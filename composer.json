@@ -38,6 +38,6 @@
   "scripts": {
     "test": "@php ./vendor/bin/phpunit --no-coverage --testdox",
     "test-cover": "@php ./vendor/bin/phpunit --coverage-text",
-    "phpstan": "@php ./vendor/bin/phpstan analyze --ansi --level=max ./app"
+    "phpstan": "@php ./vendor/bin/phpstan analyze --ansi --level=max ./src"
   }
 }
