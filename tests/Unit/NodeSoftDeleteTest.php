@@ -5,11 +5,11 @@ namespace Fureev\Trees\Tests\Unit;
 use Fureev\Trees\Exceptions\DeleteRootException;
 use Fureev\Trees\Exceptions\UniqueRootException;
 use Fureev\Trees\NestedSetConfig;
-use Fureev\Trees\Tests\models\Category;
+use Fureev\Trees\QueryBuilder;
 use Fureev\Trees\Tests\models\CategorySoftDelete;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-class NodeTest extends AbstractUnitTestCase
+class NodeSoftDeleteTest extends AbstractUnitTestCase
 {
     public static function setUpBeforeClass()
     {
@@ -32,7 +32,7 @@ class NodeTest extends AbstractUnitTestCase
         //$data = include __DIR__.'/data/categories.php';
 //        Capsule::table('categories')->insert($data);
         Capsule::flushQueryLog();
-//        Category::resetActionsPerformed();
+//        CategorySoftDelete::resetActionsPerformed();
         date_default_timezone_set('Europe/Moscow');
     }
 
@@ -49,7 +49,7 @@ class NodeTest extends AbstractUnitTestCase
 
         $this->assertTrue($model->isRoot());
 
-        $this->assertInstanceOf(Category::class, $model->getRoot());
+        $this->assertInstanceOf(CategorySoftDelete::class, $model->getRoot());
 
         $this->assertEquals($model->id, $model->getRoot()->id);
         $this->assertEquals($model->name, $model->getRoot()->name);
@@ -58,7 +58,7 @@ class NodeTest extends AbstractUnitTestCase
         $this->assertEmpty($model->parents());
 
         $this->expectException(UniqueRootException::class);
-        Category::create(['name' => 'root', '_setRoot' => true]);
+        CategorySoftDelete::create(['name' => 'root', '_setRoot' => true]);
     }
 
 
@@ -66,7 +66,7 @@ class NodeTest extends AbstractUnitTestCase
     {
         $root = static::createRoot();
 
-        $node21 = new Category(['name' => 'child 2.1']);
+        $node21 = new CategorySoftDelete(['name' => 'child 2.1']);
         $node21->prependTo($root)->save();
 
         $_root = $node21->parent()->first();
@@ -75,7 +75,7 @@ class NodeTest extends AbstractUnitTestCase
         $this->assertTrue($_root->isRoot());
         $this->assertTrue($root->equalTo($_root));
 
-        $node31 = new Category(['name' => 'child 3.1']);
+        $node31 = new CategorySoftDelete(['name' => 'child 3.1']);
         $node31->prependTo($node21)->save();
 
         $_node21 = $node31->parent()->first();
@@ -107,7 +107,7 @@ class NodeTest extends AbstractUnitTestCase
     {
         $root = static::createRoot();
 
-        $node21 = new Category(['name' => 'child 2.1']);
+        $node21 = new CategorySoftDelete(['name' => 'child 2.1']);
         $node21->prependTo($root)->save();
 
         $root->refresh();
@@ -126,10 +126,10 @@ class NodeTest extends AbstractUnitTestCase
     {
         $root = static::createRoot();
 
-        $node21 = new Category(['name' => 'child 2.1']);
+        $node21 = new CategorySoftDelete(['name' => 'child 2.1']);
         $node21->prependTo($root)->save();
 
-        $node31 = new Category(['name' => 'child 3.1']);
+        $node31 = new CategorySoftDelete(['name' => 'child 3.1']);
         $node31->prependTo($node21)->save();
 
         $root->refresh();
@@ -149,13 +149,13 @@ class NodeTest extends AbstractUnitTestCase
     {
         $root = static::createRoot();
 
-        $node21 = new Category(['name' => 'child 2.1']);
+        $node21 = new CategorySoftDelete(['name' => 'child 2.1']);
         $node21->prependTo($root)->save();
 
-        $node31 = new Category(['name' => 'child 3.1']);
+        $node31 = new CategorySoftDelete(['name' => 'child 3.1']);
         $node31->prependTo($node21)->save();
 
-        $node41 = new Category(['name' => 'child 4.1']);
+        $node41 = new CategorySoftDelete(['name' => 'child 4.1']);
         $node41->prependTo($node31)->save();
 
         $root->refresh();
@@ -180,13 +180,13 @@ class NodeTest extends AbstractUnitTestCase
         $this->assertEquals(2, $root->getRightOffset());
 
 
-        $node31 = new Category(['name' => 'child 3.1 new']);
+        $node31 = new CategorySoftDelete(['name' => 'child 3.1 new']);
         $node31->appendTo($root)->save();
 
-        $node41 = new Category(['name' => 'child 4.1 new ']);
+        $node41 = new CategorySoftDelete(['name' => 'child 4.1 new ']);
         $node41->appendTo($node31)->save();
 
-        $node51 = new Category(['name' => 'child 5.1 new ']);
+        $node51 = new CategorySoftDelete(['name' => 'child 5.1 new ']);
         $node51->prependTo($node41)->save();
 
         $root->refresh();
@@ -200,51 +200,51 @@ class NodeTest extends AbstractUnitTestCase
         $this->assertEquals(1, $root->getLeftOffset());
         $this->assertEquals(8, $root->getRightOffset());
 
-        $node21->prependTo($root)->save();
-
     }
 
+    /* public function testDeleteWithChildrenNodeAndRestore(): void
+     {
+         $root = static::createRoot();
 
-    /*   public function testMove(): void
-       {
-           $root = static::createRoot();
+         $node21 = new CategorySoftDelete(['name' => 'child 2.1']);
+         $node21->prependTo($root)->save();
 
-           $node21 = new Category(['name' => 'child 2.1']);
-           $node21->prependTo($root)->save();
+         $node31 = new CategorySoftDelete(['name' => 'child 3.1']);
+         $node31->prependTo($node21)->save();
 
-           $node31 = new Category(['name' => 'child 3.1']);
-           $node31->prependTo($node21)->save();
+         $node41 = new CategorySoftDelete(['name' => 'child 4.1']);
+         $node41->prependTo($node31)->save();
 
-           $node31->appendTo($root)->save();
-           $root->refresh();
+         $root->refresh();
+         $node21->refresh();
 
-           $this->assertTrue($root->equalTo($node31->parent));
-       }*/
+         $node21->deleteWithChildren();
+         $node21->refresh();
+
+         $node21->restore();
+
+     }*/
 
     public function testUsesSoftDelete(): void
     {
-        $model = new Category(['id' => 1, 'name' => 'root node']);
-        $this->assertFalse($model::isSoftDelete());
+        $model = new CategorySoftDelete(['id' => 1, 'name' => 'root node']);
+        $this->assertTrue($model::isSoftDelete());
+        $this->assertTrue(CategorySoftDelete::isSoftDelete());
     }
 
-
-    public function testGetBounds(): void
+    public function testNewNestedSetQuery(): void
     {
-        $model = static::createRoot();
+        $model = new CategorySoftDelete(['id' => 1, 'name' => 'root node']);
 
-        $this->assertIsArray($model->getBounds());
-        $this->assertCount(2, $model->getBounds());
-        $this->assertEquals(1, $model->getBounds()[0]);
-        $this->assertEquals(2, $model->getBounds()[1]);
+        $this->assertInstanceOf(QueryBuilder::class, $model->newNestedSetQuery());
     }
-
 
     /**
-     * @return \Fureev\Trees\Tests\models\Category
+     * @return \Fureev\Trees\Tests\models\CategorySoftDelete
      */
-    private static function createRoot(): Category
+    private static function createRoot(): CategorySoftDelete
     {
-        $model = new Category(['id' => 1, 'name' => 'root node']);
+        $model = new CategorySoftDelete(['id' => 1, 'name' => 'root node']);
 
         $model->makeRoot()->save();
 

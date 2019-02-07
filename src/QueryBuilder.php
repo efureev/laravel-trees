@@ -4,6 +4,7 @@ namespace Fureev\Trees;
 
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Expression;
 
 /**
  * Class QueryBuilder
@@ -22,7 +23,7 @@ class QueryBuilder extends Builder
      *
      * @return $this
      */
-    public function whereIsRoot()
+    public function root(): self
     {
         $this->query->whereNull($this->model->getParentIdName());
 
@@ -34,7 +35,7 @@ class QueryBuilder extends Builder
      *
      * @return $this
      */
-    public function withoutRoot()
+    public function notRoot(): self
     {
         $this->query->whereNotNull($this->model->getParentIdName());
 
@@ -46,15 +47,14 @@ class QueryBuilder extends Builder
      *
      * @return \Fureev\Trees\QueryBuilder
      */
-    public function parents($level = null)
+    public function parents(int $level = null): QueryBuilder
     {
-
         $condition = [
             [$this->model->getLeftAttributeName(), '<', $this->model->getLeftOffset()],
             [$this->model->getRightAttributeName(), '>', $this->model->getRightOffset()],
         ];
         if ($level !== null) {
-            $condition[] = [$this->model->getLevelAttributeName(), '>=', $this->model->getLevel()];
+            $condition[] = [$this->model->getLevelAttributeName(), '>=', $level];
         }
 
         return $this
@@ -63,11 +63,145 @@ class QueryBuilder extends Builder
     }
 
     /**
+     * Get all siblings
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function siblings(): QueryBuilder
+    {
+        return $this
+            ->siblingsAndSelf()
+            ->where($this->model->getKeyName(), '<>', $this->model->getKey());
+    }
+
+    /**
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function siblingsAndSelf(): QueryBuilder
+    {
+        return $this
+            ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
+    }
+
+    /**
+     * Prev node
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function prev(): QueryBuilder
+    {
+        return $this
+            ->where($this->model->getRightAttributeName(), '=', $this->model->getLeftOffset() - 1);
+    }
+
+    /**
+     * Next node
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function next(): QueryBuilder
+    {
+        return $this
+            ->where($this->model->getLeftAttributeName(), '=', $this->model->getRightOffset() + 1);
+    }
+
+    /**
+     * Get query for siblings before the node.
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function prevSiblings(): QueryBuilder
+    {
+        return $this->prevNodes()
+            ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
+    }
+
+    /**
+     * Get query for siblings after the node.
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function nextSiblings(): QueryBuilder
+    {
+        return $this->nextNodes()
+            ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
+    }
+
+    /**
+     * Get query for nodes before current node in reversed order.
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function prevNodes(): QueryBuilder
+    {
+        return $this->where($this->model->getLeftAttributeName(), '<', $this->model->getLeftOffset());
+    }
+
+    /**
+     * Get query for nodes after current node.
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function nextNodes(): QueryBuilder
+    {
+        return $this->where($this->model->getLeftAttributeName(), '>', $this->model->getLeftOffset());
+    }
+
+    /**
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function leaf(): QueryBuilder
+    {
+        return $this->where($this->model->getLeftAttributeName(), '=', new Expression($this->model->getRightAttributeName() . ' - 1'));
+    }
+
+    /**
+     * @param int|null $level
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function leaves(int $level = null): QueryBuilder
+    {
+        return $this
+            ->descendants($level)
+            ->leaf();
+    }
+
+    /**
+     * Get all descendants
+     * Потомки
+     *
+     * @param int|null $level Level of descendants
+     * @param bool $andSelf apply this node into a select
+     * @param bool $backOrder Order of a select
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function descendants(int $level = null, $andSelf = false, $backOrder = false): QueryBuilder
+    {
+        $attribute = $backOrder ? $this->model->getRightAttributeName() : $this->model->getLeftAttributeName();
+
+        $condition = [
+            [$attribute, $andSelf ? '>=' : '>', $this->model->getLeftOffset()],
+            [$attribute, $andSelf ? '<=' : '<', $this->model->getRightOffset()],
+
+        ];
+
+        if ($level !== null) {
+            $condition[] = [$this->model->getLevelAttributeName(), '<=', $this->model->getLevel() + $level];
+        }
+
+        return $this
+            ->where($condition)
+            ->orderBy($attribute, $backOrder ? 'desc' : 'asc');
+    }
+
+    /**
      * Get wrapped `lft` and `rgt` column names.
      *
      * @return array
      */
-    protected function wrappedColumns()
+    /*protected function wrappedColumns(): array
     {
         $grammar = $this->query->getGrammar();
 
@@ -75,7 +209,7 @@ class QueryBuilder extends Builder
             $grammar->wrap($this->model->getLeftAttributeName()),
             $grammar->wrap($this->model->getRightAttributeName()),
         ];
-    }
+    }*/
 
     /**
      * Order by node position.
@@ -84,7 +218,7 @@ class QueryBuilder extends Builder
      *
      * @return $this
      */
-    public function defaultOrder($dir = 'asc')
+    public function defaultOrder($dir = 'asc'): self
     {
         $this->query->orders = null;
         $this->query->orderBy($this->model->getLeftAttributeName(), $dir);

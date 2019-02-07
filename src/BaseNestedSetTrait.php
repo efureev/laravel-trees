@@ -18,13 +18,13 @@ trait BaseNestedSetTrait
 
     protected $operation;
 
-    /** @var \Illuminate\Database\Eloquent\Model|\Fureev\Trees\NestedSetTrait */
+    /** @var \Illuminate\Database\Eloquent\Model|\Fureev\Trees\NestedSetTrait|\Fureev\Trees\BaseNestedSetTrait */
     protected $node;
 
     /**
      * @return string
      */
-    public function getTreeConfigName()
+    public function getTreeConfigName(): string
     {
         return $this->_configClass;
     }
@@ -46,7 +46,7 @@ trait BaseNestedSetTrait
     /**
      * @return string
      */
-    public function getParentIdName()
+    public function getParentIdName(): string
     {
         return $this->treeConfig()->parentAttribute;
     }
@@ -54,7 +54,7 @@ trait BaseNestedSetTrait
     /**
      * @return string
      */
-    public function getLeftAttributeName()
+    public function getLeftAttributeName(): string
     {
         return $this->treeConfig()->leftAttribute;
     }
@@ -62,7 +62,7 @@ trait BaseNestedSetTrait
     /**
      * @return string
      */
-    public function getRightAttributeName()
+    public function getRightAttributeName(): string
     {
         return $this->treeConfig()->rightAttribute;
     }
@@ -70,7 +70,7 @@ trait BaseNestedSetTrait
     /**
      * @return string
      */
-    public function getLevelAttributeName()
+    public function getLevelAttributeName(): string
     {
         return $this->treeConfig()->levelAttribute;
     }
@@ -80,7 +80,7 @@ trait BaseNestedSetTrait
      *
      * @return integer|null
      */
-    public function getParentId()
+    public function getParentId(): ?int
     {
         return $this->getAttributeValue($this->getParentIdName());
     }
@@ -90,7 +90,7 @@ trait BaseNestedSetTrait
      *
      * @return int
      */
-    public function getLevel()
+    public function getLevel(): ?int
     {
         return $this->getAttributeValue($this->getLevelAttributeName());
     }
@@ -98,7 +98,7 @@ trait BaseNestedSetTrait
     /**
      * @return int
      */
-    public function getLeftOffset()
+    public function getLeftOffset(): int
     {
         return $this->getAttributeValue($this->getLeftAttributeName());
     }
@@ -106,7 +106,7 @@ trait BaseNestedSetTrait
     /**
      * @return int
      */
-    public function getRightOffset()
+    public function getRightOffset(): int
     {
         return $this->getAttributeValue($this->getRightAttributeName());
     }
@@ -114,7 +114,7 @@ trait BaseNestedSetTrait
     /**
      * @return array
      */
-    public function getBounds()
+    public function getBounds(): array
     {
         return [$this->getLeftOffset(), $this->getRightOffset()];
     }
@@ -122,7 +122,7 @@ trait BaseNestedSetTrait
     /**
      * {@inheritdoc}
      */
-    public function newEloquentBuilder($query)
+    public function newEloquentBuilder($query): QueryBuilder
     {
         return new QueryBuilder($query);
     }
@@ -132,60 +132,68 @@ trait BaseNestedSetTrait
      *
      * @return QueryBuilder
      */
-    public function newNestedSetQuery($table = null)
+    public function newNestedSetQuery($table = null): QueryBuilder
     {
-        $builder = $this->usesSoftDelete()
+        $builder = $this->isSoftDelete()
             ? $this->withTrashed()
             : $this->newQuery();
 
-        return $this->applyNestedSetScope($builder, $table);
+//        return $this->applyNestedSetScope($builder, $table);
+        return $builder;
     }
 
     /**
-     * @param mixed  $query
+     * @param mixed $query
      * @param string $table
      *
-     * @return mixed
+     * @return QueryBuilder
      */
-    public function applyNestedSetScope($query, $table = null)
-    {
-        if (!$scoped = $this->getScopeAttributes()) {
-            return $query;
-        }
-        if (!$table) {
-            $table = $this->getTable();
-        }
+    /* public function applyNestedSetScope($query, $table = null): QueryBuilder
+     {
+         if (!$scoped = $this->getScopeAttributes()) {
+             return $query;
+         }
+         if (!$table) {
+             $table = $this->getTable();
+         }
 
-        foreach ($scoped as $attribute) {
-            $query->where($table . '.' . $attribute, '=',
-                $this->getAttributeValue($attribute));
-        }
+         foreach ($scoped as $attribute) {
+             $query->where($table . '.' . $attribute, '=',
+                 $this->getAttributeValue($attribute));
+         }
 
-        return $query;
-    }
+         return $query;
+     }*/
 
     /**
      * @return array
      */
-    protected function getScopeAttributes()
-    {
-        return null;
-    }
+    /*    protected function getScopeAttributes()
+        {
+            return null;
+        }*/
 
     /**
      * @return array
-     * @throws \Php\Support\Exceptions\MissingClassException
      */
-    public function getCasts()
+    public function getCasts(): array
     {
         $this->casts = parent::getCasts();
 
         $this->casts = array_merge([
             $this->getLevelAttributeName() => 'integer',
-            $this->getLeftAttributeName()  => 'integer',
+            $this->getLeftAttributeName() => 'integer',
             $this->getRightAttributeName() => 'integer',
         ], $this->casts);
 
         return $this->casts;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isSoftDelete(): bool
+    {
+        return \method_exists(static::class, 'bootSoftDeletes');
     }
 }
