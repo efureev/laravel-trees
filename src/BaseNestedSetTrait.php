@@ -137,41 +137,10 @@ trait BaseNestedSetTrait
         $builder = $this->isSoftDelete()
             ? $this->withTrashed()
             : $this->newQuery();
-
-//        return $this->applyNestedSetScope($builder, $table);
+        
         return $builder;
     }
 
-    /**
-     * @param mixed $query
-     * @param string $table
-     *
-     * @return QueryBuilder
-     */
-    /* public function applyNestedSetScope($query, $table = null): QueryBuilder
-     {
-         if (!$scoped = $this->getScopeAttributes()) {
-             return $query;
-         }
-         if (!$table) {
-             $table = $this->getTable();
-         }
-
-         foreach ($scoped as $attribute) {
-             $query->where($table . '.' . $attribute, '=',
-                 $this->getAttributeValue($attribute));
-         }
-
-         return $query;
-     }*/
-
-    /**
-     * @return array
-     */
-    /*    protected function getScopeAttributes()
-        {
-            return null;
-        }*/
 
     /**
      * @return array
