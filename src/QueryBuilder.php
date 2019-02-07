@@ -196,20 +196,6 @@ class QueryBuilder extends Builder
             ->orderBy($attribute, $backOrder ? 'desc' : 'asc');
     }
 
-    /**
-     * Get wrapped `lft` and `rgt` column names.
-     *
-     * @return array
-     */
-    /*protected function wrappedColumns(): array
-    {
-        $grammar = $this->query->getGrammar();
-
-        return [
-            $grammar->wrap($this->model->getLeftAttributeName()),
-            $grammar->wrap($this->model->getRightAttributeName()),
-        ];
-    }*/
 
     /**
      * Order by node position.
