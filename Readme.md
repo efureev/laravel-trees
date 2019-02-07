@@ -2,6 +2,11 @@
 [![Total Downloads](https://poser.pugx.org/efureev/laravel-trees/downloads)](https://packagist.org/packages/efureev/laravel-trees)
 [![Latest Unstable Version](https://poser.pugx.org/efureev/laravel-trees/v/unstable)](https://packagist.org/packages/efureev/laravel-trees)
 
+[![Build Status](https://travis-ci.org/efureev/laravel-trees.svg?branch=master)](https://travis-ci.org/efureev/laravel-trees)
+
+[![Maintainability](https://api.codeclimate.com/v1/badges/69eff0098adbf728341d/maintainability)](https://codeclimate.com/github/efureev/laravel-trees/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/69eff0098adbf728341d/test_coverage)](https://codeclimate.com/github/efureev/laravel-trees/test_coverage)
+
 ## Information
 Tree structures
 
