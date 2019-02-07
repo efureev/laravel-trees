@@ -8,6 +8,7 @@ use Fureev\Trees\Exceptions\UniqueRootException;
 use Fureev\Trees\Exceptions\UnsavedNodeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Collection;
 use Php\Support\Exceptions\NotSupportedException;
 
 /**
@@ -15,6 +16,7 @@ use Php\Support\Exceptions\NotSupportedException;
  *
  * @package Fureev\Trees
  * @property Model $parent
+ * @property Collection|Model[] $children
  * @method QueryBuilder newQuery()
  * @method QueryBuilder query()
  * @mixin Model
@@ -134,10 +136,10 @@ trait NestedSetTrait
                 $this->insertNode($this->node->getRightOffset(), 1);
                 break;
             case NestedSetConfig::OPERATION_INSERT_BEFORE:
-                $this->insertNode($this->node->getLeftOffset(), 0);
+                $this->insertNode($this->node->getLeftOffset());
                 break;
             case NestedSetConfig::OPERATION_INSERT_AFTER:
-                $this->insertNode($this->node->getRightOffset() + 1, 0);
+                $this->insertNode($this->node->getRightOffset() + 1);
                 break;
             default:
                 throw new NotSupportedException(null, 'Method "' . get_class($this) . '::insert" is not supported for inserting new nodes.');
@@ -202,10 +204,10 @@ trait NestedSetTrait
      */
     public function beforeUpdate(): void
     {
-        if ($this->node !== null && !$this->node->exists) {
+        if ($this->node !== null && $this->node->exists) {
             $this->node->refresh();
         }
-        dd($this->node);
+
         switch ($this->operation) {
             case NestedSetConfig::OPERATION_INSERT_BEFORE:
             case NestedSetConfig::OPERATION_INSERT_AFTER:
@@ -214,7 +216,6 @@ trait NestedSetTrait
                 }
             case NestedSetConfig::OPERATION_PREPEND_TO:
             case NestedSetConfig::OPERATION_APPEND_TO:
-                dd($this->node);
                 if (!$this->node->exists) {
                     throw new Exception('Can not move a node when the target node is new record.');
                 }
@@ -256,6 +257,17 @@ trait NestedSetTrait
         $this->node = null;
     }
 
+
+    public function beforeSave(): void
+    {
+        switch ($this->operation) {
+            case NestedSetConfig::OPERATION_PREPEND_TO:
+            case NestedSetConfig::OPERATION_APPEND_TO:
+                $this->setAttribute($this->getParentIdName(), $this->node->getKey());
+                break;
+        }
+    }
+
     /**
      * @var \Carbon\Carbon
      */
@@ -277,15 +289,18 @@ trait NestedSetTrait
         });
 
         static::updating(function ($model) {
-            dd($model);
             /** @var NestedSetTrait $model */
             return $model->beforeUpdate();
         });
 
         static::updated(function ($model) {
-            dd($model);
             /** @var NestedSetTrait $model */
             return $model->afterUpdate();
+        });
+
+        static::saving(function ($model) {
+            /** @var NestedSetTrait $model */
+            return $model->beforeSave();
         });
 
         static::deleting(function ($model) {
@@ -484,15 +499,14 @@ trait NestedSetTrait
     {
         $left = $this->getLeftOffset();
         $right = $this->getRightOffset();
-
         $depth = $this->getLevel() - $this->node->getLevel() - $depth;
-
 
         // same root
         $query = $this->newQuery()->descendants(null, true);
 
+
         $query->update([
-            $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()}" . $depth),
+            $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()} + " . $depth),
         ]);
 
         $delta = $right - $left + 1;
@@ -510,32 +524,12 @@ trait NestedSetTrait
             ->where($this->getLevelAttributeName(), '<', 0);
 
         $query->update([
-            $this->getLeftAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . $delta),
+            $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
             $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . $delta),
             $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()}"),
         ]);
 
     }
-
-    /**
-     *
-     */
-    /*protected function moveNodeAsRoot(): void
-    {
-        $left = $this->getLeftOffset();
-        $right = $this->getRightOffset();
-        $depth = $this->getLevel();
-
-        $query = $this->newQuery()->descendants(null, true);
-
-        $query->update([
-            $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' .1 - $left),
-            $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' .1 - $left),
-            $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName().' + ' . -$depth),
-        ]);
-
-        $this->shift($right + 1, null, $left - $right - 1);
-    }*/
 
     /**
      * @param $from

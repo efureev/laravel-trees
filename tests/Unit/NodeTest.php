@@ -205,21 +205,32 @@ class NodeTest extends AbstractUnitTestCase
     }
 
 
-    /*   public function testMove(): void
-       {
-           $root = static::createRoot();
+    public function testMove(): void
+    {
+        $root = static::createRoot();
 
-           $node21 = new Category(['name' => 'child 2.1']);
-           $node21->prependTo($root)->save();
+        $node21 = new Category(['name' => 'child 2.1']);
+        $node21->prependTo($root)->save();
 
-           $node31 = new Category(['name' => 'child 3.1']);
-           $node31->prependTo($node21)->save();
+        $node31 = new Category(['name' => 'child 3.1']);
+        $node31->prependTo($node21)->save();
 
-           $node31->appendTo($root)->save();
-           $root->refresh();
+        $node31->appendTo($root)->save();
 
-           $this->assertTrue($root->equalTo($node31->parent));
-       }*/
+        $this->assertTrue($root->equalTo($node31->parent));
+        $this->assertCount(2, $root->children);
+        $node31->refresh();
+
+        $node31->appendTo($node21)->save();
+
+        $node31->refresh();
+        $node21->refresh();
+        $root->refresh();
+
+        $this->assertTrue($node21->equalTo($node31->parent));
+        $this->assertCount(1, $root->children);
+        $this->assertCount(1, $node21->children);
+    }
 
     public function testUsesSoftDelete(): void
     {
