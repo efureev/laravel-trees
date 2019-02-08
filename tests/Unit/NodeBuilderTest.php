@@ -202,6 +202,32 @@ class NodeBuilderTest extends AbstractUnitTestCase
 
     }
 
+    public function testNextSibling(): void
+    {
+        static::createTree();
+
+        $node42 = Category::where(['name' => 'child 4.2'])->first();
+        $node43 = Category::where(['name' => 'child 4.3'])->first();
+
+        $node = $node42->nextSibling()->first();
+        static::assertTrue($node43->equalTo($node));
+        static::assertNull($node->nextSibling()->first());
+
+    }
+
+    public function testPrevSibling(): void
+    {
+        static::createTree();
+
+        $node41 = Category::where(['name' => 'child 4.1'])->first();
+        $node42 = Category::where(['name' => 'child 4.2'])->first();
+
+        $node = $node42->prevSibling()->first();
+        static::assertTrue($node41->equalTo($node));
+        static::assertNull($node->prevSibling()->first());
+
+    }
+
     public function testLeaf(): void
     {
         static::createTree();

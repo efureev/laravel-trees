@@ -16,10 +16,18 @@ trait BaseNestedSetTrait
     /** @var string */
     protected $_configClass = NestedSetConfig::class;
 
+    /** @var int */
     protected $operation;
 
     /** @var \Illuminate\Database\Eloquent\Model|\Fureev\Trees\NestedSetTrait|\Fureev\Trees\BaseNestedSetTrait */
     protected $node;
+
+    /**
+     * Forced save
+     *
+     * @var bool
+     */
+    protected $forceSave = false;
 
     /**
      * @return string
@@ -137,7 +145,7 @@ trait BaseNestedSetTrait
         $builder = $this->isSoftDelete()
             ? $this->withTrashed()
             : $this->newQuery();
-        
+
         return $builder;
     }
 
@@ -153,6 +161,7 @@ trait BaseNestedSetTrait
             $this->getLevelAttributeName() => 'integer',
             $this->getLeftAttributeName() => 'integer',
             $this->getRightAttributeName() => 'integer',
+            $this->getParentIdName() => 'integer',
         ], $this->casts);
 
         return $this->casts;
@@ -164,5 +173,37 @@ trait BaseNestedSetTrait
     public static function isSoftDelete(): bool
     {
         return \method_exists(static::class, 'bootSoftDeletes');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDirty()
+    {
+        $dirty = parent::getDirty();
+
+        if (!$dirty && $this->forceSave) {
+            $dirty[$this->getParentIdName()] = $this->getParentId();
+        }
+
+        return $dirty;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function forceSave()
+    {
+        $this->forceSave = true;
+
+        return $this->save();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isForceSaving(): bool
+    {
+        return $this->forceSave;
     }
 }

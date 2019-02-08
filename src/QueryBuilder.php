@@ -117,6 +117,30 @@ class QueryBuilder extends Builder
     }
 
     /**
+     * Get query for sibling before the node.
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function prevSibling(): QueryBuilder
+    {
+        return $this
+            ->prev()
+            ->where($this->model->getParentIdName(), $this->model->getParentId());
+    }
+
+    /**
+     * Get query for sibling before the node.
+     *
+     * @return \Fureev\Trees\QueryBuilder
+     */
+    public function nextSibling(): QueryBuilder
+    {
+        return $this
+            ->next()
+            ->where($this->model->getParentIdName(), $this->model->getParentId());
+    }
+
+    /**
      * Get query for siblings after the node.
      *
      * @return \Fureev\Trees\QueryBuilder

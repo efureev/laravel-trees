@@ -51,6 +51,54 @@ $node = new Category(['name' => 'child 2.1']);
 $node->appendTo($root)->save();
 ```
 
+### insertBefore
+_Add child-node into same parent node. Insert before target node._
+
+```php
+$root = Category::create(['name' => 'root', '_setRoot' => true]);
+$node2 = new Category(['name' => 'child 2.1']);
+$node2->appendTo($root)->save();
+
+$node3 = new Category(['name' => 'child 3.1']);
+$node3->insertBefore($node2)->save();
+```
+
+### insertAfter
+_Add child-node into same parent node. Insert after target node._
+
+```php
+$root = Category::create(['name' => 'root', '_setRoot' => true]);
+$node2 = new Category(['name' => 'child 2.1']);
+$node2->appendTo($root)->save();
+
+$node3 = new Category(['name' => 'child 3.1']);
+$node3->insertAfter($node2)->save();
+```
+
+### up
+_Move node up in self parent scope._
+
+```php
+$root = Category::create(['name' => 'root', '_setRoot' => true]);
+(new Category(['name' => 'child 2']))->appendTo($root)->save();
+(new Category(['name' => 'child 3']))->appendTo($root)->save();
+$node = new Category(['name' => 'child 4']);
+$node->appendTo($root)->save();
+$node->up();
+```
+
+### down
+_Move node down in self parent scope._
+
+```php
+$root = Category::create(['name' => 'root', '_setRoot' => true]);
+(new Category(['name' => 'child 2']))->appendTo($root)->save();
+(new Category(['name' => 'child 3']))->appendTo($root)->save();
+$node = new Category(['name' => 'child 4']);
+$node->appendTo($root)->save();
+$node->down();
+```
+
 ### delete
 _Delete node. if exist children - they will be attach to deleted node parent._
 
@@ -92,16 +140,16 @@ return `bool`
 return `bool`
 
 ### parents()
+*Return collection of parent nodes*  
 return `\Illuminate\Database\Eloquent\Collection`
-Return collection of parent nodes
 
 ### parent()
+*Return parent node query*  
 return `\Illuminate\Database\Eloquent\Relations\BelongsTo`
-Return parent node query
 
 ### children()
+*Return children nodes query*  
 return `\Illuminate\Database\Eloquent\Relations\HasMany`
-Return children nodes query
 
 ## Node query builder
 
@@ -111,28 +159,57 @@ $root = Category::root()->first();
 ```
 
 ### parents(int $level = null)
-if `$level` is not null, then select nodes where level >= `$level`
+*if `$level` is not null, then select nodes where level >= `$level`*  
+return `\Fureev\Trees\QueryBuilder`
 ```php
 Category::parents()->get();
 Category::parents(1)->get();
 ```
 
 ### siblings()
+return `\Fureev\Trees\QueryBuilder`
 ```php
 Category::siblings()->get();
 ```
 
 ### prev()
+return `\Fureev\Trees\QueryBuilder`
 ```php
 Category::prev()->first();
 ```
 
 ### next()
+return `\Fureev\Trees\QueryBuilder`
 ```php
 Category::next()->first();
 ```
 
+### prevSiblings()
+return `\Fureev\Trees\QueryBuilder`
+```php
+$model->prevSiblings()->get();
+```
+
+### nextSiblings()
+return `\Fureev\Trees\QueryBuilder`
+```php
+$model->nextSiblings()->get();
+```
+
+### prevSibling()
+return `\Fureev\Trees\QueryBuilder`
+```php
+$model->prevSibling()->first();
+```
+
+### nextSibling()
+return `\Fureev\Trees\QueryBuilder`
+```php
+$model->nextSibling()->first();
+```
+
 ### descendants()
+return `\Fureev\Trees\QueryBuilder`
 ```php
 Category::descendants()->get();
 ```

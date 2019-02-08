@@ -267,6 +267,10 @@ trait NestedSetTrait
 
         $this->operation = null;
         $this->node = null;
+
+        if ($this->forceSave) {
+            $this->forceSave = false;
+        }
     }
 
 
@@ -504,6 +508,38 @@ trait NestedSetTrait
             $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()}"),
         ]);
 
+    }
+
+    /**
+     * Move node up
+     *
+     * @return bool
+     */
+    public function up()
+    {
+        $prev = $this->prevSibling()->first();
+
+        if (!$prev) {
+            return false;
+        }
+
+        return $this->insertBefore($prev)->forceSave();
+    }
+
+    /**
+     * Move node down.
+     *
+     * @return bool
+     */
+    public function down()
+    {
+        $next = $this->nextSibling()->first();
+
+        if (!$next) {
+            return false;
+        }
+
+        return $this->insertAfter($next)->forceSave();
     }
 
     /**

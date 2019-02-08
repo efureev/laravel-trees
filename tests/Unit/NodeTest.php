@@ -447,6 +447,90 @@ class NodeTest extends AbstractUnitTestCase
         $model->save();
     }
 
+    public function testUp(): void
+    {
+        $root = static::createRoot();
+
+        $node21 = new Category(['name' => 'child 2.1']);
+        $node31 = new Category(['name' => 'child 3.1']);
+        $node41 = new Category(['name' => 'child 4.1']);
+
+        $node21->appendTo($root)->save();
+        $node31->appendTo($root)->save();
+        $node41->appendTo($root)->save();
+
+        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+            return $item->name;
+        });
+
+        static::assertCount(3, $children);
+        static::assertEquals(['child 2.1', 'child 3.1', 'child 4.1'], $children->toArray());
+
+        static::assertTrue($node31->up());
+        static::assertFalse($node31->isForceSaving());
+
+
+        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+            return $item->name;
+        });
+
+        static::assertEquals(['child 3.1', 'child 2.1', 'child 4.1'], $children->toArray());
+        $node31->refresh();
+
+        static::assertFalse($node31->up());
+        static::assertFalse($node31->isForceSaving());
+
+
+        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+            return $item->name;
+        });
+
+        static::assertEquals(['child 3.1', 'child 2.1', 'child 4.1'], $children->toArray());
+
+    }
+
+    public function testDown(): void
+    {
+        $root = static::createRoot();
+
+        $node21 = new Category(['name' => 'child 2.1']);
+        $node31 = new Category(['name' => 'child 3.1']);
+        $node41 = new Category(['name' => 'child 4.1']);
+
+        $node21->appendTo($root)->save();
+        $node31->appendTo($root)->save();
+        $node41->appendTo($root)->save();
+
+        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+            return $item->name;
+        });
+
+        static::assertCount(3, $children);
+        static::assertEquals(['child 2.1', 'child 3.1', 'child 4.1'], $children->toArray());
+
+        static::assertTrue($node31->down());
+        static::assertFalse($node31->isForceSaving());
+
+
+        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+            return $item->name;
+        });
+
+        static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
+
+        $node31->refresh();
+        static::assertFalse($node31->down());
+        static::assertFalse($node31->isForceSaving());
+
+
+        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+            return $item->name;
+        });
+
+        static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
+
+    }
+
     /**
      * @return \Fureev\Trees\Tests\models\Category
      */
