@@ -439,7 +439,7 @@ class NodeTest extends AbstractUnitTestCase
     }
 
     /**
-     * @expectedException \Php\Support\Exceptions\NotSupportedException
+     * @expectedException \Fureev\Trees\Exceptions\NotSupportedException
      */
     public function testBaseSaveException(): void
     {
