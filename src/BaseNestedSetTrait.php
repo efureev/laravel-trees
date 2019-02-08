@@ -206,4 +206,14 @@ trait BaseNestedSetTrait
     {
         return $this->forceSave;
     }
+
+    /**
+     *
+     */
+    protected function nodeRefresh(): void
+    {
+        if ($this->node !== null && $this->node->exists) {
+            $this->node->refresh();
+        }
+    }
 }

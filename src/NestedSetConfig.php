@@ -44,7 +44,7 @@ class NestedSetConfig
      *
      * @param \Illuminate\Database\Schema\Blueprint $table
      */
-    public function columns(Blueprint $table)
+    public function columns(Blueprint $table): void
     {
         $table->unsignedInteger($this->leftAttribute)->default(0);
         $table->unsignedInteger($this->rightAttribute)->default(0);
@@ -70,7 +70,7 @@ class NestedSetConfig
      *
      * @param \Illuminate\Database\Schema\Blueprint $table
      */
-    public static function dropColumns(Blueprint $table)
+    public static function dropColumns(Blueprint $table): void
     {
         $columns = (new static())->getDefaultColumns();
         $table->dropIndex($columns);
@@ -82,7 +82,7 @@ class NestedSetConfig
      *
      * @return array
      */
-    public function getDefaultColumns()
+    public function getDefaultColumns(): array
     {
         return [$this->leftAttribute, $this->rightAttribute, $this->levelAttribute, $this->parentAttribute];
     }
