@@ -2,11 +2,10 @@
 
 namespace Fureev\Trees;
 
-use Fureev\Trees\Exceptions\{DeleteRootException, Exception, UniqueRootException, UnsavedNodeException};
+use Fureev\Trees\Exceptions\{DeleteRootException, Exception, UniqueRootException, NotSupportedException};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
-use Php\Support\Exceptions\NotSupportedException;
 
 /**
  * Trait NestedSetTrait
