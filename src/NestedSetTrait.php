@@ -2,10 +2,7 @@
 
 namespace Fureev\Trees;
 
-use Fureev\Trees\Exceptions\DeleteRootException;
-use Fureev\Trees\Exceptions\Exception;
-use Fureev\Trees\Exceptions\UniqueRootException;
-use Fureev\Trees\Exceptions\UnsavedNodeException;
+use Fureev\Trees\Exceptions\{DeleteRootException, Exception, UniqueRootException, UnsavedNodeException};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
@@ -17,6 +14,7 @@ use Php\Support\Exceptions\NotSupportedException;
  * @package Fureev\Trees
  * @property Model $parent
  * @property Collection|Model[] $children
+ * // * @property Collection|Model[] $siblings
  * @method QueryBuilder newQuery()
  * @method QueryBuilder query()
  * @mixin Model
@@ -127,22 +125,40 @@ trait NestedSetTrait
                 $this->setAttribute($this->getLeftAttributeName(), 1);
                 $this->setAttribute($this->getRightAttributeName(), 2);
                 $this->setAttribute($this->getLevelAttributeName(), 0);
-                $this->setAttribute($this->getParentIdName(), null);
+//                $this->setAttribute($this->getParentIdName(), null);
                 break;
             case NestedSetConfig::OPERATION_PREPEND_TO:
+                $this->validateExisted();
+//                $this->setAttribute($this->getParentIdName(), $this->node->getKey());
                 $this->insertNode($this->node->getLeftOffset() + 1, 1);
                 break;
             case NestedSetConfig::OPERATION_APPEND_TO:
+                $this->validateExisted();
+//                $this->setAttribute($this->getParentIdName(), $this->node->getKey());
                 $this->insertNode($this->node->getRightOffset(), 1);
                 break;
             case NestedSetConfig::OPERATION_INSERT_BEFORE:
+                $this->validateExisted();
+//                $this->setAttribute($this->getParentIdName(), $this->node->getParentId());
                 $this->insertNode($this->node->getLeftOffset());
                 break;
             case NestedSetConfig::OPERATION_INSERT_AFTER:
+                $this->validateExisted();
+//                $this->setAttribute($this->getParentIdName(), $this->node->getParentId());
                 $this->insertNode($this->node->getRightOffset() + 1);
                 break;
             default:
                 throw new NotSupportedException(null, 'Method "' . get_class($this) . '::insert" is not supported for inserting new nodes.');
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function validateExisted(): void
+    {
+        if (!$this->node->exists) {
+            throw new Exception('Can not manipulate a node when the target node is new record.');
         }
     }
 
@@ -161,11 +177,7 @@ trait NestedSetTrait
      */
     public function beforeDelete(): void
     {
-        if (!$this->exists) {
-            throw new UnsavedNodeException($this, 'Can not delete a node when it is new record.');
-        }
-
-        if ($this->isRoot() && $this->operation !== NestedSetConfig::OPERATION_DELETE_ALL) {
+        if ($this->operation !== NestedSetConfig::OPERATION_DELETE_ALL && $this->isRoot()) {
             throw new DeleteRootException($this);
         }
 
@@ -212,13 +224,13 @@ trait NestedSetTrait
             case NestedSetConfig::OPERATION_INSERT_BEFORE:
             case NestedSetConfig::OPERATION_INSERT_AFTER:
                 if ($this->node->isRoot()) {
-                    throw new Exception('Can not move a node before/after root.');
+                    throw new UniqueRootException($this->node, 'Can not move a node before/after root.');
                 }
             case NestedSetConfig::OPERATION_PREPEND_TO:
             case NestedSetConfig::OPERATION_APPEND_TO:
-                if (!$this->node->exists) {
+                /*if (!$this->node->exists) {
                     throw new Exception('Can not move a node when the target node is new record.');
-                }
+                }*/
                 if ($this->equalTo($this->node)) {
                     throw new Exception('Can not move a node when the target node is same.');
                 }
@@ -234,11 +246,11 @@ trait NestedSetTrait
     public function afterUpdate(): void
     {
         switch ($this->operation) {
-            case NestedSetConfig::OPERATION_MAKE_ROOT:
-                if (!$this->isRoot()/* || !$this->exist()*/) {
+            /*case NestedSetConfig::OPERATION_MAKE_ROOT:
+                if (!$this->isRoot() || !$this->exist) {
 //                    $this->moveNodeAsRoot();
                 }
-                break;
+                break;*/
             case NestedSetConfig::OPERATION_PREPEND_TO:
                 $this->moveNode($this->node->getLeftOffset() + 1, 1);
                 break;
@@ -264,6 +276,10 @@ trait NestedSetTrait
             case NestedSetConfig::OPERATION_PREPEND_TO:
             case NestedSetConfig::OPERATION_APPEND_TO:
                 $this->setAttribute($this->getParentIdName(), $this->node->getKey());
+                break;
+            case NestedSetConfig::OPERATION_INSERT_AFTER:
+            case NestedSetConfig::OPERATION_INSERT_BEFORE:
+                $this->setAttribute($this->getParentIdName(), $this->node->getParentId());
                 break;
         }
     }
@@ -323,49 +339,12 @@ trait NestedSetTrait
                 $model->restoreDescendants(static::$deletedAt);
 //                $model->refresh();
 //                $model->appendTo($model->parent)->save();
-
-//                dd($model);
             });
         }
-
-        /*static::saving(function ($model) {
-            return $model->beforeInsert();
-        });
-
-        */
-        /*static::updating(function ($model) {
-            return $model->beforeInsert();
-        });*/
-
-        /*static::saving(function ($model) {
-            return $model->callPendingAction();
-        });*/
-        /*  static::deleting(function ($model) {
-              // We will need fresh data to delete node safely
-              $model->refreshNode();
-          });
-          static::deleted(function ($model) {
-              $model->deleteDescendants();
-          });
-          */
     }
 
     /**
-     * Apply parent model.
-     *
-     * @param \Illuminate\Database\Eloquent\Model $model
-     *
-     * @return $this
-     */
-    public function setParent(Model $model): self
-    {
-        $this->parent()->associate($model);
-
-        return $this;
-    }
-
-    /**
-     * @param \Illuminate\Database\Eloquent\Model $node
+     * @param \Illuminate\Database\Eloquent\Model|self $node
      *
      * @return bool
      */
@@ -447,7 +426,7 @@ trait NestedSetTrait
             return false;
         }
 
-//        $result = $this->newQuery()->descendants(null, true)->delete();
+        // $result = $this->newQuery()->descendants(null, true)->delete();
         $result = $this->newQuery()->descendants(null, true)->forceDelete();
 
         $this->fireModelEvent('deleted', false);
@@ -477,16 +456,12 @@ trait NestedSetTrait
      */
     protected function insertNode($to, $depth = 0): void
     {
-        if (!$this->node->exists()) {
-            throw new Exception('Can not create a node when the target node is new record.');
-        }
         if ($depth === 0 && $this->node->isRoot()) {
-            throw new Exception('Can not insert a node before/after root.');
+            throw new UniqueRootException($this->node, 'Can not insert a node before/after root.');
         }
         $this->setAttribute($this->getLeftAttributeName(), $to);
         $this->setAttribute($this->getRightAttributeName(), $to + 1);
         $this->setAttribute($this->getLevelAttributeName(), $this->node->getLevel() + $depth);
-        $this->setAttribute($this->getParentIdName(), $this->node->getKey());
 
         $this->shift($to, null, 2);
     }
