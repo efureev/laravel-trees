@@ -2,15 +2,16 @@
 
 namespace Fureev\Trees;
 
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * Trait BaseNestedSetTrait
  *
- * @package Fureev\Trees
- * @property \Fureev\Trees\QueryBuilder $query
+ * @property QueryBuilder $query
  */
 trait BaseNestedSetTrait
 {
-    /** @var \Fureev\Trees\NestedSetConfig */
+    /** @var NestedSetConfig */
     protected $_config;
 
     /** @var string */
@@ -19,7 +20,7 @@ trait BaseNestedSetTrait
     /** @var int */
     protected $operation;
 
-    /** @var \Illuminate\Database\Eloquent\Model|\Fureev\Trees\NestedSetTrait|\Fureev\Trees\BaseNestedSetTrait */
+    /** @var Model|NestedSetTrait|BaseNestedSetTrait */
     protected $node;
 
     /**
@@ -38,9 +39,9 @@ trait BaseNestedSetTrait
     }
 
     /**
-     * @return \Fureev\Trees\NestedSetConfig
+     * @return NestedSetConfig
      */
-    public function treeConfig()
+    public function treeConfig(): NestedSetConfig
     {
         if (!$this->_config) {
             $cls = $this->getTreeConfigName();
@@ -81,6 +82,22 @@ trait BaseNestedSetTrait
     public function getLevelAttributeName(): string
     {
         return $this->treeConfig()->levelAttribute;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTreeAttributeName(): string
+    {
+        return $this->treeConfig()->treeAttribute;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMultiTree(): bool
+    {
+        return $this->treeConfig()->treeAttribute !== null;
     }
 
     /**
@@ -142,7 +159,7 @@ trait BaseNestedSetTrait
      */
     public function newNestedSetQuery($table = null): QueryBuilder
     {
-        $builder = $this->isSoftDelete()
+        $builder = self::isSoftDelete()
             ? $this->withTrashed()
             : $this->newQuery();
 

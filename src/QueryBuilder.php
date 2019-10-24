@@ -4,6 +4,7 @@ namespace Fureev\Trees;
 
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Expression;
 
 /**
@@ -14,7 +15,7 @@ use Illuminate\Database\Query\Expression;
 class QueryBuilder extends Builder
 {
     /**
-     * @var \Fureev\Trees\NestedSetTrait|\Illuminate\Database\Eloquent\Model
+     * @var Model|NestedSetTrait
      */
     protected $model;
 
@@ -45,7 +46,7 @@ class QueryBuilder extends Builder
     /**
      * @param int|null $level
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function parents(int $level = null): QueryBuilder
     {
@@ -65,7 +66,7 @@ class QueryBuilder extends Builder
     /**
      * Get all siblings
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function siblings(): QueryBuilder
     {
@@ -75,7 +76,7 @@ class QueryBuilder extends Builder
     }
 
     /**
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function siblingsAndSelf(): QueryBuilder
     {
@@ -86,7 +87,7 @@ class QueryBuilder extends Builder
     /**
      * Prev node
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function prev(): QueryBuilder
     {
@@ -97,7 +98,7 @@ class QueryBuilder extends Builder
     /**
      * Next node
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function next(): QueryBuilder
     {
@@ -108,7 +109,7 @@ class QueryBuilder extends Builder
     /**
      * Get query for siblings before the node.
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function prevSiblings(): QueryBuilder
     {
@@ -119,7 +120,7 @@ class QueryBuilder extends Builder
     /**
      * Get query for sibling before the node.
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function prevSibling(): QueryBuilder
     {
@@ -131,7 +132,7 @@ class QueryBuilder extends Builder
     /**
      * Get query for sibling before the node.
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function nextSibling(): QueryBuilder
     {
@@ -143,7 +144,7 @@ class QueryBuilder extends Builder
     /**
      * Get query for siblings after the node.
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function nextSiblings(): QueryBuilder
     {
@@ -154,7 +155,7 @@ class QueryBuilder extends Builder
     /**
      * Get query for nodes before current node in reversed order.
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function prevNodes(): QueryBuilder
     {
@@ -164,7 +165,7 @@ class QueryBuilder extends Builder
     /**
      * Get query for nodes after current node.
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function nextNodes(): QueryBuilder
     {
@@ -172,7 +173,7 @@ class QueryBuilder extends Builder
     }
 
     /**
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function leaf(): QueryBuilder
     {
@@ -182,7 +183,7 @@ class QueryBuilder extends Builder
     /**
      * @param int|null $level
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function leaves(int $level = null): QueryBuilder
     {
@@ -199,7 +200,7 @@ class QueryBuilder extends Builder
      * @param bool $andSelf apply this node into a select
      * @param bool $backOrder Order of a select
      *
-     * @return \Fureev\Trees\QueryBuilder
+     * @return QueryBuilder
      */
     public function descendants(int $level = null, $andSelf = false, $backOrder = false): QueryBuilder
     {

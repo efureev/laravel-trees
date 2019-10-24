@@ -35,6 +35,13 @@ class NestedSetConfig
     public $parentAttribute = 'parent_id';
 
     /**
+     * Prefix for multi-tree node
+     *
+     * @var string|null
+     */
+    public $treeAttribute;
+
+    /**
      * @var Model
      */
     protected $node;
@@ -42,7 +49,7 @@ class NestedSetConfig
     /**
      * Add default nested set columns to the table. Also create an index.
      *
-     * @param \Illuminate\Database\Schema\Blueprint $table
+     * @param Blueprint $table
      */
     public function columns(Blueprint $table): void
     {
@@ -50,7 +57,7 @@ class NestedSetConfig
         $table->unsignedInteger($this->rightAttribute)->default(0);
         $table->unsignedInteger($this->parentAttribute)->nullable();
         $table->integer($this->levelAttribute);
-        $table->index(static::getDefaultColumns());
+        $table->index($this->getDefaultColumns());
 
         $table->index([$this->leftAttribute, $this->rightAttribute], $table->getTable() . "_{$this->leftAttribute}_idx");
         $table->index([$this->rightAttribute], $table->getTable() . "_{$this->rightAttribute}_idx");
@@ -58,17 +65,17 @@ class NestedSetConfig
     }
 
     /**
-     * @param \Illuminate\Database\Schema\Blueprint $table
+     * @param Blueprint $table
      */
-    public static function getColumns(Blueprint $table)
+    public static function getColumns(Blueprint $table): void
     {
-        return (new static())->columns($table);
+        (new static())->columns($table);
     }
 
     /**
      * Drop NestedSet columns.
      *
-     * @param \Illuminate\Database\Schema\Blueprint $table
+     * @param Blueprint $table
      */
     public static function dropColumns(Blueprint $table): void
     {
@@ -84,7 +91,13 @@ class NestedSetConfig
      */
     public function getDefaultColumns(): array
     {
-        return [$this->leftAttribute, $this->rightAttribute, $this->levelAttribute, $this->parentAttribute];
+        return [
+            $this->leftAttribute,
+            $this->rightAttribute,
+            $this->levelAttribute,
+            $this->parentAttribute,
+            $this->treeAttribute,
+        ];
     }
 
 }

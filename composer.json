@@ -1,6 +1,7 @@
 {
   "version": "1.0.0",
   "name": "efureev/laravel-trees",
+  "license": "MIT",
   "authors": [
     {
       "name": "Eugene Fureev",
@@ -8,8 +9,8 @@
     }
   ],
   "require": {
-    "illuminate/database": "^5.6",
-    "illuminate/events": "^5.6"
+    "illuminate/database": "^5.6 | ^6.2",
+    "illuminate/events": "^5.6 | ^6.2"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.0",
@@ -37,6 +38,6 @@
   "scripts": {
     "test": "@php ./vendor/bin/phpunit --no-coverage --testdox",
     "test-cover": "@php ./vendor/bin/phpunit --coverage-text",
-    "phpstan": "@php ./vendor/bin/phpstan analyze --ansi --level=max ./src"
+    "phpstan": "@php ./vendor/bin/phpstan analyze --ansi --level=2 ./src"
   }
 }

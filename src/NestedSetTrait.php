@@ -2,18 +2,18 @@
 
 namespace Fureev\Trees;
 
-use Fureev\Trees\Exceptions\{DeleteRootException, Exception, UniqueRootException, NotSupportedException};
+use Fureev\Trees\Exceptions\{DeleteRootException, Exception, NotSupportedException, UniqueRootException};
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
 
 /**
  * Trait NestedSetTrait
  *
- * @package Fureev\Trees
  * @property Model $parent
  * @property Collection|Model[] $children
- * // * @property Collection|Model[] $siblings
  * @method QueryBuilder newQuery()
  * @method QueryBuilder query()
  * @mixin Model
@@ -93,7 +93,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @return \Fureev\Trees\QueryBuilder|\Illuminate\Database\Eloquent\Model|object|null
+     * @return QueryBuilder|Model|object|null
      */
     public function getRoot()
     {
@@ -285,55 +285,55 @@ trait NestedSetTrait
      */
     public static function bootNestedSetTrait(): void
     {
-        static::creating(function ($model) {
+        static::creating(static function ($model) {
             /** @var NestedSetTrait $model */
-            return $model->beforeInsert();
+            $model->beforeInsert();
         });
 
-        static::created(function ($model) {
+        static::created(static function ($model) {
             /** @var NestedSetTrait $model */
-            return $model->afterInsert();
+            $model->afterInsert();
         });
 
-        static::updating(function ($model) {
+        static::updating(static function ($model) {
             /** @var NestedSetTrait $model */
-            return $model->beforeUpdate();
+            $model->beforeUpdate();
         });
 
-        static::updated(function ($model) {
+        static::updated(static function ($model) {
             /** @var NestedSetTrait $model */
-            return $model->afterUpdate();
+            $model->afterUpdate();
         });
 
-        static::saving(function ($model) {
+        static::saving(static function ($model) {
             /** @var NestedSetTrait $model */
-            return $model->beforeSave();
+            $model->beforeSave();
         });
 
-        static::deleting(function ($model) {
+        static::deleting(static function ($model) {
             // We will need fresh data to delete node safely
             /** @var NestedSetTrait $model */
             $model->beforeDelete();
         });
 
-        static::deleted(function ($model) {
+        static::deleted(static function ($model) {
             /** @var NestedSetTrait $model */
             $model->afterDelete();
         });
 
         if (static::isSoftDelete()) {
-            static::restoring(function ($model) {
+            static::restoring(static function ($model) {
                 static::$deletedAt = $model->{$model->getDeletedAtColumn()};
             });
 
-            static::restored(function ($model) {
+            static::restored(static function ($model) {
                 $model->restoreDescendants(static::$deletedAt);
             });
         }
     }
 
     /**
-     * @param \Illuminate\Database\Eloquent\Model|self $node
+     * @param Model|self $node
      *
      * @return bool
      */
@@ -354,7 +354,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @param \Illuminate\Database\Eloquent\Model|\Fureev\Trees\NestedSetTrait $model
+     * @param Model|NestedSetTrait $model
      *
      * @return bool
      */
@@ -371,7 +371,7 @@ trait NestedSetTrait
     /**
      * Relation to the parent.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function parent()
     {
@@ -382,7 +382,7 @@ trait NestedSetTrait
     /**
      * @param int|null $level
      *
-     * @return \Fureev\Trees\QueryBuilder[]|\Illuminate\Database\Eloquent\Collection
+     * @return QueryBuilder[]|\Illuminate\Database\Eloquent\Collection
      */
     public function parents($level = null)
     {
@@ -395,7 +395,7 @@ trait NestedSetTrait
     /**
      * Relation to children.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function children()
     {
@@ -429,7 +429,7 @@ trait NestedSetTrait
      *
      * @param $deletedAt
      */
-    protected function restoreDescendants($deletedAt)
+    protected function restoreDescendants($deletedAt): void
     {
         $this->newNestedSetQuery()
             ->descendants(null, true)
@@ -441,7 +441,7 @@ trait NestedSetTrait
      * @param int $to
      * @param int $depth
      *
-     * @throws \Fureev\Trees\Exceptions\Exception
+     * @throws Exception
      */
     protected function insertNode($to, $depth = 0): void
     {
@@ -498,7 +498,7 @@ trait NestedSetTrait
      *
      * @return bool
      */
-    public function up()
+    public function up(): bool
     {
         $prev = $this->prevSibling()->first();
 
@@ -514,7 +514,7 @@ trait NestedSetTrait
      *
      * @return bool
      */
-    public function down()
+    public function down(): bool
     {
         $next = $this->nextSibling()->first();
 
@@ -544,7 +544,7 @@ trait NestedSetTrait
                 }
 
                 $query->update([
-                    $attribute => new Expression($attribute . '+ ' . $delta)
+                    $attribute => new Expression($attribute . '+ ' . $delta),
                 ]);
             }
         }
