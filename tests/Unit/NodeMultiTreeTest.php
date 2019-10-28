@@ -694,11 +694,9 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
     public function testGetNodeData(): void
     {
         $roots = static::createRoots();
-        dd($roots[1]);
         /** @var Page $root */
         foreach ($roots as $root) {
             $data = self::$treeModel::getNodeData($root->id);
-//            var_dump($data);
             $this->assertEquals(['lft' => 1, 'rgt' => 2, 'lvl' => 0, 'parent_id' => null, 'tree_id' => $root->id], $data);
         }
     }
