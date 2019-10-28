@@ -444,6 +444,16 @@ trait NestedSetTrait
     }
 
     /**
+     * Get query ancestors of the node.
+     *
+     * @return  AncestorsRelation
+     */
+    public function ancestors(): AncestorsRelation
+    {
+        return new AncestorsRelation($this->newQuery(), $this);
+    }
+
+    /**
      * Relation to children
      * Прямые потомки
      *

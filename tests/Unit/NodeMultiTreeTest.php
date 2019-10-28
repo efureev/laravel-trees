@@ -13,7 +13,6 @@ use Fureev\Trees\Tests\models\Page;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
-use Php\Support\Helpers\Json;
 
 class NodeMultiTreeTest extends AbstractUnitTestCase
 {
@@ -538,12 +537,62 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $root3->refresh();
 
+        // @todo: need benchmarks
         $listQ = $root3->descendantsNew();
         $list = $root3->descendants();
 
         static::assertEquals(5, $list->count());
         static::assertEquals(5, $listQ->count());
     }
+/*
+    public function testAncestors(): void
+    {
+        $roots = static::createRoots();
+
+        /** @var Page $root3 * /
+        $root3 = $roots[3];
+        $root1 = $roots[1];
+
+        $node21 = new self::$treeModel(['title' => 'child 2.1']);
+        $node31 = new self::$treeModel(['title' => 'child 3.1']);
+        $node41 = new self::$treeModel(['title' => 'child 4.1']);
+        $node32 = new self::$treeModel(['title' => 'child 3.2']);
+        /** @var Page $node321 * /
+        $node321 = new self::$treeModel(['title' => 'child 3.2.1']);
+
+        $node21->appendTo($root3)->save();
+        $node31->appendTo($root3)->save();
+        $node41->appendTo($root3)->save();
+        $node32->appendTo($node31)->save();
+        $node321->appendTo($node32)->save();
+
+        $node32->refresh();
+        $node31->refresh();
+        $node41->refresh();
+
+        (new self::$treeModel(['title' => 'child #1 - 2.1']))->appendTo($root1)->save();
+        (new self::$treeModel(['title' => 'child #1 - 3.1']))->appendTo($root1)->save();
+        (new self::$treeModel(['title' => 'child #1 - 4.1']))->appendTo($root1)->save();
+
+        // @todo: need benchmarks
+        static::assertEquals(3, $node321->ancestors()->count());
+        static::assertEquals(3, $node321->parents()->count());
+
+
+        static::assertEquals(2, $node32->ancestors()->count());
+        static::assertEquals(2, $node32->parents()->count());
+
+        static::assertEquals(1, $node31->ancestors()->count());
+        static::assertEquals(1, $node31->parents()->count());
+
+        static::assertEquals(1, $node41->ancestors()->count());
+        static::assertEquals(1, $node41->parents()->count());
+
+        static::assertEquals(1, $node21->ancestors()->count());
+        static::assertEquals(1, $node21->parents()->count());
+
+
+    }*/
 
     public function testBaseSaveException(): void
     {
@@ -656,51 +705,51 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
     }
 
-/*    public function testLoadJson(): void
-    {
-        $dataFile = file_get_contents(__DIR__ . '/../data/' . class_basename(self::$treeModel) . '.json');
-        $data = Json::decode($dataFile);
+    /*    public function testLoadJson(): void
+        {
+            $dataFile = file_get_contents(__DIR__ . '/../data/' . class_basename(self::$treeModel) . '.json');
+            $data = Json::decode($dataFile);
 
-        $root = static::createRoot();
-        dd(Config::isNode($root));
-        dd(class_basename());
-        $node21 = new self::$treeModel(['title' => 'child 2.1']);
-        $node31 = new self::$treeModel(['title' => 'child 3.1']);
-        $node41 = new self::$treeModel(['title' => 'child 4.1']);
+            $root = static::createRoot();
+            dd(Config::isNode($root));
+            dd(class_basename());
+            $node21 = new self::$treeModel(['title' => 'child 2.1']);
+            $node31 = new self::$treeModel(['title' => 'child 3.1']);
+            $node41 = new self::$treeModel(['title' => 'child 4.1']);
 
-        $node21->appendTo($root)->save();
-        $node31->appendTo($root)->save();
-        $node41->appendTo($root)->save();
+            $node21->appendTo($root)->save();
+            $node31->appendTo($root)->save();
+            $node41->appendTo($root)->save();
 
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
+            $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+                return $item->title;
+            });
 
-        static::assertCount(3, $children);
-        static::assertEquals(['child 2.1', 'child 3.1', 'child 4.1'], $children->toArray());
+            static::assertCount(3, $children);
+            static::assertEquals(['child 2.1', 'child 3.1', 'child 4.1'], $children->toArray());
 
-        static::assertTrue($node31->down());
-        static::assertFalse($node31->isForceSaving());
-
-
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
-
-        static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
-
-        $node31->refresh();
-        static::assertFalse($node31->down());
-        static::assertFalse($node31->isForceSaving());
+            static::assertTrue($node31->down());
+            static::assertFalse($node31->isForceSaving());
 
 
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
+            $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+                return $item->title;
+            });
 
-        static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
+            static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
 
-    }*/
+            $node31->refresh();
+            static::assertFalse($node31->down());
+            static::assertFalse($node31->isForceSaving());
+
+
+            $children = $root->children()->defaultOrder()->get()->map(function ($item) {
+                return $item->title;
+            });
+
+            static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
+
+        }*/
 
     /**
      * @param int|null $tree

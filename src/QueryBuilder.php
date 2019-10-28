@@ -44,7 +44,6 @@ class QueryBuilder extends Builder
     {
         $this
             ->treeCondition()
-//            ->query
             ->whereNotNull($this->model->getParentIdName());
 
         return $this;
@@ -283,8 +282,6 @@ class QueryBuilder extends Builder
         $this->query
             ->whereBetween($this->model->getTable() . '.' . $this->model->getLeftAttributeName(), [$left, $right], $boolean, $not);
 
-//        dd($this->query);
-
         if ($this->model->isMultiTree()) {
             $treeId = end($values);
             $this->query->where($this->model->getTable() . '.' . $this->model->getTreeAttributeName(), $treeId);
@@ -327,6 +324,21 @@ class QueryBuilder extends Builder
         }
 
         return (array)$data;
+    }
+
+
+    /**
+     * Get wrapped column names.
+     *
+     * @return array
+     */
+    protected function wrappedColumns(): array
+    {
+        $grammar = $this->query->getGrammar();
+
+        return array_map(static function ($col) use ($grammar) {
+            return $grammar->wrap($col);
+        }, $this->model->getTreeConfig()->getColumns());
     }
 
 

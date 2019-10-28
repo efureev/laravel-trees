@@ -367,6 +367,27 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
         static::assertCount(8, $list);
     }
 
+/*
+    public function testWhereAncestorOf(): void
+    {
+        static::createTree();
+
+        $node51 = Category::where(['name' => 'child 5.1'])->first();
+        static::assertEquals('child 5.1', $node51->name);
+
+        $list = Category::whereAncestorOf($node51->getKey())->get();
+
+        static::assertCount(4, $list);
+
+
+        $root = $node51->getRoot();
+
+        static::assertTrue($root->isRoot());
+
+        $list = Category::whereAncestorOf($root)->get();
+        static::assertCount(0, $list);
+    }*/
+
 
     private static function createTree(): void
     {
