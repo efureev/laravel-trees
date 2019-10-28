@@ -544,55 +544,56 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         static::assertEquals(5, $list->count());
         static::assertEquals(5, $listQ->count());
     }
-/*
-    public function testAncestors(): void
-    {
-        $roots = static::createRoots();
 
-        /** @var Page $root3 * /
-        $root3 = $roots[3];
-        $root1 = $roots[1];
+    /*
+        public function testAncestors(): void
+        {
+            $roots = static::createRoots();
 
-        $node21 = new self::$treeModel(['title' => 'child 2.1']);
-        $node31 = new self::$treeModel(['title' => 'child 3.1']);
-        $node41 = new self::$treeModel(['title' => 'child 4.1']);
-        $node32 = new self::$treeModel(['title' => 'child 3.2']);
-        /** @var Page $node321 * /
-        $node321 = new self::$treeModel(['title' => 'child 3.2.1']);
+            /** @var Page $root3 * /
+            $root3 = $roots[3];
+            $root1 = $roots[1];
 
-        $node21->appendTo($root3)->save();
-        $node31->appendTo($root3)->save();
-        $node41->appendTo($root3)->save();
-        $node32->appendTo($node31)->save();
-        $node321->appendTo($node32)->save();
+            $node21 = new self::$treeModel(['title' => 'child 2.1']);
+            $node31 = new self::$treeModel(['title' => 'child 3.1']);
+            $node41 = new self::$treeModel(['title' => 'child 4.1']);
+            $node32 = new self::$treeModel(['title' => 'child 3.2']);
+            /** @var Page $node321 * /
+            $node321 = new self::$treeModel(['title' => 'child 3.2.1']);
 
-        $node32->refresh();
-        $node31->refresh();
-        $node41->refresh();
+            $node21->appendTo($root3)->save();
+            $node31->appendTo($root3)->save();
+            $node41->appendTo($root3)->save();
+            $node32->appendTo($node31)->save();
+            $node321->appendTo($node32)->save();
 
-        (new self::$treeModel(['title' => 'child #1 - 2.1']))->appendTo($root1)->save();
-        (new self::$treeModel(['title' => 'child #1 - 3.1']))->appendTo($root1)->save();
-        (new self::$treeModel(['title' => 'child #1 - 4.1']))->appendTo($root1)->save();
+            $node32->refresh();
+            $node31->refresh();
+            $node41->refresh();
 
-        // @todo: need benchmarks
-        static::assertEquals(3, $node321->ancestors()->count());
-        static::assertEquals(3, $node321->parents()->count());
+            (new self::$treeModel(['title' => 'child #1 - 2.1']))->appendTo($root1)->save();
+            (new self::$treeModel(['title' => 'child #1 - 3.1']))->appendTo($root1)->save();
+            (new self::$treeModel(['title' => 'child #1 - 4.1']))->appendTo($root1)->save();
 
-
-        static::assertEquals(2, $node32->ancestors()->count());
-        static::assertEquals(2, $node32->parents()->count());
-
-        static::assertEquals(1, $node31->ancestors()->count());
-        static::assertEquals(1, $node31->parents()->count());
-
-        static::assertEquals(1, $node41->ancestors()->count());
-        static::assertEquals(1, $node41->parents()->count());
-
-        static::assertEquals(1, $node21->ancestors()->count());
-        static::assertEquals(1, $node21->parents()->count());
+            // @todo: need benchmarks
+            static::assertEquals(3, $node321->ancestors()->count());
+            static::assertEquals(3, $node321->parents()->count());
 
 
-    }*/
+            static::assertEquals(2, $node32->ancestors()->count());
+            static::assertEquals(2, $node32->parents()->count());
+
+            static::assertEquals(1, $node31->ancestors()->count());
+            static::assertEquals(1, $node31->parents()->count());
+
+            static::assertEquals(1, $node41->ancestors()->count());
+            static::assertEquals(1, $node41->parents()->count());
+
+            static::assertEquals(1, $node21->ancestors()->count());
+            static::assertEquals(1, $node21->parents()->count());
+
+
+        }*/
 
     public function testBaseSaveException(): void
     {
@@ -693,17 +694,19 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
     public function testGetNodeData(): void
     {
         $roots = static::createRoots();
+        dd($roots[1]);
         /** @var Page $root */
         foreach ($roots as $root) {
             $data = self::$treeModel::getNodeData($root->id);
+//            var_dump($data);
             $this->assertEquals(['lft' => 1, 'rgt' => 2, 'lvl' => 0, 'parent_id' => null, 'tree_id' => $root->id], $data);
         }
     }
 
-    public function testPopulateTree(): void
-    {
+    /* public function testPopulateTree(): void
+     {
 
-    }
+     }*/
 
     /*    public function testLoadJson(): void
         {
@@ -770,6 +773,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $list = [];
         for ($i = 0; $i < $count; $i++) {
             $list[] = static::createRoot();
+
         }
         return $list;
     }
