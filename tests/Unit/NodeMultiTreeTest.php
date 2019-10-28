@@ -52,7 +52,14 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
     public function tearDown(): void
     {
-        Capsule::table(self::$treeModelTable)->truncate();
+        $schema = Capsule::schema();
+        if ($schema->getConnection()->getDriverName() === 'sqlite') {
+            $tbl = $schema->getConnection()->getTablePrefix() . self::$treeModelTable;
+            $schema->getConnection()->statement('DELETE FROM ' . $tbl);
+            $schema->getConnection()->statement("DELETE FROM SQLITE_SEQUENCE WHERE name='{$tbl}'");
+        } else {
+            Capsule::table(self::$treeModelTable)->truncate();
+        }
     }
 
     public function testCreateRootMissingTree(): void
@@ -694,6 +701,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
     public function testGetNodeData(): void
     {
         $roots = static::createRoots();
+
         /** @var Page $root */
         foreach ($roots as $root) {
             $data = self::$treeModel::getNodeData($root->id);
