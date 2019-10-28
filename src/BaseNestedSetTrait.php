@@ -11,11 +11,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait BaseNestedSetTrait
 {
-    /** @var NestedSetConfig */
-    protected $_config;
 
-    /** @var string */
-    protected $_configClass = NestedSetConfig::class;
+    /** @var Config */
+    protected $_tree_config;
 
     /** @var int */
     protected $operation;
@@ -31,25 +29,48 @@ trait BaseNestedSetTrait
     protected $forceSave = false;
 
     /**
-     * @return string
+     * @inheritDoc
      */
-    public function getTreeConfigName(): string
+    protected function bootIfNotBooted()
     {
-        return $this->_configClass;
+
+        static::registerModelEvent('booting', static function ($model) {
+            $model->setTreeConfig(static::buildTreeConfig());
+        });
+
+        parent::bootIfNotBooted();
     }
 
     /**
-     * @return NestedSetConfig
+     * Set tree-config to model
+     *
+     * @param Config $config
      */
-    public function treeConfig(): NestedSetConfig
+    public function setTreeConfig(Config $config): void
     {
-        if (!$this->_config) {
-            $cls = $this->getTreeConfigName();
+        $this->_tree_config = $config;
+    }
 
-            $this->_config = new $cls;
+    /**
+     * @return Config|null
+     */
+    public function getTreeConfig(): ?Config
+    {
+        if (!$this->_tree_config) {
+            $this->_tree_config = static::buildTreeConfig();
         }
 
-        return $this->_config;
+        return $this->_tree_config;
+    }
+
+    /**
+     * Build custom tree-config
+     *
+     * @return Config
+     */
+    protected static function buildTreeConfig(): Config
+    {
+        return new Config();
     }
 
     /**
@@ -57,7 +78,7 @@ trait BaseNestedSetTrait
      */
     public function getParentIdName(): string
     {
-        return $this->treeConfig()->parentAttribute;
+        return $this->getTreeConfig()->getParentAttributeName();
     }
 
     /**
@@ -65,7 +86,7 @@ trait BaseNestedSetTrait
      */
     public function getLeftAttributeName(): string
     {
-        return $this->treeConfig()->leftAttribute;
+        return $this->getTreeConfig()->getLeftAttributeName();
     }
 
     /**
@@ -73,7 +94,7 @@ trait BaseNestedSetTrait
      */
     public function getRightAttributeName(): string
     {
-        return $this->treeConfig()->rightAttribute;
+        return $this->getTreeConfig()->getRightAttributeName();
     }
 
     /**
@@ -81,15 +102,15 @@ trait BaseNestedSetTrait
      */
     public function getLevelAttributeName(): string
     {
-        return $this->treeConfig()->levelAttribute;
+        return $this->getTreeConfig()->getLevelAttributeName();
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getTreeAttributeName(): string
+    public function getTreeAttributeName(): ?string
     {
-        return $this->treeConfig()->treeAttribute;
+        return $this->getTreeConfig()->getTreeAttributeName();
     }
 
     /**
@@ -97,7 +118,7 @@ trait BaseNestedSetTrait
      */
     public function isMultiTree(): bool
     {
-        return $this->treeConfig()->treeAttribute !== null;
+        return $this->getTreeConfig()->isMultiTree();
     }
 
     /**
@@ -121,6 +142,14 @@ trait BaseNestedSetTrait
     }
 
     /**
+     * @return int|null
+     */
+    public function getTree(): ?int
+    {
+        return $this->isMultiTree() ? $this->getAttributeValue($this->getTreeAttributeName()) : null;
+    }
+
+    /**
      * @return int
      */
     public function getLeftOffset(): int
@@ -141,7 +170,9 @@ trait BaseNestedSetTrait
      */
     public function getBounds(): array
     {
-        return [$this->getLeftOffset(), $this->getRightOffset()];
+        return array_map(function ($column) {
+            return $this->getAttributeValue($column);
+        }, $this->getTreeConfig()->getColumns());
     }
 
     /**
@@ -163,9 +194,38 @@ trait BaseNestedSetTrait
             ? $this->withTrashed()
             : $this->newQuery();
 
-        return $builder;
+        return $this->applyNestedSetScope($builder, $table);
     }
 
+    /**
+     * @param mixed $query
+     * @param string $table
+     *
+     * @return mixed
+     */
+    public function applyNestedSetScope($query, $table = null)
+    {
+        if (!$scoped = $this->getScopeAttributes()) {
+            return $query;
+        }
+
+        if (!$table) {
+            $table = $this->getTable();
+        }
+
+        foreach ($scoped as $attribute) {
+            $query->where($table . '.' . $attribute, '=', $this->getAttributeValue($attribute));
+        }
+        return $query;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getScopeAttributes(): array
+    {
+        return [];
+    }
 
     /**
      * @return array
@@ -179,6 +239,7 @@ trait BaseNestedSetTrait
             $this->getLeftAttributeName() => 'integer',
             $this->getRightAttributeName() => 'integer',
             $this->getParentIdName() => 'integer',
+            $this->getTreeAttributeName() => 'integer',
         ], $this->casts);
 
         return $this->casts;
@@ -232,5 +293,20 @@ trait BaseNestedSetTrait
         if ($this->node !== null && $this->node->exists) {
             $this->node->refresh();
         }
+    }
+
+    /**
+     * @param string|int|static $node
+     *
+     * @return array
+     *
+     */
+    public function getNodeBounds($node): array
+    {
+        if (Config::isNode($node)) {
+            return $node->getBounds();
+        }
+
+        return $this->newNestedSetQuery()->getPlainNodeData($node, true);
     }
 }

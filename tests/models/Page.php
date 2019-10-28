@@ -2,27 +2,36 @@
 
 namespace Fureev\Trees\Tests\models;
 
+use Fureev\Trees\Config;
 use Fureev\Trees\NestedSetTrait;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class Category
+ * Class Page
  *
  * @package Fureev\Trees\Tests\models
  * @property int $id
- * @property string $name
+ * @property string $title
  * @property int $lvl
+ * @property int $tree_id
+ * @property int $lft
+ * @property int $rgt
  * @mixin \Fureev\Trees\QueryBuilder
  */
-class Site extends Model
+class Page extends Model //implements Treeable
 {
     use NestedSetTrait;
 
-    protected $fillable = ['name', '_setRoot'];
+    protected $fillable = ['title', '_setRoot'];
 
     public $timestamps = false;
 
-    protected $table = 'sites';
+    protected $table = 'pages';
+
+    protected static function buildTreeConfig(): Config
+    {
+        return new Config(['treeAttribute' => 'tree_id']);
+    }
 
     /* public static function resetActionsPerformed()
      {

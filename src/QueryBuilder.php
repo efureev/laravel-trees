@@ -5,6 +5,7 @@ namespace Fureev\Trees;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Query\Expression;
 
 /**
@@ -26,7 +27,10 @@ class QueryBuilder extends Builder
      */
     public function root(): self
     {
-        $this->query->whereNull($this->model->getParentIdName());
+        $this
+//            ->query
+            ->treeCondition()
+            ->whereNull($this->model->getParentIdName());
 
         return $this;
     }
@@ -38,7 +42,10 @@ class QueryBuilder extends Builder
      */
     public function notRoot(): self
     {
-        $this->query->whereNotNull($this->model->getParentIdName());
+        $this
+            ->treeCondition()
+//            ->query
+            ->whereNotNull($this->model->getParentIdName());
 
         return $this;
     }
@@ -60,6 +67,7 @@ class QueryBuilder extends Builder
 
         return $this
             ->where($condition)
+            ->treeCondition()
             ->defaultOrder();
     }
 
@@ -92,7 +100,8 @@ class QueryBuilder extends Builder
     public function prev(): QueryBuilder
     {
         return $this
-            ->where($this->model->getRightAttributeName(), '=', $this->model->getLeftOffset() - 1);
+            ->where($this->model->getRightAttributeName(), '=', $this->model->getLeftOffset() - 1)
+            ->treeCondition();
     }
 
     /**
@@ -103,7 +112,8 @@ class QueryBuilder extends Builder
     public function next(): QueryBuilder
     {
         return $this
-            ->where($this->model->getLeftAttributeName(), '=', $this->model->getRightOffset() + 1);
+            ->where($this->model->getLeftAttributeName(), '=', $this->model->getRightOffset() + 1)
+            ->treeCondition();
     }
 
     /**
@@ -113,7 +123,8 @@ class QueryBuilder extends Builder
      */
     public function prevSiblings(): QueryBuilder
     {
-        return $this->prevNodes()
+        return $this
+            ->prevNodes()
             ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
     }
 
@@ -148,7 +159,8 @@ class QueryBuilder extends Builder
      */
     public function nextSiblings(): QueryBuilder
     {
-        return $this->nextNodes()
+        return $this
+            ->nextNodes()
             ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
     }
 
@@ -159,7 +171,9 @@ class QueryBuilder extends Builder
      */
     public function prevNodes(): QueryBuilder
     {
-        return $this->where($this->model->getLeftAttributeName(), '<', $this->model->getLeftOffset());
+        return $this
+            ->where($this->model->getLeftAttributeName(), '<', $this->model->getLeftOffset())
+            ->treeCondition();
     }
 
     /**
@@ -169,7 +183,9 @@ class QueryBuilder extends Builder
      */
     public function nextNodes(): QueryBuilder
     {
-        return $this->where($this->model->getLeftAttributeName(), '>', $this->model->getLeftOffset());
+        return $this
+            ->where($this->model->getLeftAttributeName(), '>', $this->model->getLeftOffset())
+            ->treeCondition();
     }
 
     /**
@@ -177,7 +193,12 @@ class QueryBuilder extends Builder
      */
     public function leaf(): QueryBuilder
     {
-        return $this->where($this->model->getLeftAttributeName(), '=', new Expression($this->model->getRightAttributeName() . ' - 1'));
+        return $this
+            ->where(
+                $this->model->getLeftAttributeName(),
+                '=',
+                new Expression($this->model->getRightAttributeName() . ' - 1')
+            );
     }
 
     /**
@@ -209,7 +230,6 @@ class QueryBuilder extends Builder
         $condition = [
             [$attribute, $andSelf ? '>=' : '>', $this->model->getLeftOffset()],
             [$attribute, $andSelf ? '<=' : '<', $this->model->getRightOffset()],
-
         ];
 
         if ($level !== null) {
@@ -218,7 +238,95 @@ class QueryBuilder extends Builder
 
         return $this
             ->where($condition)
+            ->treeCondition()
             ->orderBy($attribute, $backOrder ? 'desc' : 'asc');
+    }
+
+    /**
+     * Get all descendants (query version)
+     * Потомки
+     *
+     * @param string|int|Model|NestedSetTrait $id
+     * @param string $boolean
+     * @param bool $not
+     * @param bool $andSelf
+     *
+     * @return mixed
+     */
+    public function whereDescendantOf($id, $boolean = 'and', $not = false, $andSelf = false): QueryBuilder
+    {
+        $data = $this->model->getNodeBounds($id);
+
+        // Don't include the node
+        if (!$andSelf) {
+            ++$data[0];
+        }
+
+        return $this->whereNodeBetween($data, $boolean, $not);
+    }
+
+    /**
+     * Add node selection statement between specified range.
+     *
+     * @param array $values
+     * @param string $boolean
+     * @param bool $not
+     *
+     * @return $this
+     * @since 2.0
+     *
+     */
+    public function whereNodeBetween($values, $boolean = 'and', $not = false): QueryBuilder
+    {
+        [$left, $right] = $values;
+
+        $this->query
+            ->whereBetween($this->model->getTable() . '.' . $this->model->getLeftAttributeName(), [$left, $right], $boolean, $not);
+
+//        dd($this->query);
+
+        if ($this->model->isMultiTree()) {
+            $treeId = end($values);
+            $this->query->where($this->model->getTable() . '.' . $this->model->getTreeAttributeName(), $treeId);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get plain node data.
+     *
+     * @param mixed $id
+     * @param bool $required
+     *
+     * @return array
+     */
+    public function getPlainNodeData($id, $required = false): array
+    {
+        return array_values($this->getNodeData($id, $required));
+    }
+
+    /**
+     * Get node's `left offset` and `right offset`, `level`, `parent_id`, `tree` tree values.
+     *
+     * @param string|int $id
+     * @param bool $required
+     *
+     * @return array
+     */
+    public function getNodeData($id, $required = false): array
+    {
+        $query = $this->toBase();
+        $query->where($this->model->getKeyName(), '=', $id);
+
+        $columns = $this->model->getTreeConfig()->getColumns();
+
+        $data = $query->first($columns);
+        if (!$data && $required) {
+            throw new ModelNotFoundException("Model #$id not found");
+        }
+
+        return (array)$data;
     }
 
 
@@ -237,5 +345,26 @@ class QueryBuilder extends Builder
         return $this;
     }
 
+    /**
+     * @param string|null $table
+     *
+     * @return $this
+     */
+    public function applyNestedSetScope($table = null): self
+    {
+        return $this->model->applyNestedSetScope($this, $table);
+    }
+
+    /**
+     * @return $this
+     */
+    public function treeCondition(): self
+    {
+        if ($this->model->isMultiTree()) {
+            $this->query->where($this->model->getTreeAttributeName(), $this->model->getTree());
+        }
+
+        return $this;
+    }
 
 }

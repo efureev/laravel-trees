@@ -2,14 +2,15 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
-use Fureev\Trees\Exceptions\{DeleteRootException, UniqueRootException};
-use Fureev\Trees\NestedSetConfig;
+use Fureev\Trees\Config;
+use Fureev\Trees\Exceptions\{DeleteRootException, Exception, NotSupportedException, UniqueRootException};
+use Fureev\Trees\Migrate;
 use Fureev\Trees\Tests\models\Category;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-class NodeTest extends AbstractUnitTestCase
+class NodeSingleTreeTest extends AbstractUnitTestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $schema = Capsule::schema();
 
@@ -20,21 +21,18 @@ class NodeTest extends AbstractUnitTestCase
             $table->increments('id');
             $table->string('name');
             $table->softDeletes();
-            NestedSetConfig::getColumns($table);
+            Migrate::getColumns($table, new Config());
         });
         Capsule::enableQueryLog();
     }
 
-    public function setUp()
+    public function setUp(): void
     {
-        //$data = include __DIR__.'/data/categories.php';
-//        Capsule::table('categories')->insert($data);
         Capsule::flushQueryLog();
-//        Category::resetActionsPerformed();
         date_default_timezone_set('Europe/Moscow');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Capsule::table('categories')->truncate();
     }
@@ -96,14 +94,12 @@ class NodeTest extends AbstractUnitTestCase
         $this->assertSame(2, $node31->getLevel());
     }
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\UniqueRootException
-     */
     public function testInsertBeforeNodeException(): void
     {
         $root = static::createRoot();
 
         $node21 = new Category(['name' => 'child 2.1']);
+        $this->expectException(UniqueRootException::class);
         $node21->insertBefore($root)->save();
     }
 
@@ -173,22 +169,16 @@ class NodeTest extends AbstractUnitTestCase
 
     }
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\UniqueRootException
-     */
     public function testInsertAfterRootException(): void
     {
         $root = static::createRoot();
 
         $node21 = new Category(['name' => 'child 2.1']);
         $node21->appendTo($root)->save();
-
+        $this->expectException(UniqueRootException::class);
         $node21->insertAfter($root)->save();
     }
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\UniqueRootException
-     */
     public function testInsertBeforeRootException(): void
     {
         $root = static::createRoot();
@@ -196,46 +186,41 @@ class NodeTest extends AbstractUnitTestCase
         $node21 = new Category(['name' => 'child 2.1']);
         $node21->appendTo($root)->save();
 
+        $this->expectException(UniqueRootException::class);
         $node21->insertBefore($root)->save();
     }
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\Exception
-     */
     public function testAppendToSameException(): void
     {
         $root = static::createRoot();
 
         $node21 = new Category(['name' => 'child 2.1']);
         $node21->appendTo($root)->save();
+
+        $this->expectException(Exception::class);
         $node21->appendTo($node21)->save();
     }
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\Exception
-     */
     public function testAppendToNonExistParentException(): void
     {
         $root = new Category(['name' => 'root']);
         $node21 = new Category(['name' => 'child 2.1']);
+
+        $this->expectException(Exception::class);
         $node21->appendTo($root)->save();
     }
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\Exception
-     */
     public function testPrependToSameException(): void
     {
         $root = static::createRoot();
 
         $node21 = new Category(['name' => 'child 2.1']);
         $node21->appendTo($root)->save();
+
+        $this->expectException(Exception::class);
         $node21->prependTo($node21)->save();
     }
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\Exception
-     */
     public function testMoveToSelfChildrenException(): void
     {
         $root = static::createRoot();
@@ -249,18 +234,18 @@ class NodeTest extends AbstractUnitTestCase
         $node21->refresh();
         static::assertTrue($node31->isChildOf($node21));
 
+        $this->expectException(Exception::class);
         $node21->appendTo($node31)->save();
     }
 
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\UniqueRootException
-     */
     public function testInsertAfterNodeException(): void
     {
         $root = static::createRoot();
 
         $node21 = new Category(['name' => 'child 2.1']);
+
+        $this->expectException(UniqueRootException::class);
         $node21->insertAfter($root)->save();
     }
 
@@ -433,17 +418,29 @@ class NodeTest extends AbstractUnitTestCase
         $model = static::createRoot();
 
         $this->assertIsArray($model->getBounds());
-        $this->assertCount(2, $model->getBounds());
+        $this->assertCount(4, $model->getBounds());
         $this->assertEquals(1, $model->getBounds()[0]);
         $this->assertEquals(2, $model->getBounds()[1]);
+        $this->assertEquals(0, $model->getBounds()[2]);
+        $this->assertEquals(null, $model->getBounds()[3]);
     }
 
-    /**
-     * @expectedException \Fureev\Trees\Exceptions\NotSupportedException
-     */
+    public function testGetNodeBounds(): void
+    {
+        $model = static::createRoot();
+
+        $data_1 = $model->getNodeBounds($model);
+        $data_2 = $model->getNodeBounds($model->getKey());
+        $this->assertIsArray($data_1);
+        $this->assertIsArray($data_2);
+        $this->assertCount(4, $data_1);
+        $this->assertEquals($data_2, $data_1);
+    }
+
     public function testBaseSaveException(): void
     {
         $model = new Category(['id' => 2, 'name' => 'node']);
+        $this->expectException(NotSupportedException::class);
         $model->save();
     }
 
@@ -529,6 +526,38 @@ class NodeTest extends AbstractUnitTestCase
 
         static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
 
+    }
+
+
+    public function testDescendants(): void
+    {
+        $root = static::createRoot();
+
+        $node21 = new Category(['name' => 'child 2.1']);
+        $node31 = new Category(['name' => 'child 3.1']);
+        $node41 = new Category(['name' => 'child 4.1']);
+        $node32 = new Category(['name' => 'child 3.2']);
+        $node321 = new Category(['name' => 'child 3.2.1']);
+
+        $node21->appendTo($root)->save();
+        $node31->appendTo($root)->save();
+        $node41->appendTo($root)->save();
+        $node32->appendTo($node31)->save();
+        $node321->appendTo($node32)->save();
+
+        $root->refresh();
+
+        $list = $root->descendantsNew();
+
+        static::assertEquals(5, $list->count());
+    }
+
+    public function testGetNodeData(): void
+    {
+        $root = static::createRoot();
+
+        $data = Category::getNodeData($root->id);
+        $this->assertEquals(['lft' => 1, 'rgt' => 2, 'lvl' => 0, 'parent_id' => null], $data);
     }
 
     /**

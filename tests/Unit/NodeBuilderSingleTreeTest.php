@@ -2,16 +2,14 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
-use Fureev\Trees\Exceptions\DeleteRootException;
-use Fureev\Trees\Exceptions\UniqueRootException;
-use Fureev\Trees\NestedSetConfig;
+use Fureev\Trees\Config;
+use Fureev\Trees\Migrate;
 use Fureev\Trees\Tests\models\Category;
-use Fureev\Trees\Tests\models\CategorySoftDelete;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
-class NodeBuilderTest extends AbstractUnitTestCase
+class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $schema = Capsule::schema();
 
@@ -22,18 +20,18 @@ class NodeBuilderTest extends AbstractUnitTestCase
             $table->increments('id');
             $table->string('name');
             $table->softDeletes();
-            NestedSetConfig::getColumns($table);
+            Migrate::getColumns($table, new Config());
         });
         Capsule::enableQueryLog();
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         Capsule::flushQueryLog();
         date_default_timezone_set('Europe/Moscow');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Capsule::table('categories')->truncate();
     }
@@ -347,6 +345,26 @@ class NodeBuilderTest extends AbstractUnitTestCase
             'child 4.1',
         ], $nodes->toArray());
 
+    }
+
+
+    public function testWhereDescendantOf(): void
+    {
+        static::createTree();
+
+        $node21 = Category::where(['name' => 'child 2.1'])->first();
+        static::assertEquals('child 2.1', $node21->name);
+
+        $list = Category::whereDescendantOf($node21->getKey())->get();
+        static::assertCount(5, $list);
+
+
+        $root = $node21->getRoot();
+
+        static::assertTrue($root->isRoot());
+
+        $list = Category::whereDescendantOf($root)->get();
+        static::assertCount(8, $list);
     }
 
 

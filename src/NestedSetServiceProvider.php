@@ -18,11 +18,11 @@ class NestedSetServiceProvider extends ServiceProvider
     public function register(): void
     {
         Blueprint::macro('installNestedSet', static function ($instance) {
-            NestedSetConfig::getColumns($instance);
+            Config::getColumns($instance);
         });
 
         Blueprint::macro('dropNestedSet', static function ($instance) {
-            NestedSetConfig::dropColumns($instance);
+            Config::dropColumns($instance);
         });
     }
 }

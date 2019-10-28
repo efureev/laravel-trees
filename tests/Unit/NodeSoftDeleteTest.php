@@ -2,16 +2,17 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
+use Fureev\Trees\Config;
 use Fureev\Trees\Exceptions\DeleteRootException;
 use Fureev\Trees\Exceptions\UniqueRootException;
-use Fureev\Trees\NestedSetConfig;
+use Fureev\Trees\Migrate;
 use Fureev\Trees\QueryBuilder;
 use Fureev\Trees\Tests\models\CategorySoftDelete;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
 class NodeSoftDeleteTest extends AbstractUnitTestCase
 {
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         $schema = Capsule::schema();
 
@@ -22,12 +23,12 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
             $table->increments('id');
             $table->string('name');
             $table->softDeletes();
-            NestedSetConfig::getColumns($table);
+            Migrate::getColumns($table, new Config());
         });
         Capsule::enableQueryLog();
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         //$data = include __DIR__.'/data/categories.php';
 //        Capsule::table('categories')->insert($data);
@@ -36,7 +37,7 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
         date_default_timezone_set('Europe/Moscow');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Capsule::table('categories')->truncate();
     }
@@ -45,7 +46,7 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
     {
         $model = static::createRoot();
 
-        $this->assertTrue($model->id === 1);
+        static::assertSame($model->id, 1);
 
         $this->assertTrue($model->isRoot());
 
