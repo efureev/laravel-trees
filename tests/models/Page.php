@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $rgt
  * @mixin \Fureev\Trees\QueryBuilder
  */
-class Page extends Model //implements Treeable
+class Page extends Model
 {
     use NestedSetTrait;
 
@@ -30,11 +30,6 @@ class Page extends Model //implements Treeable
 
     protected static function buildTreeConfig(): Config
     {
-        return new Config(['treeAttribute' => 'tree_id']);
+        return new Config(['treeAttribute' => 'tree_id', 'parentAttributeType' => 'uuid']);
     }
-
-    /* public static function resetActionsPerformed()
-     {
-         static::$actionsPerformed = 0;
-     }*/
 }

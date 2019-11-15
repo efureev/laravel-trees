@@ -27,7 +27,9 @@ class Migrate
 
         $table->unsignedInteger($this->config->getLeftAttributeName())->default(0);
         $table->unsignedInteger($this->config->getRightAttributeName())->default(0);
-        $table->unsignedInteger($this->config->getParentAttributeName())->nullable();
+
+        $table->{$this->config->getParentAttributeType()}($this->config->getParentAttributeName())->nullable();
+
         $table->integer($this->config->getLevelAttributeName());
         // @todo: need next index ??
 //        $table->index($this->getDefaultColumns());

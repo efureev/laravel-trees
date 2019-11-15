@@ -32,9 +32,17 @@ class Config implements Contracts\NestedSetConfig
     protected $levelAttribute = 'lvl';
 
     /**
+     * Name of `parent` column
+     *
      * @var string
      */
     protected $parentAttribute = 'parent_id';
+    /**
+     * Type of `parent` column
+     *
+     * @var string
+     */
+    protected $parentAttributeType = 'unsignedInteger';
 
     /**
      * Prefix for multi-tree node
@@ -96,6 +104,14 @@ class Config implements Contracts\NestedSetConfig
     public function getParentAttributeName(): string
     {
         return $this->parentAttribute;
+    }
+
+    /**
+     * @return string
+     */
+    public function getParentAttributeType(): string
+    {
+        return $this->parentAttributeType;
     }
 
     /**
