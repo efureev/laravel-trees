@@ -117,6 +117,23 @@ class Config implements Contracts\NestedSetConfig
     /**
      * @return string
      */
+    public function getCastForParentAttribute(): ?string
+    {
+        switch ($this->getParentAttributeType()) {
+            case 'integer':
+            case 'unsignedInteger':
+                return 'integer';
+            case 'string':
+            case 'uuid':
+                return 'uuid';
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string
+     */
     public function getLeftAttributeName(): string
     {
         return $this->leftAttribute;

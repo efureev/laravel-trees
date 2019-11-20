@@ -124,9 +124,9 @@ trait BaseNestedSetTrait
     /**
      * Get the value of the model's parent id key.
      *
-     * @return integer|null
+     * @return integer|string|null
      */
-    public function getParentId(): ?int
+    public function getParentId()
     {
         return $this->getAttributeValue($this->getParentIdName());
     }
@@ -238,9 +238,12 @@ trait BaseNestedSetTrait
             $this->getLevelAttributeName() => 'integer',
             $this->getLeftAttributeName() => 'integer',
             $this->getRightAttributeName() => 'integer',
-            $this->getParentIdName() => 'integer',
             $this->getTreeAttributeName() => 'integer',
         ], $this->casts);
+
+        if ($type = $this->getTreeConfig()->getCastForParentAttribute()) {
+            $this->casts[$this->getParentIdName()] = $type;
+        }
 
         return $this->casts;
     }
