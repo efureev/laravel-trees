@@ -13,7 +13,7 @@ use Illuminate\Database\Query\Expression;
  *
  * @package Fureev\Trees
  */
-class QueryBuilder extends Builder
+class QueryBuilder extends Builder implements \Countable
 {
     /**
      * @var Model|NestedSetTrait
@@ -377,6 +377,14 @@ class QueryBuilder extends Builder
         }
 
         return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function count(): int
+    {
+        return parent::count();
     }
 
 }
