@@ -9,7 +9,7 @@ use Illuminate\Database\Schema\Blueprint;
 
 class NodeBuilderMultiTreeTest extends AbstractUnitTestCase
 {
-    /** @var string */
+    /** @var Page|string */
     private static $treeModel = Page::class;
 
     private static $treeModelTable;
@@ -48,30 +48,27 @@ class NodeBuilderMultiTreeTest extends AbstractUnitTestCase
         Capsule::table(self::$treeModelTable)->truncate();
     }
 
-  /*  public function testWhereAncestorOf(): void
+
+    public function testByTree(): void
     {
         $roots = static::createRoots();
-        $root1 = $roots[1];
-        static::createTree($root1);
-        static::createTree($roots[3]);
-        static::createTree($roots[2]);
+
+        /** @var Page $root */
+        foreach ($roots as $node) {
+            $nodesRootCheck = self::$treeModel::root()->byTree($node->getTree())->get();
+            static::assertCount(1, $nodesRootCheck);
+            $nodeRootCheck = $nodesRootCheck->first();
+            static::assertInstanceOf(self::$treeModel, $nodeRootCheck);
+            static::assertTrue($node->equalTo($nodeRootCheck));
 
 
-        $node51 = self::$treeModel::where(['title' => 'child 5.1', 'tree_id' => 2])->first();
-        static::assertEquals('child 5.1', $node51->title);
-
-        $list = self::$treeModel::whereAncestorOf($node51->getKey())->get();
-
-        static::assertCount(4, $list);
-
-
-        $root = $node51->getRoot();
-
-        static::assertTrue($root->isRoot());
-
-        $list = self::$treeModel::whereAncestorOf($root)->get();
-        static::assertCount(0, $list);
-    }*/
+            $nodesCheck = self::$treeModel::byTree($node->getTree())->get();
+            static::assertCount(1, $nodesCheck);
+            $nodeCheck = $nodesCheck->first();
+            static::assertInstanceOf(self::$treeModel, $nodeCheck);
+            static::assertTrue($node->equalTo($nodeCheck));
+        }
+    }
 
     /**
      * @param int|null $tree

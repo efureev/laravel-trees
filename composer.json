@@ -16,7 +16,8 @@
     "phpunit/phpunit": "^8.0",
     "fzaninotto/faker": "^1.8",
     "phpstan/phpstan": "^0.10.3",
-    "symfony/var-dumper": "^4.2"
+    "symfony/var-dumper": "^4.2",
+    "vlucas/phpdotenv": "^3.6"
   },
   "autoload": {
     "psr-4": {

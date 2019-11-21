@@ -18,18 +18,18 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $rgt
  * @mixin \Fureev\Trees\QueryBuilder
  */
-class Page extends Model
+class PageUuid extends Model
 {
     use NestedSetTrait;
-
+    protected $keyType = 'uuid';
     protected $fillable = ['title', '_setRoot'];
 
     public $timestamps = false;
 
-    protected $table = 'pages_uuid';
+    protected $table = 'pages';
 
     protected static function buildTreeConfig(): Config
     {
-        return new Config(['treeAttribute' => 'tree_id']);
+        return new Config(['treeAttribute' => 'tree_id', 'parentAttributeType' => 'uuid']);
     }
 }

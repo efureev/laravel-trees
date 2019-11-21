@@ -28,7 +28,6 @@ class QueryBuilder extends Builder
     public function root(): self
     {
         $this
-//            ->query
             ->treeCondition()
             ->whereNull($this->model->getParentIdName());
 
@@ -372,7 +371,7 @@ class QueryBuilder extends Builder
      */
     public function treeCondition(): self
     {
-        if ($this->model->isMultiTree()) {
+        if ($this->model->isMultiTree() && $this->model->getTree() !== null) {
             $this->query->where($this->model->getTreeAttributeName(), $this->model->getTree());
         }
 
