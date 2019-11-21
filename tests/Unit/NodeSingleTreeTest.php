@@ -306,6 +306,9 @@ class NodeSingleTreeTest extends AbstractUnitTestCase
         static::assertSame(1, $node31->getLevel());
 
         $this->assertTrue($node31->isLeaf());
+        $root->refresh();
+        
+        $this->assertTrue($root->equalTo($node31->parent));
     }
 
     public function testDeleteWithChildrenNode(): void

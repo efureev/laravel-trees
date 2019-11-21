@@ -2,8 +2,7 @@
 
 namespace Fureev\Trees;
 
-use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
-    DeleteRootException,
+use Fureev\Trees\Exceptions\{DeleteRootException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
@@ -207,14 +206,23 @@ trait NestedSetTrait
         }
 
         if (!static::isSoftDelete() && $this->children()->count() > 0) {
-            throw DeletedNodeHasChildrenException::make($this);
+            $this->onDeletedNodeHasChildren();
         }
 
         $this->refresh();
     }
 
     /**
+     * Callback on deleting node which has children
      *
+     */
+    protected function onDeletedNodeHasChildren(): void
+    {
+        //throw DeletedNodeHasChildrenException::make($this);
+    }
+
+    /**
+     * If deleted node has children - these will be moved to parent of deleted node
      */
     public function afterDelete(): void
     {
@@ -224,12 +232,15 @@ trait NestedSetTrait
         if ($this->operation === Config::OPERATION_DELETE_ALL || $this->isLeaf()) {
             $this->shift($right + 1, null, $left - $right - 1);
         } else {
+            $parentId = $this->getParentId();
+
             $query = $this->newNestedSetQuery()->descendants();
 
             $query->update([
                 $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . '- 1'),
                 $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . '- 1'),
                 $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . '- 1'),
+                $this->getParentIdName() => $parentId,
             ]);
 
             $this->shift($right + 1, null, -2);
