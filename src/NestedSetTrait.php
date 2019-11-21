@@ -144,7 +144,7 @@ trait NestedSetTrait
         switch ($this->operation) {
             case Config::OPERATION_MAKE_ROOT:
 
-                if (($exist = $this->root()->first()) !== null) {
+                if (!$this->isMultiTree() && ($exist = $this->root()->first()) !== null) {
                     throw new UniqueRootException($exist);
                 }
 
