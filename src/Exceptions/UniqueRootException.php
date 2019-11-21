@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class UniqueRootException
- *
- * @package Php\Support\Exceptions
  */
 class UniqueRootException extends Exception
 {

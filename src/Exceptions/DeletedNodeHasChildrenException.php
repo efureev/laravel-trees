@@ -5,15 +5,15 @@ namespace Fureev\Trees\Exceptions;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class DeleteRootException
+ * Class DeletedNodeHasChildrenException
  */
-class DeleteRootException extends Exception
+class DeletedNodeHasChildrenException extends Exception
 {
     protected $model;
 
     public function __construct(Model $model)
     {
         $this->model = $model;
-        parent::__construct('Root node does not support delete action. #' . $this->model->getKey());
+        parent::__construct('Deleted Node has children. #' . $this->model->getKey());
     }
 }

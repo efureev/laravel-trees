@@ -2,11 +2,12 @@
 
 namespace Fureev\Trees\Exceptions;
 
+use Php\Support\Traits\Maker;
+
 /**
  * Class Exception
- *
- * @package Php\Support\Exceptions
  */
 class Exception extends \Exception
 {
+    use Maker;
 }

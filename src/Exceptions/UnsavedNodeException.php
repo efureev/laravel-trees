@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class UnsavedNodeException
- *
- * @package Php\Support\Exceptions
  */
 class UnsavedNodeException extends Exception
 {

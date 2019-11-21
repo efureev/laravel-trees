@@ -4,8 +4,6 @@ namespace Fureev\Trees\Exceptions;
 
 /**
  * Class NotSupportedException
- *
- * @package Php\Support\Exceptions
  */
 class NotSupportedException extends Exception
 {

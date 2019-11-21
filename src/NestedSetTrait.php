@@ -2,7 +2,8 @@
 
 namespace Fureev\Trees;
 
-use Fureev\Trees\Exceptions\{DeleteRootException,
+use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
+    DeleteRootException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
@@ -200,8 +201,13 @@ trait NestedSetTrait
      */
     public function beforeDelete(): void
     {
+        // @todo скорей всего, надо позволять удалять с multiTree
         if ($this->operation !== Config::OPERATION_DELETE_ALL && $this->isRoot()) {
-            throw new DeleteRootException($this);
+            throw DeleteRootException::make($this);
+        }
+
+        if (!static::isSoftDelete() && $this->children()->count() > 0) {
+            throw DeletedNodeHasChildrenException::make($this);
         }
 
         $this->refresh();
