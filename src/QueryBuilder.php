@@ -379,4 +379,18 @@ class QueryBuilder extends Builder
         return $this;
     }
 
+    /**
+     * @param int|string $treeId
+     *
+     * @return $this
+     */
+    public function byTree(?int $treeId = null): self
+    {
+        if ($treeId === null || $this->model->isMultiTree()) {
+            $this->query->where($this->model->getTreeAttributeName(), $treeId);
+        }
+
+        return $this;
+    }
+
 }

@@ -249,7 +249,6 @@ trait NestedSetTrait
 
                 if ($this->getOriginal($this->getTreeAttributeName()) !== $this->getTree()) {
                     $this->treeChange = $this->getTree();
-//dd($this->treeChange);
                     $this->setAttribute($this->getTreeAttributeName(), $this->getOriginal($this->getTreeAttributeName()));
                 }
                 break;
