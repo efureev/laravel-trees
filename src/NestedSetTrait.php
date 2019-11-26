@@ -734,7 +734,7 @@ trait NestedSetTrait
      *
      * @return static
      */
-    public function populateTree($depth = null, $with = null)
+    /*public function populateTree($depth = null, $with = null)
     {
         $query = $this->descendants($depth);
         if ($with) {
@@ -748,7 +748,7 @@ trait NestedSetTrait
         $parents = [$key];
         $prev = $this->getLevel();
 
-        /** @var Model|NestedSetTrait $node */
+        /** @var Model|NestedSetTrait $node * /
         foreach ($nodes as $node) {
             $level = $node->getLevel();
             if ($level <= $prev) {
@@ -776,6 +776,5 @@ trait NestedSetTrait
         }
 
         return $this;
-    }
-
+    }*/
 }

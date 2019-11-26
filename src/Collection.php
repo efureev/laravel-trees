@@ -3,6 +3,7 @@
 namespace Fureev\Trees;
 
 use Illuminate\Database\Eloquent\Collection as BaseCollection;
+use Illuminate\Database\Eloquent\Model;
 
 class Collection extends BaseCollection
 {
@@ -12,54 +13,70 @@ class Collection extends BaseCollection
      *
      * This will overwrite any previously set relations.
      *
+     * Для того, что бы не делать лишние запросы в бд по этим релейшенам
+     *
      * @return $this
      */
-    /* public function linkNodes()
-     {
-         if ($this->isEmpty()) return $this;
-         $groupedNodes = $this->groupBy($this->first()->getParentIdName());
-         /** @var NodeTrait|Model $node * /
-         foreach ($this->items as $node) {
-             if ( ! $node->getParentId()) {
-                 $node->setRelation('parent', null);
-             }
-             $children = $groupedNodes->get($node->getKey(), [ ]);
-             /** @var Model|NodeTrait $child * /
-             foreach ($children as $child) {
-                 $child->setRelation('parent', $node);
-             }
-             $node->setRelation('children', BaseCollection::make($children));
-         }
-         return $this;
-     }
-     */
+    public function linkNodes(): self
+    {
+        if ($this->isEmpty()) {
+            return $this;
+        }
+
+        $groupedNodes = $this->groupBy($this->first()->getParentIdName());
+
+        /** @var NestedSetTrait|Model $node */
+        foreach ($this->items as $node) {
+            if (!$node->getParentId()) {
+                $node->setRelation('parent', null);
+            }
+
+            $children = $groupedNodes->get($node->getKey(), []);
+
+            /** @var Model|NestedSetTrait $child */
+            foreach ($children as $child) {
+                $child->setRelation('parent', $node);
+            }
+            $node->setRelation('children', BaseCollection::make($children));
+        }
+
+        return $this;
+    }
+
+
     /**
      * Build a tree from a list of nodes. Each item will have set children relation.
      *
-     * To successfully build tree "id", "_lft" and "parent_id" keys must present.
+     * If `$fromNode` is provided, the tree will contain only descendants of that node.
      *
-     * If `$root` is provided, the tree will contain only descendants of that node.
+     * @param Model|string|int|null $fromNode
      *
-     * @param mixed $root
-     *
-     * @return Collection
+     * @return $this
      */
-    /*public function toTree($root = false)
+    public function toTree($fromNode = null): self
     {
         if ($this->isEmpty()) {
             return new static;
         }
+
         $this->linkNodes();
         $items = [];
-        $root = $this->getRootNodeId($root);
-        /** @var Model|NodeTrait $node * /
+
+        if ($fromNode) {
+            if ($fromNode instanceof Model) {
+                $fromNode = $fromNode->getKey();
+            }
+        }
+
+        /** @var Model|NestedSetTrait $node */
         foreach ($this->items as $node) {
-            if ($node->getParentId() == $root) {
+            if ($node->getParentId() === $fromNode) {
                 $items[] = $node;
             }
         }
+
         return new static($items);
-    }*/
+    }
 
     /**
      * @param mixed $root

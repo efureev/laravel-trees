@@ -8,17 +8,16 @@ use Fureev\Trees\Config;
  * Class Page
  *
  * @package Fureev\Trees\Tests\models
- * @property int $id
- * @property string $title
- * @property int $lvl
- * @property int $tree_id
- * @property int $lft
- * @property int $rgt
+ * @property string $id
+ * @property string $parent_id
+ *
  * @mixin \Fureev\Trees\QueryBuilder
  */
 class PageUuid extends Page
 {
     protected $keyType = 'uuid';
+
+    protected $table = 'pages_uuid';
 
     protected static function buildTreeConfig(): Config
     {

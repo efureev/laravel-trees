@@ -4,10 +4,11 @@ namespace Fureev\Trees\Tests\Unit;
 
 use Fureev\Trees\Config;
 use Fureev\Trees\Migrate;
+use Fureev\Trees\Tests\AbstractTestCase;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
 
-class MigrateTest extends AbstractUnitTestCase
+class MigrateTest extends AbstractTestCase
 {
     private static $tableName = 'test_config';
     private static $singleColumns = ['lft', 'rgt', 'parent_id', 'lvl'];

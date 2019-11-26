@@ -184,7 +184,7 @@ class Config implements Contracts\NestedSetConfig
     }
 
     /**
-     * @param $model
+     * @param Model $model
      *
      * @return bool
      */

@@ -3,8 +3,9 @@
 namespace Fureev\Trees\Tests\Unit;
 
 use Fureev\Trees\Config;
+use Fureev\Trees\Tests\AbstractTestCase;
 
-class ConfigTest extends AbstractUnitTestCase
+class ConfigTest extends AbstractTestCase
 {
     private static $singleColumns = ['lft', 'rgt', 'parent_id', 'lvl'];
     private static $treeColumn = 'tree_id';

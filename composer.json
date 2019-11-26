@@ -29,16 +29,9 @@
       "Fureev\\Trees\\Tests\\": "tests/"
     }
   },
-  "extra": {
-    "laravel": {
-      "providers": [
-        "Fureev\\Trees\\NestedSetServiceProvider"
-      ]
-    }
-  },
   "scripts": {
     "test": "@php ./vendor/bin/phpunit --no-coverage --testdox",
     "test-cover": "@php ./vendor/bin/phpunit --coverage-text",
-    "phpstan": "@php ./vendor/bin/phpstan analyze --ansi --level=2 ./src"
+    "phpstan": "@php ./vendor/bin/phpstan analyze --ansi --level=1 ./src"
   }
 }

@@ -3,8 +3,6 @@
 namespace Fureev\Trees\Tests\models;
 
 use Fureev\Trees\Config;
-use Fureev\Trees\NestedSetTrait;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Page
@@ -12,21 +10,17 @@ use Illuminate\Database\Eloquent\Model;
  * @package Fureev\Trees\Tests\models
  * @property int $id
  * @property string $title
- * @property int $lvl
  * @property int $tree_id
- * @property int $lft
- * @property int $rgt
+ *
  * @mixin \Fureev\Trees\QueryBuilder
  */
-class Page extends Model
+class Page extends BaseModel
 {
-    use NestedSetTrait;
-
     protected $fillable = ['title', '_setRoot'];
 
-    public $timestamps = false;
+    protected $hidden = ['_setRoot', 'lft', 'rgt', 'lvl', 'tree_id', 'parent'];
 
-    protected $table = 'pages_uuid';
+    protected $table = 'pages';
 
     protected static function buildTreeConfig(): Config
     {

@@ -3,12 +3,16 @@ php:
   - '7.2'
   - '7.3'
 
+services:
+  - postgresql
+
 before_install:
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 
 before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
   - composer install
 
 script:

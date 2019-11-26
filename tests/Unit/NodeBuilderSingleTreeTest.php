@@ -2,63 +2,35 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
-use Fureev\Trees\Config;
-use Fureev\Trees\Migrate;
 use Fureev\Trees\Tests\models\Category;
-use Illuminate\Database\Capsule\Manager as Capsule;
 
 class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 {
-    public static function setUpBeforeClass(): void
-    {
-        $schema = Capsule::schema();
-
-        $schema->dropIfExists('categories');
-        Capsule::disableQueryLog();
-
-        $schema->create('categories', function (\Illuminate\Database\Schema\Blueprint $table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->softDeletes();
-            Migrate::getColumns($table, new Config());
-        });
-        Capsule::enableQueryLog();
-    }
-
-    public function setUp(): void
-    {
-        Capsule::flushQueryLog();
-        date_default_timezone_set('Europe/Moscow');
-    }
-
-    public function tearDown(): void
-    {
-        Capsule::table('categories')->truncate();
-    }
+    protected static $modelClass = Category::class;
 
     public function testRoot(): void
     {
-        $root = Category::create(['name' => 'root', '_setRoot' => true]);
+        $root = static::$modelClass::create(['title' => 'root', '_setRoot' => true]);
 
-        $node = Category::root()->first();
+        $node = static::$modelClass::root()->first();
 
         static::assertTrue($node->equalTo($root));
     }
 
     public function testNotRoot(): void
     {
-        $root = Category::create(['name' => 'root', '_setRoot' => true]);
+        $root = static::$modelClass::create(['title' => 'root', '_setRoot' => true]);
 
-        $node21 = new Category(['name' => 'child 2.1']);
+        $node21 = new static::$modelClass(['title' => 'child 2.1']);
         $node21->prependTo($root)->save();
-        $node31 = new Category(['name' => 'child 3.1']);
+        $node31 = new static::$modelClass(['title' => 'child 3.1']);
         $node31->prependTo($node21)->save();
 
-        $nodes = Category::notRoot()->get();
+        $nodes = static::$modelClass::notRoot()->get();
 
         static::assertCount(2, $nodes);
 
-        $node = Category::notRoot()->where('name', 'child 3.1')->first();
+        $node = static::$modelClass::notRoot()->where('title', 'child 3.1')->first();
 
         static::assertTrue($node->equalTo($node31));
     }
@@ -66,283 +38,266 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
     public function testParents(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 2, 1, 1);
 
-        $node51 = Category::where(['name' => 'child 5.1'])->first();
-        $parents = $node51->parents()->map(function ($item) {
-            return $item->name;
+        $node12211 = static::$modelClass::where(['title' => 'child 1.2.2.1.1'])->first();
+        $parents = $node12211->parents()->map(static function ($item) {
+            return $item->title;
         });
 
         static::assertCount(4, $parents);
         static::assertEquals([
-            "root",
-            "child 2.1",
-            "child 3.1",
-            "child 4.1",
+            'Root node 1',
+            'child 1.2',
+            'child 1.2.2',
+            'child 1.2.2.1',
         ], $parents->toArray());
 
 
-        $parents = $node51->parents(2)->map(function ($item) {
-            return $item->name;
+        $parents = $node12211->parents(2)->map(static function ($item) {
+            return $item->title;
         });
 
 
         static::assertCount(2, $parents);
         static::assertEquals([
-            'child 3.1',
-            'child 4.1',
+            'child 1.2.2',
+            'child 1.2.2.1',
         ], $parents->toArray());
     }
 
 
     public function testSiblings(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4);
 
-        $node42 = Category::where(['name' => 'child 4.2'])->first();
+        $node122 = static::$modelClass::where(['title' => 'child 1.2.2'])->first();
 
-        $nodes = $node42->siblings()->defaultOrder()->get()->map(function ($item) {
-            return $item->name;
-        });
-
-
-        static::assertCount(2, $nodes);
-        static::assertEquals([
-            'child 4.1',
-            'child 4.3',
-        ], $nodes->toArray());
-
-
-        $nodes = $node42->siblingsAndSelf()->defaultOrder()->get()->map(function ($item) {
-            return $item->name;
+        $nodes = $node122->siblings()->defaultOrder()->get()->map(static function ($item) {
+            return $item->title;
         });
 
 
         static::assertCount(3, $nodes);
         static::assertEquals([
-            'child 4.1',
-            'child 4.2',
-            'child 4.3',
+            'child 1.2.4',
+            'child 1.2.3',
+            'child 1.2.1',
+        ], $nodes->toArray());
+
+
+        $nodes = $node122->siblingsAndSelf()->defaultOrder()->get()->map(static function ($item) {
+            return $item->title;
+        });
+
+        static::assertCount(4, $nodes);
+        static::assertEquals([
+            'child 1.2.4',
+            'child 1.2.3',
+            'child 1.2.2',
+            'child 1.2.1',
         ], $nodes->toArray());
 
     }
 
-
     public function testPrev(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4);
 
-        $node41 = Category::where(['name' => 'child 4.1'])->first();
-        $node42 = Category::where(['name' => 'child 4.2'])->first();
-        $node43 = Category::where(['name' => 'child 4.3'])->first();
+        $node2 = static::$modelClass::where(['title' => 'child 1.2.2'])->first();
+        $node3 = static::$modelClass::where(['title' => 'child 1.2.1'])->first();
+        $node1 = static::$modelClass::where(['title' => 'child 1.2.3'])->first();
 
-        $node = $node43->prev()->first();
-        static::assertTrue($node42->equalTo($node));
-
-        $node = $node->prev()->first();
-        static::assertTrue($node41->equalTo($node));
+        static::assertTrue($node1->equalTo($node2->prev()->first()));
+        static::assertTrue($node2->equalTo($node3->prev()->first()));
     }
 
     public function testNext(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4);
 
-        $node41 = Category::where(['name' => 'child 4.1'])->first();
-        $node42 = Category::where(['name' => 'child 4.2'])->first();
-        $node43 = Category::where(['name' => 'child 4.3'])->first();
+        $node2 = static::$modelClass::where(['title' => 'child 1.2.2'])->first();
+        $node3 = static::$modelClass::where(['title' => 'child 1.2.1'])->first();
+        $node1 = static::$modelClass::where(['title' => 'child 1.2.3'])->first();
 
-        $node = $node41->next()->first();
-        static::assertTrue($node42->equalTo($node));
-
-        $node = $node->next()->first();
-        static::assertTrue($node43->equalTo($node));
+        static::assertTrue($node2->equalTo($node1->next()->first()));
+        static::assertTrue($node3->equalTo($node2->next()->first()));
     }
+
 
     public function testPrevSiblings(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4);
 
-        $node41 = Category::where(['name' => 'child 4.1'])->first();
-        $node42 = Category::where(['name' => 'child 4.2'])->first();
-        $node43 = Category::where(['name' => 'child 4.3'])->first();
+        $node3 = static::$modelClass::where(['title' => 'child 1.2.1'])->first();
+        $node2 = static::$modelClass::where(['title' => 'child 1.2.2'])->first();
+        $node1 = static::$modelClass::where(['title' => 'child 1.2.3'])->first();
+        $node0 = static::$modelClass::where(['title' => 'child 1.2.4'])->first();
 
-        $nodes = $node42->prevSiblings()->get();
-        static::assertCount(1, $nodes);
+        static::assertCount(3, $node3->prevSiblings()->get());
+        static::assertCount(2, $node2->prevSiblings()->get());
+        static::assertTrue($node0->equalTo($node2->prevSiblings()->get()->first()));
+        static::assertTrue($node1->equalTo($node2->prevSiblings()->get()->last()));
+        static::assertCount(1, $node1->prevSiblings()->get());
+        static::assertCount(0, $node0->prevSiblings()->get());
 
-        static::assertTrue($node41->equalTo($nodes->first()));
-
-        $nodes = $node43->prevSiblings()->defaultOrder()->get();
-        static::assertCount(2, $nodes);
-
-        static::assertTrue($node41->equalTo($nodes->first()));
-        static::assertTrue($node42->equalTo($nodes->last()));
-
+        $nodes = $node3->prevSiblings()->defaultOrder()->get();
+        static::assertCount(3, $nodes);
+        static::assertTrue($node0->equalTo($nodes->first()));
+        static::assertTrue($node2->equalTo($nodes->last()));
     }
+
 
     public function testNextSiblings(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4);
 
-        $node41 = Category::where(['name' => 'child 4.1'])->first();
-        $node42 = Category::where(['name' => 'child 4.2'])->first();
-        $node43 = Category::where(['name' => 'child 4.3'])->first();
+        $node3 = static::$modelClass::where(['title' => 'child 1.2.1'])->first();
+        $node2 = static::$modelClass::where(['title' => 'child 1.2.2'])->first();
+        $node1 = static::$modelClass::where(['title' => 'child 1.2.3'])->first();
+        $node0 = static::$modelClass::where(['title' => 'child 1.2.4'])->first();
 
-        $nodes = $node42->nextSiblings()->get();
+        static::assertCount(0, $node3->nextSiblings()->get());
+        static::assertCount(1, $node2->nextSiblings()->get());
+
+        static::assertTrue($node3->equalTo($node2->nextSiblings()->get()->first()));
+        static::assertTrue($node3->equalTo($node2->nextSiblings()->get()->last()));
+        static::assertCount(2, $node1->nextSiblings()->get());
+        static::assertCount(3, $node0->nextSiblings()->get());
+
+        $nodes = $node2->nextSiblings()->defaultOrder()->get();
         static::assertCount(1, $nodes);
-
-        static::assertTrue($node43->equalTo($nodes->first()));
-
-        $nodes = $node41->nextSiblings()->defaultOrder()->get();
-        static::assertCount(2, $nodes);
-
-        static::assertTrue($node42->equalTo($nodes->first()));
-        static::assertTrue($node43->equalTo($nodes->last()));
-
+        static::assertTrue($node3->equalTo($nodes->first()));
+        static::assertTrue($node3->equalTo($nodes->last()));
     }
 
     public function testNextSibling(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4);
 
-        $node42 = Category::where(['name' => 'child 4.2'])->first();
-        $node43 = Category::where(['name' => 'child 4.3'])->first();
+        $node1 = static::$modelClass::where(['title' => 'child 1.2.3'])->first();
+        $node0 = static::$modelClass::where(['title' => 'child 1.2.4'])->first();
 
-        $node = $node42->nextSibling()->first();
-        static::assertTrue($node43->equalTo($node));
-        static::assertNull($node->nextSibling()->first());
-
+        static::assertTrue($node1->equalTo($node0->nextSibling()->first()));
+        static::assertNull($node1->nextSibling()->first()->nextSibling()->first()->nextSibling()->first());
     }
 
     public function testPrevSibling(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4);
 
-        $node41 = Category::where(['name' => 'child 4.1'])->first();
-        $node42 = Category::where(['name' => 'child 4.2'])->first();
+        $node1 = static::$modelClass::where(['title' => 'child 1.2.3'])->first();
+        $node0 = static::$modelClass::where(['title' => 'child 1.2.4'])->first();
 
-        $node = $node42->prevSibling()->first();
-        static::assertTrue($node41->equalTo($node));
-        static::assertNull($node->prevSibling()->first());
-
+        static::assertTrue($node0->equalTo($node1->prevSibling()->first()));
+        static::assertNull($node0->prevSibling()->first());
     }
 
     public function testLeaf(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4);
+        $node = static::$modelClass::where(['title' => 'child 1.2'])->first();
 
-        $node31 = Category::where(['name' => 'child 3.1'])->first();
-
-
-        $nodes = $node31->descendants()->leaf()->defaultOrder()->get()->map(function ($item) {
-            return $item->name;
+        $nodes = $node->descendants()->leaf()->defaultOrder()->get()->map(static function ($item) {
+            return $item->title;
         });
 
-        static::assertCount(3, $nodes);
+        static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 5.1',
-            'child 4.2',
-            'child 4.3',
+            'child 1.2.4',
+            'child 1.2.3',
+            'child 1.2.2',
+            'child 1.2.1',
         ], $nodes->toArray());
     }
 
 
     public function testLeaves(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 4, 1);
+        $node = static::$modelClass::where(['title' => 'child 1.3'])->first();
 
-        $node31 = Category::where(['name' => 'child 3.1'])->first();
-
-
-        $nodes = $node31->descendants()->leaves()->defaultOrder()->get()->map(function ($item) {
-            return $item->name;
-        });
-
-        static::assertCount(3, $nodes);
-        static::assertEquals([
-            'child 5.1',
-            'child 4.2',
-            'child 4.3',
-        ], $nodes->toArray());
-
-        $nodes = $node31->descendants()->leaves(1)->defaultOrder()->get()->map(function ($item) {
-            return $item->name;
-        });
-
-        static::assertCount(2, $nodes);
-        static::assertEquals([
-            'child 4.2',
-            'child 4.3',
-        ], $nodes->toArray());
-    }
-
-    public function testDescendants(): void
-    {
-        static::createTree();
-
-        $node21 = Category::where(['name' => 'child 2.1'])->first();
-
-        $nodes = $node21->descendants()->get()->map(function ($item) {
-            return $item->name;
-        });
-
-        static::assertCount(5, $nodes);
-        static::assertEquals([
-            'child 3.1',
-            'child 4.1',
-            'child 5.1',
-            'child 4.2',
-            'child 4.3',
-        ], $nodes->toArray());
-
-
-        $nodes = $node21->descendants(2)->get()->map(function ($item) {
-            return $item->name;
+        $nodes = $node->descendants()->leaves()->defaultOrder()->get()->map(static function ($item) {
+            return $item->title;
         });
 
         static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 3.1',
-            'child 4.1',
-            'child 4.2',
-            'child 4.3',
+            'child 1.3.4.1',
+            'child 1.3.3.1',
+            'child 1.3.2.1',
+            'child 1.3.1.1',
+        ], $nodes->toArray());
+
+        $nodes = $node->descendants()->leaves(1)->defaultOrder()->get()->map(static function ($item) {
+            return $item->title;
+        });
+
+        static::assertCount(0, $nodes);
+    }
+
+    public function testDescendants(): void
+    {
+        static::makeTree(null, 1, 3, 3, 1);
+        $node = static::$modelClass::where(['title' => 'child 1.3'])->first();
+
+        $nodes = $node->descendants()->get()->map(static function ($item) {
+            return $item->title;
+        });
+
+        static::assertCount(6, $nodes);
+        static::assertEquals([
+            'child 1.3.3',
+            'child 1.3.3.1',
+            'child 1.3.2',
+            'child 1.3.2.1',
+            'child 1.3.1',
+            'child 1.3.1.1',
         ], $nodes->toArray());
 
 
-        $nodes = $node21->descendants(1)->get()->map(function ($item) {
-            return $item->name;
+        $nodes = $node->descendants(1)->get()->map(static function ($item) {
+            return $item->title;
         });
 
-        static::assertCount(1, $nodes);
+        static::assertCount(3, $nodes);
         static::assertEquals([
-            'child 3.1',
+            'child 1.3.3',
+            'child 1.3.2',
+            'child 1.3.1',
         ], $nodes->toArray());
 
 
-        $nodes = $node21->descendants(2, true)->get()->map(function ($item) {
-            return $item->name;
+        $nodes = $node->descendants(0)->get()->map(static function ($item) {
+            return $item->title;
         });
 
-        static::assertCount(5, $nodes);
+        static::assertCount(0, $nodes);
+
+
+        $nodes = $node->descendants(1, true)->get()->map(static function ($item) {
+            return $item->title;
+        });
+
+        static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 2.1',
-            'child 3.1',
-            'child 4.1',
-            'child 4.2',
-            'child 4.3',
+            'child 1.3',
+            'child 1.3.3',
+            'child 1.3.2',
+            'child 1.3.1',
         ], $nodes->toArray());
 
 
-        $nodes = $node21->descendants(2, true, true)->get()->map(function ($item) {
-            return $item->name;
+        $nodes = $node->descendants(1, true, true)->get()->map(static function ($item) {
+            return $item->title;
         });
 
-        static::assertCount(5, $nodes);
+        static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 2.1',
-            'child 3.1',
-            'child 4.3',
-            'child 4.2',
-            'child 4.1',
+            'child 1.3',
+            'child 1.3.1',
+            'child 1.3.2',
+            'child 1.3.3',
         ], $nodes->toArray());
 
     }
@@ -350,67 +305,42 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
     public function testWhereDescendantOf(): void
     {
-        static::createTree();
+        static::makeTree(null, 1, 3, 3, 1);
+        $node = static::$modelClass::where(['title' => 'child 1.3'])->first();
 
-        $node21 = Category::where(['name' => 'child 2.1'])->first();
-        static::assertEquals('child 2.1', $node21->name);
+        static::assertEquals('child 1.3', $node->title);
 
-        $list = Category::whereDescendantOf($node21->getKey())->get();
-        static::assertCount(5, $list);
-
-
-        $root = $node21->getRoot();
-
-        static::assertTrue($root->isRoot());
-
-        $list = Category::whereDescendantOf($root)->get();
-        static::assertCount(8, $list);
-    }
-
-/*
-    public function testWhereAncestorOf(): void
-    {
-        static::createTree();
-
-        $node51 = Category::where(['name' => 'child 5.1'])->first();
-        static::assertEquals('child 5.1', $node51->name);
-
-        $list = Category::whereAncestorOf($node51->getKey())->get();
-
-        static::assertCount(4, $list);
+        $list = static::$modelClass::whereDescendantOf($node->getKey())->get();
+        static::assertCount(6, $list);
 
 
-        $root = $node51->getRoot();
+        $root = $node->getRoot();
 
         static::assertTrue($root->isRoot());
 
-        $list = Category::whereAncestorOf($root)->get();
-        static::assertCount(0, $list);
-    }*/
-
-
-    private static function createTree(): void
-    {
-        $root = Category::create(['name' => 'root', '_setRoot' => true]);
-
-        $node21 = new Category(['name' => 'child 2.1']);
-        $node21->prependTo($root)->save();
-        $node31 = new Category(['name' => 'child 3.1']);
-        $node31->prependTo($node21)->save();
-        $node41 = new Category(['name' => 'child 4.1']);
-        $node41->prependTo($node31)->save();
-        $node42 = new Category(['name' => 'child 4.2']);
-        $node42->appendTo($node31)->save();
-        $node43 = new Category(['name' => 'child 4.3']);
-        $node43->appendTo($node31)->save();
-        $node51 = new Category(['name' => 'child 5.1']);
-        $node51->prependTo($node41)->save();
-
-        $node22 = new Category(['name' => 'child 2.2']);
-        $node22->appendTo($root)->save();
-        $node32 = new Category(['name' => 'child 3.2']);
-        $node32->prependTo($node22)->save();
+        $list = static::$modelClass::whereDescendantOf($root)->get();
+        static::assertCount(21, $list);
     }
 
+    /*
+        public function testWhereAncestorOf(): void
+        {
+            static::createTree();
+
+            $node51 = static::$modelClass::where(['title' => 'child 5.1'])->first();
+            static::assertEquals('child 5.1', $node51->title);
+
+            $list = static::$modelClass::whereAncestorOf($node51->getKey())->get();
+
+            static::assertCount(4, $list);
+
+
+            $root = $node51->getRoot();
+
+            static::assertTrue($root->isRoot());
+
+            $list = static::$modelClass::whereAncestorOf($root)->get();
+            static::assertCount(0, $list);
+        }*/
 
 }

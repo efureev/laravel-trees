@@ -227,25 +227,34 @@ trait BaseNestedSetTrait
         return [];
     }
 
+    /** @var array|null For increase `getCast` function */
+    private $castsFill;
+
     /**
      * @return array
      */
     public function getCasts(): array
     {
-        $this->casts = parent::getCasts();
+        if ($this->castsFill === null) {
+            $casts = array_merge(
+                parent::getCasts(),
+                [
+                    $this->getLevelAttributeName() => 'integer',
+                    $this->getLeftAttributeName() => 'integer',
+                    $this->getRightAttributeName() => 'integer',
+                    $this->getTreeAttributeName() => 'integer',
+                ],
+                $this->casts
+            );
 
-        $this->casts = array_merge([
-            $this->getLevelAttributeName() => 'integer',
-            $this->getLeftAttributeName() => 'integer',
-            $this->getRightAttributeName() => 'integer',
-            $this->getTreeAttributeName() => 'integer',
-        ], $this->casts);
+            if ($type = $this->getTreeConfig()->getCastForParentAttribute()) {
+                $casts[$this->getParentIdName()] = $type;
+            }
 
-        if ($type = $this->getTreeConfig()->getCastForParentAttribute()) {
-            $this->casts[$this->getParentIdName()] = $type;
+            $this->castsFill = $casts;
         }
 
-        return $this->casts;
+        return $this->castsFill;
     }
 
     /**
