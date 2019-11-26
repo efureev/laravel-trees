@@ -48,9 +48,6 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
                 case 'mysql':
                     $expression = new Expression('UUID()');
                     break;
-                case 'sqlite':
-                    $expression = new Expression('randomblob(16)');
-                    break;
                 default:
                     throw new \Exception('Your DB driver [' . DB::getDriverName() . '] does not supported');
                     break;

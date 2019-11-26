@@ -8,7 +8,7 @@ include __DIR__ . '/models/Category.php';
 
 $capsule = new Manager;
 $capsule->addConnection([
-    'driver' => env('DB_DRIVER', 'postgresql'),
+    'driver' => env('DB_DRIVER', 'pgsql'),
     'database' => env('DB_DATABASE', 'travis_ci_test'),
     'username' => env('DB_USERNAME', 'postgres'),
     'password' => env('DB_PASSWORD', ''),
