@@ -25,9 +25,6 @@ __Contents:__
     -   [Retrieving nodes](#retrieving-nodes)
     -   [Nodes queries](#nodes-queries)
     -   [Model's helpers](#models-helpers)
-    -   [Consistency checking & fixing](#checking-consistency)
-    -   [Scoping](#scoping)
-
 
 
 Information
