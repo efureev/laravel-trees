@@ -90,30 +90,4 @@ class Collection extends BaseCollection
         });
     }
 
-    /**
-     * @param mixed $root
-     *
-     * @return int
-     */
-    /* protected function getRootNodeId($root = false)
-     {
-         if (NestedSet::isNode($root)) {
-             return $root->getKey();
-         }
-         if ($root !== false) {
-             return $root;
-         }
-         // If root node is not specified we take parent id of node with
-         // least lft value as root node id.
-         $leastValue = null;
-         /** @var Model|NodeTrait $node * /
-         foreach ($this->items as $node) {
-             if ($leastValue === null || $node->getLft() < $leastValue) {
-                 $leastValue = $node->getLft();
-                 $root = $node->getParentId();
-             }
-         }
-         return $root;
-     }*/
-
 }
