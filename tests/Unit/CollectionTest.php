@@ -97,7 +97,6 @@ class CollectionTest extends AbstractUnitTestCase
 
         static::assertCount($expectedQueryCount, $root->getConnection()->getQueryLog());
 
-
     }
 
     public function testToTreeWithOutRootNode(): void
@@ -119,5 +118,23 @@ class CollectionTest extends AbstractUnitTestCase
         foreach ($tree as $page) {
             static::assertCount(3, $page['children']);
         }
+
+        static::assertCount($expectedQueryCount, $list->first()->getConnection()->getQueryLog());
+    }
+
+    public function testGetRoots(): void
+    {
+        static::makeTree(null, 6, 1, 2, 1);
+
+        $list = static::$modelClass::all();
+        $expectedQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+
+        static::assertCount(36, $list);
+
+        $roots = $list->getRoots();
+
+        static::assertCount(6, $roots);
+
+        static::assertCount($expectedQueryCount, $list->first()->getConnection()->getQueryLog());
     }
 }

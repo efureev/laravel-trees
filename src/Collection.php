@@ -79,6 +79,18 @@ class Collection extends BaseCollection
     }
 
     /**
+     * Returns all root-nodes
+     *
+     * @return $this
+     */
+    public function getRoots(): self
+    {
+        return $this->filter(static function ($item) {
+            return $item->getParentId() === null;
+        });
+    }
+
+    /**
      * @param mixed $root
      *
      * @return int
