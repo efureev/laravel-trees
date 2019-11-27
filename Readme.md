@@ -9,209 +9,353 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/69eff0098adbf728341d/maintainability)](https://codeclimate.com/github/efureev/laravel-trees/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/69eff0098adbf728341d/test_coverage)](https://codeclimate.com/github/efureev/laravel-trees/test_coverage)
 
-## Information
-Tree structures
 
-## Install
-- `composer require efureev/laravel-trees`
+__Contents:__
 
-## Test
-`./vendor/bin/phpunit --testdox`  
-or  
-`composer test`
+- [Theory](#information)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Testing](#testing)
+- [Documentation](#documentation)
+    -   [Migrating](#migrating)
+    -   [Relationships](#relationships)
+    -   [Creating nodes](#creating-nodes)
+    -   [Moving nodes](#moving-nodes)
+    -   [Deleting nodes](#deleting-nodes)
+    -   [Retrieving nodes](#retrieving-nodes)
+    -   [Nodes queries](#nodes-queries)
+    -   [Model's helpers](#models-helpers)
+    -   [Consistency checking & fixing](#checking-consistency)
+    -   [Scoping](#scoping)
 
 
-## Nodes manipulation
 
-### makeRoot
-_Create root node._
+Information
+--------------
+This package is Multi-Tree structures (a lot of root-nodes).
+
+### What are nested sets?
+
+Nested sets or [Nested Set Model](http://en.wikipedia.org/wiki/Nested_set_model) is
+a way to effectively store hierarchical data in a relational table. From wikipedia:
+
+> The nested set model is to number the nodes according to a tree traversal,
+> which visits each node twice, assigning numbers in the order of visiting, and
+> at both visits. This leaves two numbers for each node, which are stored as two
+> attributes. Querying becomes inexpensive: hierarchy membership can be tested by
+> comparing these numbers. Updating requires renumbering and is therefore expensive.
+
+### Applications
+
+NSM shows good performance when tree is updated rarely. It is tuned to be fast for
+getting related nodes. It'is ideally suited for building multi-depth menu or
+categories for shop.
+
+
+
+Requirements
+------------
+
+- PHP >= 7.2
+- Laravel >= 5.6
+
+It is highly suggested to use database that supports transactions (like MySql's InnoDb, Postgres)
+to secure a tree from possible corruption.
+
+Installation
+------------
+
+To install the package, in terminal:
+
+```
+composer require efureev/laravel-trees
+```
+
+Testing
+------------
+```
+./vendor/bin/phpunit --testdox
+```
+or 
+```
+composer test
+```
+
+
+
+
+Documentation
+-------------
+This package works with different model primary key: `int`, `uuid`.
+This package allows to creating multi-root structures: no only-one-root! And allow to move nodes between trees.   
+ 
+### Migrating
+
+**Model for Single tree structure:**
+```php
+<?php
+namespace App\Models;
+
+use Fureev\Trees\NestedSetTrait;
+use Illuminate\Database\Eloquent\Model;
+
+class Category extends Model
+{
+    use NestedSetTrait;
+
+    //protected $fillable = ['title', '_setRoot']; 
+}
+```
+The model will use an Attribute `_setRoot`. It's reserved word for this package and it allows to save root-node. 
+
+**Model for Multi tree structure and with primary key type `uuid`:**
+```php
+<?php
+namespace App\Models;
+
+use Fureev\Trees\{Config, NestedSetTrait};
+use Illuminate\Database\Eloquent\Model;
+
+class Item extends Model
+{
+    use NestedSetTrait;
+    
+    protected $keyType = 'uuid';
+
+    protected static function buildTreeConfig(): Config
+    {
+        return new Config(['treeAttribute' => 'tree_id', 'parentAttributeType' => 'uuid']);
+    }
+}
+```
+
+Use in migrations:
+```php
+public function up()
+{
+    Schema::create('trees', function (Blueprint $table) {
+        $table->uuid('id')->primary();
+        $table->string('title');
+
+        \Fureev\Trees\Migrate::getColumns($table, (new Page)->getTreeConfig());
+
+        $table->timestamps();
+        $table->softDeletes();
+    });
+}
+```
+
+
+
+### Relationships
+
+Node has following relationships that are fully functional and can be eagerly loaded:
+
+-   Node belongs to `parent`
+-   Node has many `children`
+-   Node has many `ancestors`
+-   Node has many `descendantsNew`
+
+
+
+### Creating nodes
+
+#### Creating root-nodes
+
+When you creating a root-node: If you use ... 
+
+- single-mode: you may to create ONLY one root-node.
+- multi-mode: it will be insert as root-node and different `tree_id`. Default: increment by one. You may customize this function.
+
+These actions are identical: 
+```php
+Category::make($attributes)->makeRoot()->save();
+Category::make($attributes)->saveAsRoot();
+Category::create(['setRoot'=>true,...]);
+```
+
+#### Creating non-root-nodes
+
+When you creating a non-root node, it will be appended to the end of the parent node.
+
+If you want to make node a child of other node, you can make it last or first child.
+
+_In following examples, `$parent` is some existing node._
+
+##### Appending to the specified parent
+_Add child-node into node. Insert after other children of the parent._
 
 ```php
-$model = new Category(['id' => 1, 'name' => 'root node']);
-$model->makeRoot()->save();
-```
-or
-```php
-$model = Category::create(['name' => 'root', '_setRoot' => true]);
+$node->appendTo($parent)->save();
 ```
 
-### prependTo
-_Add child-node into node. Insert before other children._
+
+##### Prepending to the specified parent
+_Add child-node into node. Insert before other children of the parent._
 
 ```php
-$root = Category::create(['name' => 'root', '_setRoot' => true]);
-$node = new Category(['name' => 'child 2.1']);
-$node->prependTo($root)->save();
+$node->prependTo($parent)->save();
 ```
 
-### appendTo
-_Add child-node into node. Insert after all children._
 
-```php
-$root = Category::create(['name' => 'root', '_setRoot' => true]);
-$node = new Category(['name' => 'child 2.1']);
-$node->appendTo($root)->save();
-```
-
-### insertBefore
+##### Insert before parent node
 _Add child-node into same parent node. Insert before target node._
 
 ```php
-$root = Category::create(['name' => 'root', '_setRoot' => true]);
-$node2 = new Category(['name' => 'child 2.1']);
-$node2->appendTo($root)->save();
-
-$node3 = new Category(['name' => 'child 3.1']);
-$node3->insertBefore($node2)->save();
+$node->insertBefore($parent)->save();
 ```
 
-### insertAfter
+##### Insert after parent node
 _Add child-node into same parent node. Insert after target node._
 
 ```php
-$root = Category::create(['name' => 'root', '_setRoot' => true]);
-$node2 = new Category(['name' => 'child 2.1']);
-$node2->appendTo($root)->save();
-
-$node3 = new Category(['name' => 'child 3.1']);
-$node3->insertAfter($node2)->save();
+$node->insertAfter($parent)->save();
 ```
 
-### up
-_Move node up in self parent scope._
+
+
+### Moving nodes
+
+##### Move node up in self parent scope
 
 ```php
-$root = Category::create(['name' => 'root', '_setRoot' => true]);
-(new Category(['name' => 'child 2']))->appendTo($root)->save();
-(new Category(['name' => 'child 3']))->appendTo($root)->save();
-$node = new Category(['name' => 'child 4']);
-$node->appendTo($root)->save();
 $node->up();
 ```
 
-### down
-_Move node down in self parent scope._
+##### Move node down in self parent scope
 
 ```php
-$root = Category::create(['name' => 'root', '_setRoot' => true]);
-(new Category(['name' => 'child 2']))->appendTo($root)->save();
-(new Category(['name' => 'child 3']))->appendTo($root)->save();
-$node = new Category(['name' => 'child 4']);
-$node->appendTo($root)->save();
 $node->down();
 ```
 
-### delete
-_Delete node. if exist children - they will be attach to deleted node parent._
+### Deleting nodes
+
+To delete a node:
 
 ```php
-$root = Category::create(['name' => 'root', '_setRoot' => true]);
-$node = new Category(['name' => 'child 2.1']);
-$node->appendTo($root)->save();
 $node->delete();
 ```
 
-### deleteWithChildren
-_Delete node. if exist children - they will be attach to deleted node parent._
+**IMPORTANT!** if deleting node has children - they will be attach to deleted node parent. This behavior may be changed.
+
+**IMPORTANT!** Nodes are required to be deleted as models! **DO NOT** try do delete them using a query like so:
 
 ```php
-$root = Category::create(['name' => 'root', '_setRoot' => true]);
-$node21 = new Category(['name' => 'child 2.1']);
-$node21->appendTo($root)->save();
-$node31 = new Category(['name' => 'child 3.1']);
-$node31->prependTo($node21)->save();
-
-$delNodes = $node21->deleteWithChildren();
+Category::where('id', '=', $id)->delete();
 ```
 
-## Nodes queries
+This will break the tree!
 
-### isRoot()
-return `bool`
+`SoftDeletes` trait is supported, also on model level.
+
+Also you may to delete all children:
+
 ```php
-$node->isRoot();
+$node->deleteWithChildren();
 ```
 
-### isChildOf()
-return `bool`
 
-### isLeaf()
-return `bool`
+### Retrieving nodes
 
-### equalTo()
-return `bool`
+*In some cases we will use an `$id` variable which is an id of the target node.*
 
-### parents()
-*Return collection of parent nodes*  
-return `\Illuminate\Database\Eloquent\Collection`
 
-### parent()
-*Return parent node query*  
-return `\Illuminate\Database\Eloquent\Relations\BelongsTo`
+#### Ancestors and descendants
 
-### children()
-*Return children nodes query*  
-return `\Illuminate\Database\Eloquent\Relations\HasMany`
+Ancestors make a chain of parents to the node. Helpful for displaying breadcrumbs
+to the current category.
 
-## Node query builder
+Descendants are all nodes in a sub tree, i.e. children of node, children of
+children, etc.
 
-### root()
+Both ancestors and descendants can be eagerly loaded.
+
+It's relationships:
+- `ancestors`: AncestorsRelation
+- `descendantsNew`: DescendantsRelation
+- `children`: HasMany
+- `parent`: BelongsTo
+
+
 ```php
-$root = Category::root()->first();
+// Accessing ancestors
+$node->ancestors;
+
+// Accessing descendants
+$node->descendantsNew;
+
+// Accessing descendants
+$node->children;
 ```
 
-### parents(int $level = null)
-*if `$level` is not null, then select nodes where level >= `$level`*  
-return `\Fureev\Trees\QueryBuilder`
+#### Parent
+Get parent node
 ```php
-Category::parents()->get();
-Category::parents(1)->get();
+$node->parent;
 ```
 
-### siblings()
-return `\Fureev\Trees\QueryBuilder`
+Collection of parents
 ```php
-Category::siblings()->get();
+$node->parents($level);
 ```
 
-### prev()
-return `\Fureev\Trees\QueryBuilder`
+
+#### Siblings
+
+Siblings are nodes that have same parent.
+
 ```php
-Category::prev()->first();
+// Get all siblings of the node
+$collection = $node->siblings()->get();
+
+// Get siblings which are before the node
+$collection = $node->prevSiblings()->get();
+
+// Get siblings which are after the node
+$collection = $node->nexrSiblings()->get();
+
+// Get a sibling that is immediately before the node
+$prevNode = $node->prevSibling()->first();
+
+// Get a sibling that is immediately after the node
+$nextNode = $node->nextibling()->first();
 ```
 
-### next()
-return `\Fureev\Trees\QueryBuilder`
 ```php
-Category::next()->first();
+$prevNode = $node->prev()->first();
+$nextNode = $node->next()->first();
 ```
 
-### prevSiblings()
-return `\Fureev\Trees\QueryBuilder`
-```php
-$model->prevSiblings()->get();
-```
 
-### nextSiblings()
-return `\Fureev\Trees\QueryBuilder`
-```php
-$model->nextSiblings()->get();
-```
+### Nodes queries
+Method | Example | Description
+:--- |  :---|  :---
+parents(int $level = null)  | `$node->parents(2)->get();`| Select chain of parents
+root()  | `$node->root()->get();` | Select only root nodes
+notRoot()  | `$node->notRoot()->get();` | Select only not root nodes
+siblings()  | `$node->siblings()->get();`
+siblingsAndSelf()  | `$node->siblingsAndSelf()->get();`
+prev()  | `$node->prev()->first();`
+next()  | `$node->next()->first();`
+prevSiblings()  | `$node->prevSiblings()->get();`
+nextSiblings()  | `$node->nextSiblings()->get();`
+prevSibling()  | `$node->prevSibling()->first();`
+nextSibling()  | `$node->nextSibling()->first();`
+prevNodes()  | `$node->prevNodes()->get();`
+nextNodes()  | `$node->nextNodes()->get();`
+leaf()  | `$node->leaf()->first();` | Select ended node
+leaves(int $level = null)  | `$node->leaves(2)->first();`
+descendants($level, $andSelf, $backOrder)  | `$node->descendants(2, true)->get();` | Get all descendants
+whereDescendantOf($id)  | `$node->whereDescendantOf(2)->get();` | Get all descendants
+whereNodeBetween([$left, $right]...)  | `$node->whereDescendantOf(2)->get();` | Add node selection statement between specified range.
+defaultOrder($dir)  | `$node->defaultOrder(true)->get();` | Add node selection statement between specified range.
+byTree($dir)  | `$node->byTree(1)->get();` | Select nodes by `tree_id`.
 
-### prevSibling()
-return `\Fureev\Trees\QueryBuilder`
-```php
-$model->prevSibling()->first();
-```
 
-### nextSibling()
-return `\Fureev\Trees\QueryBuilder`
-```php
-$model->nextSibling()->first();
-```
-
-### descendants()
-return `\Fureev\Trees\QueryBuilder`
-```php
-Category::descendants()->get();
-```
+### Model's helpers
+Method | Return | Example
+:--- | :--- | :---
+isRoot() | bool | `$node->isRoot();`
+isChildOf(Model $node) | bool | `$node->isChildOf($parentNode);`
+isLeaf() | bool | `$node->isLeaf();`
+equalTo(Model $node) | bool | `$node->equalTo($parentNode);`

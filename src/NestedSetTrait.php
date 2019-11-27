@@ -196,6 +196,39 @@ trait NestedSetTrait
     }
 
     /**
+     * Move node up
+     *
+     * @return bool
+     */
+    public function up(): bool
+    {
+        $prev = $this->prevSibling()->first();
+
+        if (!$prev) {
+            return false;
+        }
+
+        return $this->insertBefore($prev)->forceSave();
+    }
+
+    /**
+     * Move node down.
+     *
+     * @return bool
+     */
+    public function down(): bool
+    {
+        $next = $this->nextSibling()->first();
+
+        if (!$next) {
+            return false;
+        }
+
+        return $this->insertAfter($next)->forceSave();
+    }
+
+
+    /**
      * @throws DeleteRootException
      */
     public function beforeDelete(): void
@@ -631,39 +664,6 @@ trait NestedSetTrait
         $this->shift($right + 1, null, $left - $right - 1);
     }
 
-
-    /**
-     * Move node up
-     *
-     * @return bool
-     */
-    public function up(): bool
-    {
-        $prev = $this->prevSibling()->first();
-
-        if (!$prev) {
-            return false;
-        }
-
-        return $this->insertBefore($prev)->forceSave();
-    }
-
-    /**
-     * Move node down.
-     *
-     * @return bool
-     */
-    public function down(): bool
-    {
-        $next = $this->nextSibling()->first();
-
-        if (!$next) {
-            return false;
-        }
-
-        return $this->insertAfter($next)->forceSave();
-    }
-
     /**
      * @param int $from
      * @param int $to
@@ -715,6 +715,17 @@ trait NestedSetTrait
         throw new TreeNeedValueException();
     }
 
+    /**
+     * @return bool
+     */
+    public function saveAsRoot(): bool
+    {
+        if ($this->exists && $this->isRoot()) {
+            return $this->save();
+        }
+
+        return $this->makeRoot()->save();
+    }
 
     /**
      * {@inheritdoc}
