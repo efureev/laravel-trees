@@ -122,6 +122,33 @@ class CollectionTest extends AbstractUnitTestCase
         static::assertCount($expectedQueryCount, $list->first()->getConnection()->getQueryLog());
     }
 
+    public function testToTreeArrayMultiRoots(): void
+    {
+        static::makeTree(null, 5, 3, 2,);
+
+        $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+        $expectedQueryCount = $preQueryCount + 1;
+
+        $list = static::$modelClass::all();
+
+        static::assertCount(50, $list);
+
+        $tree = $list->toTree()->toArray();
+
+        static::assertCount(5, $tree);
+
+
+        foreach ($tree as $pages) {
+            static::assertCount(3, $pages['children']);
+
+            foreach ($pages['children'] as $page) {
+                static::assertCount(2, $page['children']);
+            }
+        }
+
+        static::assertCount($expectedQueryCount, $list->first()->getConnection()->getQueryLog());
+    }
+
     public function testGetRoots(): void
     {
         static::makeTree(null, 6, 1, 2, 1);
