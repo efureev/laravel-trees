@@ -15,9 +15,9 @@
   "require-dev": {
     "phpunit/phpunit": "^8.0",
     "fzaninotto/faker": "^1.8",
-    "phpstan/phpstan": "^0.10.3",
-    "symfony/var-dumper": "^4.2",
-    "vlucas/phpdotenv": "^3.6"
+    "symfony/var-dumper": "^5.0",
+    "vlucas/phpdotenv": "^3.6",
+    "phpstan/phpstan": "^0.11"
   },
   "autoload": {
     "psr-4": {
@@ -32,6 +32,6 @@
   "scripts": {
     "test": "@php ./vendor/bin/phpunit --no-coverage --testdox",
     "test-cover": "@php ./vendor/bin/phpunit --coverage-text",
-    "phpstan": "@php ./vendor/bin/phpstan analyze --ansi --level=1 ./src"
+    "phpstan": "@php ./vendor/bin/phpstan analyze --ansi"
   }
 }
