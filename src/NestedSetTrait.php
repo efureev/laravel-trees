@@ -655,8 +655,8 @@ trait NestedSetTrait
         $this->newQuery()
             ->descendants(null, true)
             ->update([
-                $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . 1 - $left),
-                $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . 1 - $left),
+                $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . (1 - $left)),
+                $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . (1 - $left)),
                 $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . -$depth),
                 $this->getTreeAttributeName() => $tree,
             ]);
