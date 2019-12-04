@@ -124,7 +124,7 @@ class CollectionTest extends AbstractUnitTestCase
 
     public function testToTreeArrayMultiRoots(): void
     {
-        static::makeTree(null, 5, 3, 2,);
+        static::makeTree(null, 5, 3, 2);
 
         $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
