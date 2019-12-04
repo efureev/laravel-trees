@@ -6,7 +6,8 @@ use Fureev\Trees\Exceptions\{DeleteRootException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
-    UniqueRootException};
+    UniqueRootException
+};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -136,9 +137,14 @@ trait NestedSetTrait
     {
         $this->nodeRefresh();
 
-        if (!$this->operation && $this->getAttributeFromArray('_setRoot')) {
-            $this->operation = Config::OPERATION_MAKE_ROOT;
-            unset($this->attributes['_setRoot']);
+        if (!$this->operation) {
+            if ($this->getAttributeFromArray('_setRoot')) {
+                $this->operation = Config::OPERATION_MAKE_ROOT;
+                unset($this->attributes['_setRoot']);
+            } else if ($this->parent) {
+                $this->operation = Config::OPERATION_APPEND_TO;
+                $this->node = $this->parent;
+            }
         }
 
         switch ($this->operation) {
