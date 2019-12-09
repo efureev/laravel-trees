@@ -156,26 +156,7 @@ trait NestedSetTrait
             } else if ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
                 $this->saveWithOutTargets();
             }
-
-            /* if ($this->isMultiTree()) {
-                 if ($this->parent) {
-                     $this->saveWithParent();
-                 } else {
-                     $this->saveWithOutTargets();
-                 }
-             } else {
-                 if ($this->getAttributeFromArray('_setRoot')) {
-                     $this->saveWithOutTargets();
-                 } else if ($this->parent) {
-                     $this->saveWithParent();
-                 }
-             }*/
         }
-
-
-        /*if (!$this->operation) {
-
-        }*/
 
         switch ($this->operation) {
             case Config::OPERATION_MAKE_ROOT:
