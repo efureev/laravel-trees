@@ -37,7 +37,7 @@ class Collection extends BaseCollection
             foreach ($children as $child) {
                 $child->setRelation('parent', $node);
             }
-            $node->setRelation('children', BaseCollection::make($children));
+            $node->setRelation('children', static::make($children));
         }
 
         return $this;
