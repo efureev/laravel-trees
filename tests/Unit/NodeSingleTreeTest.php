@@ -4,6 +4,7 @@ namespace Fureev\Trees\Tests\Unit;
 
 use Fureev\Trees\Exceptions\{DeleteRootException, Exception, NotSupportedException, UniqueRootException};
 use Fureev\Trees\Tests\models\Category;
+use Illuminate\Database\Eloquent\Model;
 
 class NodeSingleTreeTest extends AbstractUnitTestCase
 {
@@ -28,7 +29,6 @@ class NodeSingleTreeTest extends AbstractUnitTestCase
         $this->expectException(UniqueRootException::class);
         static::$modelClass::create(['title' => 'root', '_setRoot' => true]);
     }
-
 
     public function testInsertNode(): void
     {

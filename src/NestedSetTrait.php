@@ -130,6 +130,18 @@ trait NestedSetTrait
             ->first();
     }
 
+    protected function saveWithOutTargets(): void
+    {
+        $this->operation = Config::OPERATION_MAKE_ROOT;
+        unset($this->attributes['_setRoot']);
+    }
+
+    protected function saveWithParent(): void
+    {
+        $this->operation = Config::OPERATION_APPEND_TO;
+        $this->node = $this->parent;
+    }
+
     /**
      * @throws \Exception
      */
@@ -138,14 +150,32 @@ trait NestedSetTrait
         $this->nodeRefresh();
 
         if (!$this->operation) {
-            if ($this->getAttributeFromArray('_setRoot')) {
-                $this->operation = Config::OPERATION_MAKE_ROOT;
-                unset($this->attributes['_setRoot']);
-            } else if ($this->parent) {
-                $this->operation = Config::OPERATION_APPEND_TO;
-                $this->node = $this->parent;
+
+            if ($this->parent) {
+                $this->saveWithParent();
+            } else if ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
+                $this->saveWithOutTargets();
             }
+
+            /* if ($this->isMultiTree()) {
+                 if ($this->parent) {
+                     $this->saveWithParent();
+                 } else {
+                     $this->saveWithOutTargets();
+                 }
+             } else {
+                 if ($this->getAttributeFromArray('_setRoot')) {
+                     $this->saveWithOutTargets();
+                 } else if ($this->parent) {
+                     $this->saveWithParent();
+                 }
+             }*/
         }
+
+
+        /*if (!$this->operation) {
+
+        }*/
 
         switch ($this->operation) {
             case Config::OPERATION_MAKE_ROOT:

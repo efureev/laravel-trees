@@ -561,9 +561,11 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
     public function testBaseSaveException(): void
     {
+        /** @var Model $model */
         $model = new self::$modelClass(['id' => 2, 'title' => 'node']);
-        $this->expectException(NotSupportedException::class);
         $model->save();
+        static::assertTrue($model->exists);
+        static::assertEquals(1, $model->getKey());
     }
 
     public function testUp(): void

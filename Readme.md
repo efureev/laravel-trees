@@ -166,9 +166,13 @@ When you creating a root-node: If you use ...
 
 These actions are identical: 
 ```php
-Category::make($attributes)->makeRoot()->save();
+// For single-root tree
+Category::make($attributes)->makeRoot()->save(); 
 Category::make($attributes)->saveAsRoot();
 Category::create(['setRoot'=>true,...]);
+
+// For multi-root tree. If parent is absent, node set as root.
+Page::make($attributes)->save();
 ```
 
 #### Creating non-root-nodes
