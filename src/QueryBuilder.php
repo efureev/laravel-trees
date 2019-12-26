@@ -221,7 +221,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function descendants(int $level = null, $andSelf = false, $backOrder = false): self
+    public function descendants(?int $level = null, $andSelf = false, $backOrder = false): self
     {
         $attribute = $backOrder ? $this->model->getRightAttributeName() : $this->model->getLeftAttributeName();
 
