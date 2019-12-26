@@ -756,17 +756,6 @@ trait NestedSetTrait
     }
 
     /**
-     * @param Builder $builder
-     * @param int $level
-     *
-     * @return Builder
-     */
-    public function scopeToLevel(Builder $builder, int $level)
-    {
-        return $builder->where($this->getLevelAttributeName(), '<=', $level);
-    }
-
-    /**
      * Populate children relations for self and all descendants
      *
      * @param int $depth = null

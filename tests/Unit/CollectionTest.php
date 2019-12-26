@@ -2,6 +2,7 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
+use Fureev\Trees\Collection;
 use Fureev\Trees\Tests\models\PageUuid;
 
 class CollectionTest extends AbstractUnitTestCase
@@ -73,14 +74,15 @@ class CollectionTest extends AbstractUnitTestCase
 
     public function testToTreeWithRootNode(): void
     {
-        static::makeTree(null, 2, 3, 2, 3);
+        $childrenNodesMap = [2, 3, 2, 3];
+        static::makeTree(null, ...$childrenNodesMap);
 
         $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
 
         $list = static::$modelClass::byTree(1)->get();
 
-        static::assertCount(28, $list);
+        static::assertCount(static::sum($childrenNodesMap) / 2, $list);
 
         /** @var PageUuid $root */
         $root = $list->where('parent_id', '=', null)->first();
@@ -101,14 +103,15 @@ class CollectionTest extends AbstractUnitTestCase
 
     public function testToTreeWithOutRootNode(): void
     {
-        static::makeTree(null, 2, 3);
+        $childrenNodesMap = [2, 3];
+        static::makeTree(null, ...$childrenNodesMap);
 
         $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
 
         $list = static::$modelClass::all();
 
-        static::assertCount(8, $list);
+        static::assertCount(static::sum($childrenNodesMap), $list);
 
         $tree = $list->toTree();
 
@@ -122,16 +125,47 @@ class CollectionTest extends AbstractUnitTestCase
         static::assertCount($expectedQueryCount, $list->first()->getConnection()->getQueryLog());
     }
 
+    public function testToTreeCustomLevels(): void
+    {
+        $childrenNodesMap = [2, 3, 1, 2];
+        static::makeTree(null, ...$childrenNodesMap);
+
+        foreach ($childrenNodesMap as $level => $childrenCount) {
+            $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+            $expectedQueryCount = $preQueryCount + 1;
+
+
+            $list = static::$modelClass::toLevel($level)->get();
+            static::assertCount(static::sum($childrenNodesMap, $level), $list);
+
+            static::assertEmpty($list->filter(function ($item) use ($level) {
+                return $item->getLevel() > $level;
+            }));
+
+            static::assertCount(static::sum($childrenNodesMap, $level), $list->filter(function ($item) use ($level) {
+                return $item->getLevel() <= $level;
+            }));
+
+            /** @var Collection $tree */
+            $tree = $list->toTree();
+
+            static::assertCount(2, $tree);
+
+            static::assertCount($expectedQueryCount, $list->first()->getConnection()->getQueryLog());
+        }
+    }
+
     public function testToTreeArrayMultiRoots(): void
     {
-        static::makeTree(null, 5, 3, 2);
+        $childrenNodesMap = [5, 3, 2];
+        static::makeTree(null, ...$childrenNodesMap);
 
         $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
 
         $list = static::$modelClass::all();
 
-        static::assertCount(50, $list);
+        static::assertCount(static::sum($childrenNodesMap), $list);
 
         $tree = $list->toTree()->toArray();
 

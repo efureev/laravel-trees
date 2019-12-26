@@ -53,7 +53,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function parents(int $level = null): QueryBuilder
+    public function parents(int $level = null): self
     {
         $condition = [
             [$this->model->getLeftAttributeName(), '<', $this->model->getLeftOffset()],
@@ -74,7 +74,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function siblings(): QueryBuilder
+    public function siblings(): self
     {
         return $this
             ->siblingsAndSelf()
@@ -84,7 +84,7 @@ class QueryBuilder extends Builder
     /**
      * @return QueryBuilder
      */
-    public function siblingsAndSelf(): QueryBuilder
+    public function siblingsAndSelf(): self
     {
         return $this
             ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
@@ -95,7 +95,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function prev(): QueryBuilder
+    public function prev(): self
     {
         return $this
             ->where($this->model->getRightAttributeName(), '=', $this->model->getLeftOffset() - 1)
@@ -107,7 +107,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function next(): QueryBuilder
+    public function next(): self
     {
         return $this
             ->where($this->model->getLeftAttributeName(), '=', $this->model->getRightOffset() + 1)
@@ -119,7 +119,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function prevSiblings(): QueryBuilder
+    public function prevSiblings(): self
     {
         return $this
             ->prevNodes()
@@ -131,7 +131,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function prevSibling(): QueryBuilder
+    public function prevSibling(): self
     {
         return $this
             ->prev()
@@ -143,7 +143,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function nextSibling(): QueryBuilder
+    public function nextSibling(): self
     {
         return $this
             ->next()
@@ -155,7 +155,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function nextSiblings(): QueryBuilder
+    public function nextSiblings(): self
     {
         return $this
             ->nextNodes()
@@ -167,7 +167,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function prevNodes(): QueryBuilder
+    public function prevNodes(): self
     {
         return $this
             ->where($this->model->getLeftAttributeName(), '<', $this->model->getLeftOffset())
@@ -179,7 +179,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function nextNodes(): QueryBuilder
+    public function nextNodes(): self
     {
         return $this
             ->where($this->model->getLeftAttributeName(), '>', $this->model->getLeftOffset())
@@ -189,7 +189,7 @@ class QueryBuilder extends Builder
     /**
      * @return QueryBuilder
      */
-    public function leaf(): QueryBuilder
+    public function leaf(): self
     {
         return $this
             ->where(
@@ -204,7 +204,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function leaves(int $level = null): QueryBuilder
+    public function leaves(int $level = null): self
     {
         return $this
             ->descendants($level)
@@ -221,7 +221,7 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function descendants(int $level = null, $andSelf = false, $backOrder = false): QueryBuilder
+    public function descendants(int $level = null, $andSelf = false, $backOrder = false): self
     {
         $attribute = $backOrder ? $this->model->getRightAttributeName() : $this->model->getLeftAttributeName();
 
@@ -249,9 +249,9 @@ class QueryBuilder extends Builder
      * @param bool $not
      * @param bool $andSelf
      *
-     * @return mixed
+     * @return $this
      */
-    public function whereDescendantOf($id, $boolean = 'and', $not = false, $andSelf = false): QueryBuilder
+    public function whereDescendantOf($id, $boolean = 'and', $not = false, $andSelf = false): self
     {
         $data = $this->model->getNodeBounds($id);
 
@@ -274,7 +274,7 @@ class QueryBuilder extends Builder
      * @since 2.0
      *
      */
-    public function whereNodeBetween($values, $boolean = 'and', $not = false): QueryBuilder
+    public function whereNodeBetween($values, $boolean = 'and', $not = false): self
     {
         [$left, $right] = $values;
 
