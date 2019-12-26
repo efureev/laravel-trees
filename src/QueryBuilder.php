@@ -399,9 +399,11 @@ class QueryBuilder extends Builder
      *
      * @return $this
      */
-    public function toLevel(int $level): self
+    public function toLevel(?int $level): self
     {
-        $this->query->where($this->model->getLevelAttributeName(), '<=', $level);
+        if ($level !== null) {
+            $this->query->where($this->model->getLevelAttributeName(), '<=', $level);
+        }
 
         return $this;
     }
