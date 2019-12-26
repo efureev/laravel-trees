@@ -3,6 +3,7 @@
 namespace Fureev\Trees\Tests\models;
 
 use Fureev\Trees\Config;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Class Page

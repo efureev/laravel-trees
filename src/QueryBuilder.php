@@ -392,4 +392,18 @@ class QueryBuilder extends Builder
         return $this;
     }
 
+    /**
+     * Returns items from level 0 to level <= {$level}
+     *
+     * @param int $level
+     *
+     * @return $this
+     */
+    public function toLevel(int $level): self
+    {
+        $this->query->where($this->model->getLevelAttributeName(), '<=', $level);
+
+        return $this;
+    }
+
 }

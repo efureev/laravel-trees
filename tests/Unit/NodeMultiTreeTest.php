@@ -3,11 +3,7 @@
 namespace Fureev\Trees\Tests\Unit;
 
 use Fureev\Trees\Config;
-use Fureev\Trees\Exceptions\{DeleteRootException,
-    Exception,
-    NotSupportedException,
-    TreeNeedValueException,
-    UniqueRootException};
+use Fureev\Trees\Exceptions\{DeleteRootException, Exception, TreeNeedValueException, UniqueRootException};
 use Fureev\Trees\Tests\models\Page;
 use Illuminate\Database\Eloquent\Model;
 
@@ -666,6 +662,17 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         foreach ($roots as $root) {
             $data = self::$modelClass::getNodeData($root->getKey());
             $this->assertEquals(['lft' => 1, 'rgt' => 2, 'lvl' => 0, 'parent_id' => null, 'tree_id' => $root->getKey()], $data);
+        }
+    }
+
+    public function testGetByLevels(): void
+    {
+        $treeChildrenMap = [4, 2, 3, 1];
+        static::makeTree(null, ...$treeChildrenMap);
+
+        for ($i = 0, $iMax = count($treeChildrenMap); $i < $iMax; $i++) {
+            $count = Page::toLevel($i)->count();
+            static::assertEquals(static::sum($treeChildrenMap, $i), $count);
         }
     }
 

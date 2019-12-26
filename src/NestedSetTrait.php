@@ -8,6 +8,7 @@ use Fureev\Trees\Exceptions\{DeleteRootException,
     TreeNeedValueException,
     UniqueRootException
 };
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -752,6 +753,17 @@ trait NestedSetTrait
     public function newCollection(array $models = []): Collection
     {
         return new Collection($models);
+    }
+
+    /**
+     * @param Builder $builder
+     * @param int $level
+     *
+     * @return Builder
+     */
+    public function scopeToLevel(Builder $builder, int $level)
+    {
+        return $builder->where($this->getLevelAttributeName(), '<=', $level);
     }
 
     /**

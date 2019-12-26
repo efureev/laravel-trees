@@ -135,4 +135,31 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
         return $model;
     }
 
+    protected static function sum(array $childMap, $level = null): int
+    {
+        if (!count($childMap)) {
+            return 0;
+        }
+
+        if ($level === null) {
+            $level = count($childMap);
+        }
+
+        $childMap = array_slice($childMap, 0, $level + 1);
+        $res = array_reduce($childMap, static function ($prev, $next) {
+            if (!$prev) {
+                return [$next, $next];
+            }
+
+            [$prevCount, $total] = $prev;
+
+            $prevTotal = $prevCount * $next;
+            $total = $prevTotal + $total;
+
+            return [$prevTotal, $total];
+        });
+
+        return $res[1];
+    }
+
 }
