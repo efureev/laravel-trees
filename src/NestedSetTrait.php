@@ -755,6 +755,16 @@ trait NestedSetTrait
     }
 
     /**
+     * Overwrite from `HasAttribute::getArrayableRelations` for excluding cycle: model->parent->model->parent->model...
+     *
+     * @return array
+     */
+/*    protected function getArrayableRelations()
+    {
+        return $this->unsetRelation('parent')->getArrayableItems($this->relations);
+    }*/
+
+    /**
      * Populate children relations for self and all descendants
      *
      * @param int $depth = null

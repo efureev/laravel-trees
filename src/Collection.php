@@ -15,9 +15,11 @@ class Collection extends BaseCollection
      *
      * Для того, что бы не делать лишние запросы в бд по этим релейшенам
      *
+     * @param bool $setParentRelations
+     *
      * @return $this
      */
-    public function linkNodes(): self
+    public function linkNodes($setParentRelations = true): self
     {
         if ($this->isEmpty()) {
             return $this;
@@ -32,11 +34,13 @@ class Collection extends BaseCollection
             }
 
             $children = $groupedNodes->get($node->getKey(), []);
-
-            /** @var Model|NestedSetTrait $child */
-            foreach ($children as $child) {
-                $child->setRelation('parent', $node);
+            if ($setParentRelations) {
+                /** @var Model|NestedSetTrait $child */
+                foreach ($children as $child) {
+                    $child->setRelation('parent', $node);
+                }
             }
+
             $node->setRelation('children', static::make($children));
         }
 
@@ -59,7 +63,7 @@ class Collection extends BaseCollection
             return new static;
         }
 
-        $this->linkNodes();
+        $this->linkNodes(false);
         $items = [];
 
         if ($fromNode) {
