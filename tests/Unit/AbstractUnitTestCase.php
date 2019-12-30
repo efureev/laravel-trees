@@ -63,6 +63,7 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
             Migrate::getColumns($table, $config);
             $table->string('title');
             $table->string('path')->nullable();
+            $table->json('params')->default('{}');
             if ($model::isSoftDelete()) {
                 $table->softDeletes();
             }
@@ -152,7 +153,6 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
             }
 
             [$prevCount, $total] = $prev;
-
             $prevTotal = $prevCount * $next;
             $total = $prevTotal + $total;
 

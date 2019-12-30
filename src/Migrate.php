@@ -22,7 +22,7 @@ class Migrate
     public function columns(Blueprint $table): void
     {
         if ($this->config->isMultiTree()) {
-            $table->unsignedInteger($this->config->getTreeAttributeName());
+            $table->{$this->config->getTreeAttributeType()}($this->config->getTreeAttributeName());
         }
 
         $table->unsignedInteger($this->config->getLeftAttributeName())->default(0);

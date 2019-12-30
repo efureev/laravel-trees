@@ -44,6 +44,14 @@ class Config implements Contracts\NestedSetConfig
      */
     protected $parentAttributeType = 'unsignedInteger';
 
+
+    /**
+     * Type of `tree` column
+     *
+     * @var string
+     */
+    protected $treeAttributeType = 'unsignedInteger';
+
     /**
      * Prefix for multi-tree node
      *
@@ -90,11 +98,10 @@ class Config implements Contracts\NestedSetConfig
                 $this->getRightAttributeName(),
                 $this->getLevelAttributeName(),
                 $this->getParentAttributeName(),
-            ], $this->isMultiTree()
-            ? [
-                $this->getTreeAttributeName(),
-            ]
-            : []
+            ],
+            $this->isMultiTree()
+                ? [$this->getTreeAttributeName()]
+                : []
         );
     }
 
@@ -117,9 +124,35 @@ class Config implements Contracts\NestedSetConfig
     /**
      * @return string
      */
+    public function getTreeAttributeType(): string
+    {
+        return $this->treeAttributeType;
+    }
+
+    /**
+     * @return string
+     */
     public function getCastForParentAttribute(): ?string
     {
-        switch ($this->getParentAttributeType()) {
+        return static::getCastForCustomAttribute($this->getParentAttributeType());
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCastForTreeAttribute(): ?string
+    {
+        return static::getCastForCustomAttribute($this->getTreeAttributeType());
+    }
+
+    /**
+     * @param string $attributeType
+     *
+     * @return string|null
+     */
+    protected static function getCastForCustomAttribute(string $attributeType): ?string
+    {
+        switch ($attributeType) {
             case 'integer':
             case 'unsignedInteger':
                 return 'integer';
@@ -180,6 +213,10 @@ class Config implements Contracts\NestedSetConfig
      */
     public function generateTreeId($model)
     {
+        if (method_exists($model, 'generateTreeId')) {
+            return $model->generateTreeId();
+        }
+
         return ((int)$model->max($this->getTreeAttributeName())) + 1;
     }
 

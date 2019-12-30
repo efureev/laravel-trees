@@ -97,7 +97,7 @@ class CollectionTest extends AbstractUnitTestCase
             static::assertTrue($root->equalTo($children1->parent));
         }
 
-        static::assertCount($expectedQueryCount, $root->getConnection()->getQueryLog());
+        static::assertCount($expectedQueryCount + $root->children->count(), $root->getConnection()->getQueryLog());
 
     }
 

@@ -2,9 +2,11 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
+use Faker\Provider\Uuid;
 use Fureev\Trees\Config;
 use Fureev\Trees\Exceptions\{DeleteRootException, Exception, TreeNeedValueException, UniqueRootException};
 use Fureev\Trees\Tests\models\Page;
+use Fureev\Trees\Tests\models\Structure;
 use Illuminate\Database\Eloquent\Model;
 
 class NodeMultiTreeTest extends AbstractUnitTestCase

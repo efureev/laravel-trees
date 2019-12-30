@@ -22,6 +22,7 @@ abstract class BaseModel extends Model
 
     protected $casts = [
         'path' => 'array',
+        'params' => 'array',
     ];
 
     public $timestamps = false;

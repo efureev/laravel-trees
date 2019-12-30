@@ -379,11 +379,11 @@ class QueryBuilder extends Builder
     }
 
     /**
-     * @param int $treeId
+     * @param int|string $treeId
      *
      * @return $this
      */
-    public function byTree(int $treeId): self
+    public function byTree($treeId): self
     {
         if ($this->model->isMultiTree()) {
             $this->query->where($this->model->getTreeAttributeName(), $treeId);

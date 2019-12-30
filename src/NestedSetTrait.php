@@ -8,7 +8,6 @@ use Fureev\Trees\Exceptions\{DeleteRootException,
     TreeNeedValueException,
     UniqueRootException
 };
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,11 +31,11 @@ trait NestedSetTrait
     protected $treeChange;
 
     /**
-     * @param int|null $tree
+     * @param int|string|null $tree
      *
      * @return $this
      */
-    public function makeRoot(?int $tree = null): self
+    public function makeRoot($tree = null): self
     {
         $this->operation = Config::OPERATION_MAKE_ROOT;
 

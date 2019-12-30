@@ -33,7 +33,6 @@ trait BaseNestedSetTrait
      */
     protected function bootIfNotBooted()
     {
-
         static::registerModelEvent('booting', static function ($model) {
             $model->setTreeConfig(static::buildTreeConfig());
         });
@@ -142,9 +141,9 @@ trait BaseNestedSetTrait
     }
 
     /**
-     * @return int|null
+     * @return int|mixed|null
      */
-    public function getTree(): ?int
+    public function getTree()
     {
         return $this->isMultiTree() ? $this->getAttributeValue($this->getTreeAttributeName()) : null;
     }
@@ -242,13 +241,16 @@ trait BaseNestedSetTrait
                     $this->getLevelAttributeName() => 'integer',
                     $this->getLeftAttributeName() => 'integer',
                     $this->getRightAttributeName() => 'integer',
-                    $this->getTreeAttributeName() => 'integer',
                 ],
                 $this->casts
             );
 
             if ($type = $this->getTreeConfig()->getCastForParentAttribute()) {
                 $casts[$this->getParentIdName()] = $type;
+            }
+
+            if ($type = $this->getTreeConfig()->getCastForTreeAttribute()) {
+                $casts[$this->getTreeAttributeName()] = $type;
             }
 
             $this->castsFill = $casts;
