@@ -55,11 +55,23 @@ class QueryBuilder extends Builder
     public function parents(int $level = null): self
     {
         $condition = [
-            [$this->model->getLeftAttributeName(), '<', $this->model->getLeftOffset()],
-            [$this->model->getRightAttributeName(), '>', $this->model->getRightOffset()],
+            [
+                $this->model->getLeftAttributeName(),
+                '<',
+                $this->model->getLeftOffset(),
+            ],
+            [
+                $this->model->getRightAttributeName(),
+                '>',
+                $this->model->getRightOffset(),
+            ],
         ];
         if ($level !== null) {
-            $condition[] = [$this->model->getLevelAttributeName(), '>=', $level];
+            $condition[] = [
+                $this->model->getLevelAttributeName(),
+                '>=',
+                $level,
+            ];
         }
 
         return $this
@@ -225,12 +237,24 @@ class QueryBuilder extends Builder
         $attribute = $backOrder ? $this->model->getRightAttributeName() : $this->model->getLeftAttributeName();
 
         $condition = [
-            [$attribute, $andSelf ? '>=' : '>', $this->model->getLeftOffset()],
-            [$attribute, $andSelf ? '<=' : '<', $this->model->getRightOffset()],
+            [
+                $attribute,
+                $andSelf ? '>=' : '>',
+        $this->model->getLeftOffset(),
+            ],
+            [
+                $attribute,
+                $andSelf ? '<=' : '<',
+            $this->model->getRightOffset(),
+            ],
         ];
 
         if ($level !== null) {
-            $condition[] = [$this->model->getLevelAttributeName(), '<=', $this->model->getLevel() + $level];
+            $condition[] = [
+                $this->model->getLevelAttributeName(),
+                '<=',
+                $this->model->getLevel() + $level,
+            ];
         }
 
         return $this
@@ -275,7 +299,10 @@ class QueryBuilder extends Builder
      */
     public function whereNodeBetween($values, $boolean = 'and', $not = false): self
     {
-        [$left, $right] = $values;
+        [
+            $left,
+            $right,
+        ] = $values;
 
         $this->query
             ->whereBetween($this->model->getTable() . '.' . $this->model->getLeftAttributeName(), [$left, $right], $boolean, $not);

@@ -245,7 +245,7 @@ trait BaseNestedSetTrait
                 parent::getCasts(),
                 [
                     $this->getLevelAttributeName() => 'integer',
-                    $this->getLeftAttributeName() => 'integer',
+                    $this->getLeftAttributeName()  => 'integer',
                     $this->getRightAttributeName() => 'integer',
                 ],
                 $this->casts

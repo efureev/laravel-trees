@@ -152,7 +152,7 @@ trait NestedSetTrait
         if (!$this->operation) {
             if ($this->parent) {
                 $this->saveWithParent();
-            } elseif ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
+            } else if ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
                 $this->saveWithOutTargets();
             }
         }
@@ -286,10 +286,10 @@ trait NestedSetTrait
 
             $query->update(
                 [
-                    $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . '- 1'),
+                    $this->getLeftAttributeName()  => new Expression($this->getLeftAttributeName() . '- 1'),
                     $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . '- 1'),
                     $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . '- 1'),
-                    $this->getParentIdName() => $parentId,
+                    $this->getParentIdName()       => $parentId,
                 ]
             );
 
@@ -650,7 +650,7 @@ trait NestedSetTrait
                 ->where($this->getLevelAttributeName(), '<', 0)
                 ->update(
                     [
-                        $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
+                        $this->getLeftAttributeName()  => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
                         $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . $delta),
                         $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()}"),
                     ]
@@ -665,10 +665,10 @@ trait NestedSetTrait
                 ->descendants(null, true)
                 ->update(
                     [
-                        $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
+                        $this->getLeftAttributeName()  => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
                         $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . $delta),
                         $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
-                        $this->getTreeAttributeName() => $tree,
+                        $this->getTreeAttributeName()  => $tree,
                     ]
                 );
 
@@ -696,10 +696,10 @@ trait NestedSetTrait
             ->descendants(null, true)
             ->update(
                 [
-                    $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . (1 - $left)),
+                    $this->getLeftAttributeName()  => new Expression($this->getLeftAttributeName() . ' + ' . (1 - $left)),
                     $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . (1 - $left)),
                     $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
-                    $this->getTreeAttributeName() => $tree,
+                    $this->getTreeAttributeName()  => $tree,
                 ]
             );
 
