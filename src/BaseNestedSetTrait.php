@@ -4,6 +4,8 @@ namespace Fureev\Trees;
 
 use Illuminate\Database\Eloquent\Model;
 
+use function method_exists;
+
 /**
  * Trait BaseNestedSetTrait
  *
@@ -27,30 +29,25 @@ trait BaseNestedSetTrait
      * @var boolean
      */
     protected $forceSave = false;
+    /** @var array|null For increase `getCast` function */
+    private $castsFill;
 
     /**
-     * @inheritDoc
+     * Get the value of the model's level
+     *
+     * @return int
      */
-    protected function bootIfNotBooted()
+    public function getLevel(): ?int
     {
-        static::registerModelEvent(
-            'booting',
-            static function ($model) {
-                $model->setTreeConfig(static::buildTreeConfig());
-            }
-        );
-
-        parent::bootIfNotBooted();
+        return $this->getAttributeValue($this->getLevelAttributeName());
     }
 
     /**
-     * Set tree-config to model
-     *
-     * @param Config $config
+     * @return string
      */
-    public function setTreeConfig(Config $config): void
+    public function getLevelAttributeName(): string
     {
-        $this->_tree_config = $config;
+        return $this->getTreeConfig()->getLevelAttributeName();
     }
 
     /**
@@ -66,81 +63,13 @@ trait BaseNestedSetTrait
     }
 
     /**
-     * Build custom tree-config
+     * Set tree-config to model
      *
-     * @return Config
+     * @param Config $config
      */
-    protected static function buildTreeConfig(): Config
+    public function setTreeConfig(Config $config): void
     {
-        return new Config();
-    }
-
-    /**
-     * @return string
-     */
-    public function getParentIdName(): string
-    {
-        return $this->getTreeConfig()->getParentAttributeName();
-    }
-
-    /**
-     * @return string
-     */
-    public function getLeftAttributeName(): string
-    {
-        return $this->getTreeConfig()->getLeftAttributeName();
-    }
-
-    /**
-     * @return string
-     */
-    public function getRightAttributeName(): string
-    {
-        return $this->getTreeConfig()->getRightAttributeName();
-    }
-
-    /**
-     * @return string
-     */
-    public function getLevelAttributeName(): string
-    {
-        return $this->getTreeConfig()->getLevelAttributeName();
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getTreeAttributeName(): ?string
-    {
-        return $this->getTreeConfig()->getTreeAttributeName();
-    }
-
-    /**
-     * @return bool
-     */
-    public function isMultiTree(): bool
-    {
-        return $this->getTreeConfig()->isMultiTree();
-    }
-
-    /**
-     * Get the value of the model's parent id key.
-     *
-     * @return integer|string|null
-     */
-    public function getParentId()
-    {
-        return $this->getAttributeValue($this->getParentIdName());
-    }
-
-    /**
-     * Get the value of the model's level
-     *
-     * @return int
-     */
-    public function getLevel(): ?int
-    {
-        return $this->getAttributeValue($this->getLevelAttributeName());
+        $this->_tree_config = $config;
     }
 
     /**
@@ -152,11 +81,35 @@ trait BaseNestedSetTrait
     }
 
     /**
+     * @return bool
+     */
+    public function isMultiTree(): bool
+    {
+        return $this->getTreeConfig()->isMultiTree();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getTreeAttributeName(): ?string
+    {
+        return $this->getTreeConfig()->getTreeAttributeName();
+    }
+
+    /**
      * @return int
      */
     public function getLeftOffset(): int
     {
         return $this->getAttributeValue($this->getLeftAttributeName());
+    }
+
+    /**
+     * @return string
+     */
+    public function getLeftAttributeName(): string
+    {
+        return $this->getTreeConfig()->getLeftAttributeName();
     }
 
     /**
@@ -168,16 +121,11 @@ trait BaseNestedSetTrait
     }
 
     /**
-     * @return array
+     * @return string
      */
-    public function getBounds(): array
+    public function getRightAttributeName(): string
     {
-        return array_map(
-            function ($column) {
-                return $this->getAttributeValue($column);
-            },
-            $this->getTreeConfig()->getColumns()
-        );
+        return $this->getTreeConfig()->getRightAttributeName();
     }
 
     /**
@@ -187,53 +135,6 @@ trait BaseNestedSetTrait
     {
         return new QueryBuilder($query);
     }
-
-    /**
-     * @param string|null $table
-     *
-     * @return QueryBuilder
-     */
-    public function newNestedSetQuery($table = null): QueryBuilder
-    {
-        $builder = self::isSoftDelete()
-            ? $this->withTrashed()
-            : $this->newQuery();
-
-        return $this->applyNestedSetScope($builder, $table);
-    }
-
-    /**
-     * @param mixed $query
-     * @param string $table
-     *
-     * @return mixed
-     */
-    public function applyNestedSetScope($query, $table = null)
-    {
-        if (!$scoped = $this->getScopeAttributes()) {
-            return $query;
-        }
-
-        if (!$table) {
-            $table = $this->getTable();
-        }
-
-        foreach ($scoped as $attribute) {
-            $query->where($table . '.' . $attribute, '=', $this->getAttributeValue($attribute));
-        }
-        return $query;
-    }
-
-    /**
-     * @return array
-     */
-    protected function getScopeAttributes(): array
-    {
-        return [];
-    }
-
-    /** @var array|null For increase `getCast` function */
-    private $castsFill;
 
     /**
      * @return array
@@ -266,11 +167,11 @@ trait BaseNestedSetTrait
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public static function isSoftDelete(): bool
+    public function getParentIdName(): string
     {
-        return \method_exists(static::class, 'bootSoftDeletes');
+        return $this->getTreeConfig()->getParentAttributeName();
     }
 
     /**
@@ -285,6 +186,16 @@ trait BaseNestedSetTrait
         }
 
         return $dirty;
+    }
+
+    /**
+     * Get the value of the model's parent id key.
+     *
+     * @return integer|string|null
+     */
+    public function getParentId()
+    {
+        return $this->getAttributeValue($this->getParentIdName());
     }
 
     /**
@@ -306,16 +217,6 @@ trait BaseNestedSetTrait
     }
 
     /**
-     *
-     */
-    protected function nodeRefresh(): void
-    {
-        if ($this->node !== null && $this->node->exists) {
-            $this->node->refresh();
-        }
-    }
-
-    /**
      * @param string|int|static $node
      *
      * @return array
@@ -328,5 +229,105 @@ trait BaseNestedSetTrait
         }
 
         return $this->newNestedSetQuery()->getPlainNodeData($node, true);
+    }
+
+    /**
+     * @return array
+     */
+    public function getBounds(): array
+    {
+        return array_map(
+            function ($column) {
+                return $this->getAttributeValue($column);
+            },
+            $this->getTreeConfig()->getColumns()
+        );
+    }
+
+    /**
+     * @param string|null $table
+     *
+     * @return QueryBuilder
+     */
+    public function newNestedSetQuery($table = null): QueryBuilder
+    {
+        $builder = self::isSoftDelete()
+            ? $this->withTrashed()
+            : $this->newQuery();
+
+        return $this->applyNestedSetScope($builder, $table);
+    }
+
+    /**
+     * @return bool
+     */
+    public static function isSoftDelete(): bool
+    {
+        return method_exists(static::class, 'bootSoftDeletes');
+    }
+
+    /**
+     * @param mixed $query
+     * @param string $table
+     *
+     * @return mixed
+     */
+    public function applyNestedSetScope($query, $table = null)
+    {
+        if (!$scoped = $this->getScopeAttributes()) {
+            return $query;
+        }
+
+        if (!$table) {
+            $table = $this->getTable();
+        }
+
+        foreach ($scoped as $attribute) {
+            $query->where($table . '.' . $attribute, '=', $this->getAttributeValue($attribute));
+        }
+        return $query;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getScopeAttributes(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function bootIfNotBooted()
+    {
+        static::registerModelEvent(
+            'booting',
+            static function ($model) {
+                $model->setTreeConfig(static::buildTreeConfig());
+            }
+        );
+
+        parent::bootIfNotBooted();
+    }
+
+    /**
+     * Build custom tree-config
+     *
+     * @return Config
+     */
+    protected static function buildTreeConfig(): Config
+    {
+        return new Config();
+    }
+
+    /**
+     *
+     */
+    protected function nodeRefresh(): void
+    {
+        if ($this->node !== null && $this->node->exists) {
+            $this->node->refresh();
+        }
     }
 }

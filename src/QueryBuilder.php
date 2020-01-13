@@ -34,6 +34,18 @@ class QueryBuilder extends Builder
     }
 
     /**
+     * @return $this
+     */
+    public function treeCondition(): self
+    {
+        if ($this->model->isMultiTree() && $this->model->getTree() !== null) {
+            $this->query->where($this->model->getTreeAttributeName(), $this->model->getTree());
+        }
+
+        return $this;
+    }
+
+    /**
      * Exclude root node from the result.
      *
      * @return $this
@@ -81,6 +93,21 @@ class QueryBuilder extends Builder
     }
 
     /**
+     * Order by node position.
+     *
+     * @param string $dir
+     *
+     * @return $this
+     */
+    public function defaultOrder($dir = 'asc'): self
+    {
+        $this->query->orders = null;
+        $this->query->orderBy($this->model->getLeftAttributeName(), $dir);
+
+        return $this;
+    }
+
+    /**
      * Get all siblings
      *
      * @return QueryBuilder
@@ -102,30 +129,6 @@ class QueryBuilder extends Builder
     }
 
     /**
-     * Prev node
-     *
-     * @return QueryBuilder
-     */
-    public function prev(): self
-    {
-        return $this
-            ->where($this->model->getRightAttributeName(), '=', $this->model->getLeftOffset() - 1)
-            ->treeCondition();
-    }
-
-    /**
-     * Next node
-     *
-     * @return QueryBuilder
-     */
-    public function next(): self
-    {
-        return $this
-            ->where($this->model->getLeftAttributeName(), '=', $this->model->getRightOffset() + 1)
-            ->treeCondition();
-    }
-
-    /**
      * Get query for siblings before the node.
      *
      * @return QueryBuilder
@@ -134,42 +137,6 @@ class QueryBuilder extends Builder
     {
         return $this
             ->prevNodes()
-            ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
-    }
-
-    /**
-     * Get query for sibling before the node.
-     *
-     * @return QueryBuilder
-     */
-    public function prevSibling(): self
-    {
-        return $this
-            ->prev()
-            ->where($this->model->getParentIdName(), $this->model->getParentId());
-    }
-
-    /**
-     * Get query for sibling before the node.
-     *
-     * @return QueryBuilder
-     */
-    public function nextSibling(): self
-    {
-        return $this
-            ->next()
-            ->where($this->model->getParentIdName(), $this->model->getParentId());
-    }
-
-    /**
-     * Get query for siblings after the node.
-     *
-     * @return QueryBuilder
-     */
-    public function nextSiblings(): self
-    {
-        return $this
-            ->nextNodes()
             ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
     }
 
@@ -186,6 +153,66 @@ class QueryBuilder extends Builder
     }
 
     /**
+     * Get query for sibling before the node.
+     *
+     * @return QueryBuilder
+     */
+    public function prevSibling(): self
+    {
+        return $this
+            ->prev()
+            ->where($this->model->getParentIdName(), $this->model->getParentId());
+    }
+
+    /**
+     * Prev node
+     *
+     * @return QueryBuilder
+     */
+    public function prev(): self
+    {
+        return $this
+            ->where($this->model->getRightAttributeName(), '=', ($this->model->getLeftOffset() - 1))
+            ->treeCondition();
+    }
+
+    /**
+     * Get query for sibling before the node.
+     *
+     * @return QueryBuilder
+     */
+    public function nextSibling(): self
+    {
+        return $this
+            ->next()
+            ->where($this->model->getParentIdName(), $this->model->getParentId());
+    }
+
+    /**
+     * Next node
+     *
+     * @return QueryBuilder
+     */
+    public function next(): self
+    {
+        return $this
+            ->where($this->model->getLeftAttributeName(), '=', ($this->model->getRightOffset() + 1))
+            ->treeCondition();
+    }
+
+    /**
+     * Get query for siblings after the node.
+     *
+     * @return QueryBuilder
+     */
+    public function nextSiblings(): self
+    {
+        return $this
+            ->nextNodes()
+            ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
+    }
+
+    /**
      * Get query for nodes after current node.
      *
      * @return QueryBuilder
@@ -195,6 +222,18 @@ class QueryBuilder extends Builder
         return $this
             ->where($this->model->getLeftAttributeName(), '>', $this->model->getLeftOffset())
             ->treeCondition();
+    }
+
+    /**
+     * @param int|null $level
+     *
+     * @return QueryBuilder
+     */
+    public function leaves(int $level = null): self
+    {
+        return $this
+            ->descendants($level)
+            ->leaf();
     }
 
     /**
@@ -208,18 +247,6 @@ class QueryBuilder extends Builder
                 '=',
                 new Expression($this->model->getRightAttributeName() . ' - 1')
             );
-    }
-
-    /**
-     * @param int|null $level
-     *
-     * @return QueryBuilder
-     */
-    public function leaves(int $level = null): self
-    {
-        return $this
-            ->descendants($level)
-            ->leaf();
     }
 
     /**
@@ -240,12 +267,12 @@ class QueryBuilder extends Builder
             [
                 $attribute,
                 $andSelf ? '>=' : '>',
-        $this->model->getLeftOffset(),
+                $this->model->getLeftOffset(),
             ],
             [
                 $attribute,
                 $andSelf ? '<=' : '<',
-            $this->model->getRightOffset(),
+                $this->model->getRightOffset(),
             ],
         ];
 
@@ -253,7 +280,7 @@ class QueryBuilder extends Builder
             $condition[] = [
                 $this->model->getLevelAttributeName(),
                 '<=',
-                $this->model->getLevel() + $level,
+                ($this->model->getLevel() + $level),
             ];
         }
 
@@ -305,7 +332,15 @@ class QueryBuilder extends Builder
         ] = $values;
 
         $this->query
-            ->whereBetween($this->model->getTable() . '.' . $this->model->getLeftAttributeName(), [$left, $right], $boolean, $not);
+            ->whereBetween(
+                $this->model->getTable() . '.' . $this->model->getLeftAttributeName(),
+                [
+                    $left,
+                    $right,
+                ],
+                $boolean,
+                $not
+            );
 
         if ($this->model->isMultiTree()) {
             $treeId = end($values);
@@ -351,40 +386,6 @@ class QueryBuilder extends Builder
         return (array)$data;
     }
 
-
-    /**
-     * Get wrapped column names.
-     *
-     * @return array
-     */
-    protected function wrappedColumns(): array
-    {
-        $grammar = $this->query->getGrammar();
-
-        return array_map(
-            static function ($col) use ($grammar) {
-                return $grammar->wrap($col);
-            },
-            $this->model->getTreeConfig()->getColumns()
-        );
-    }
-
-
-    /**
-     * Order by node position.
-     *
-     * @param string $dir
-     *
-     * @return $this
-     */
-    public function defaultOrder($dir = 'asc'): self
-    {
-        $this->query->orders = null;
-        $this->query->orderBy($this->model->getLeftAttributeName(), $dir);
-
-        return $this;
-    }
-
     /**
      * @param string|null $table
      *
@@ -393,18 +394,6 @@ class QueryBuilder extends Builder
     public function applyNestedSetScope($table = null): self
     {
         return $this->model->applyNestedSetScope($this, $table);
-    }
-
-    /**
-     * @return $this
-     */
-    public function treeCondition(): self
-    {
-        if ($this->model->isMultiTree() && $this->model->getTree() !== null) {
-            $this->query->where($this->model->getTreeAttributeName(), $this->model->getTree());
-        }
-
-        return $this;
     }
 
     /**
@@ -435,5 +424,22 @@ class QueryBuilder extends Builder
         }
 
         return $this;
+    }
+
+    /**
+     * Get wrapped column names.
+     *
+     * @return array
+     */
+    protected function wrappedColumns(): array
+    {
+        $grammar = $this->query->getGrammar();
+
+        return array_map(
+            static function ($col) use ($grammar) {
+                return $grammar->wrap($col);
+            },
+            $this->model->getTreeConfig()->getColumns()
+        );
     }
 }

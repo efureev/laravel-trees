@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder;
+use InvalidArgumentException;
 
 /**
  * Class BaseRelation
@@ -26,36 +27,10 @@ abstract class BaseRelation extends Relation
     public function __construct(QueryBuilder $builder, Model $parent)
     {
         if (!Config::isNode($parent)) {
-            throw new \InvalidArgumentException('Model must be node.');
+            throw new InvalidArgumentException('Model must be node.');
         }
         parent::__construct($builder, $parent);
     }
-
-    /**
-     * @param Model $model
-     * @param $related
-     *
-     * @return bool
-     */
-    abstract protected function matches(Model $model, $related): bool;
-
-    /**
-     * @param QueryBuilder $query
-     * @param Model $model
-     *
-     * @return void
-     */
-    abstract protected function addEagerConstraint($query, $model): void;
-
-    /**
-     * @param $hash
-     * @param $table
-     * @param $lft
-     * @param $rgt
-     *
-     * @return string
-     */
-    abstract protected function relationExistenceCondition($hash, $table, $lft, $rgt): string;
 
     /**
      * Initialize the relation on a set of models.
@@ -95,8 +70,8 @@ abstract class BaseRelation extends Relation
         optional($models[0])->applyNestedSetScope($this->query);
         $this->query->whereNested(
             function (Builder $inner) use ($models) {
-            // We will use this query in order to apply constraints to the
-            // base query builder
+                // We will use this query in order to apply constraints to the
+                // base query builder
                 $outer = $this->parent->newQuery()->setQuery($inner);
                 foreach ($models as $model) {
                     $this->addEagerConstraint($outer, $model);
@@ -104,6 +79,14 @@ abstract class BaseRelation extends Relation
             }
         );
     }
+
+    /**
+     * @param QueryBuilder $query
+     * @param Model $model
+     *
+     * @return void
+     */
+    abstract protected function addEagerConstraint($query, $model): void;
 
     /**
      * Match the eagerly loaded results to their parents.
@@ -141,8 +124,26 @@ abstract class BaseRelation extends Relation
         return $result;
     }
 
+    /**
+     * @param Model $model
+     * @param $related
+     *
+     * @return bool
+     */
+    abstract protected function matches(Model $model, $related): bool;
+
     public function getRelationQuery(EloquentBuilder $query, EloquentBuilder $parent, $columns = ['*'])
     {
         dd(debug_print_backtrace(), 'stop here: ' . __FUNCTION__);
     }
+
+    /**
+     * @param $hash
+     * @param $table
+     * @param $lft
+     * @param $rgt
+     *
+     * @return string
+     */
+    abstract protected function relationExistenceCondition($hash, $table, $lft, $rgt): string;
 }

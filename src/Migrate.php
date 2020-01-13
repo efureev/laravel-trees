@@ -14,6 +14,20 @@ class Migrate
     /** @var NestedSetConfig */
     protected $config;
 
+    public function __construct(NestedSetConfig $config)
+    {
+        $this->config = $config;
+    }
+
+    /**
+     * @param Blueprint $table
+     * @param NestedSetConfig $config
+     */
+    public static function getColumns(Blueprint $table, NestedSetConfig $config): void
+    {
+        (new static($config))->columns($table);
+    }
+
     /**
      * Add default nested set columns to the table. Also create an index.
      *
@@ -35,29 +49,49 @@ class Migrate
 //        $table->index($this->getDefaultColumns());
 
         if ($this->config->isMultiTree()) {
-            $table->index([$this->config->getTreeAttributeName()], $table->getTable() . "_{$this->config->getTreeAttributeName()}_idx");
-            $table->index([$this->config->getTreeAttributeName(), $this->config->getLeftAttributeName(), $this->config->getRightAttributeName()], $table->getTable() . "_{$this->config->getLeftAttributeName()}_idx");
-            $table->index([$this->config->getTreeAttributeName(), $this->config->getRightAttributeName()], $table->getTable() . "_{$this->config->getRightAttributeName()}_idx");
-            $table->index([$this->config->getTreeAttributeName(), $this->config->getParentAttributeName()], $table->getTable() . "_{$this->config->getParentAttributeName()}_idx");
+            $table->index(
+                [$this->config->getTreeAttributeName()],
+                $table->getTable() . "_{$this->config->getTreeAttributeName()}_idx"
+            );
+            $table->index(
+                [
+                    $this->config->getTreeAttributeName(),
+                    $this->config->getLeftAttributeName(),
+                    $this->config->getRightAttributeName(),
+                ],
+                $table->getTable() . "_{$this->config->getLeftAttributeName()}_idx"
+            );
+            $table->index(
+                [
+                    $this->config->getTreeAttributeName(),
+                    $this->config->getRightAttributeName(),
+                ],
+                $table->getTable() . "_{$this->config->getRightAttributeName()}_idx"
+            );
+            $table->index(
+                [
+                    $this->config->getTreeAttributeName(),
+                    $this->config->getParentAttributeName(),
+                ],
+                $table->getTable() . "_{$this->config->getParentAttributeName()}_idx"
+            );
         } else {
-            $table->index([$this->config->getLeftAttributeName(), $this->config->getRightAttributeName()], $table->getTable() . "_{$this->config->getLeftAttributeName()}_idx");
-            $table->index([$this->config->getRightAttributeName()], $table->getTable() . "_{$this->config->getRightAttributeName()}_idx");
-            $table->index([$this->config->getParentAttributeName()], $table->getTable() . "_{$this->config->getParentAttributeName()}_idx");
+            $table->index(
+                [
+                    $this->config->getLeftAttributeName(),
+                    $this->config->getRightAttributeName(),
+                ],
+                $table->getTable() . "_{$this->config->getLeftAttributeName()}_idx"
+            );
+            $table->index(
+                [$this->config->getRightAttributeName()],
+                $table->getTable() . "_{$this->config->getRightAttributeName()}_idx"
+            );
+            $table->index(
+                [$this->config->getParentAttributeName()],
+                $table->getTable() . "_{$this->config->getParentAttributeName()}_idx"
+            );
         }
-    }
-
-    public function __construct(NestedSetConfig $config)
-    {
-        $this->config = $config;
-    }
-
-    /**
-     * @param Blueprint $table
-     * @param NestedSetConfig $config
-     */
-    public static function getColumns(Blueprint $table, NestedSetConfig $config): void
-    {
-        (new static($config))->columns($table);
     }
 
     /**

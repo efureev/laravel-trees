@@ -17,9 +17,9 @@
 <!--    <rule ref="Squiz.Commenting.InlineComment"/>-->
 <!--    <rule ref="Squiz.Commenting.PostStatementComment"/>-->
     <rule ref="Squiz.Commenting.VariableComment"/>
-<!--    <rule ref="Squiz.Formatting.OperatorBracket"/>-->
-<!--    <rule ref="Squiz.Functions.FunctionDeclarationArgumentSpacing"/>-->
-<!--    <rule ref="Squiz.Operators.ComparisonOperatorUsage"/>-->
+    <rule ref="Squiz.Formatting.OperatorBracket"/>
+    <rule ref="Squiz.Functions.FunctionDeclarationArgumentSpacing"/>
+    <rule ref="Squiz.Operators.ComparisonOperatorUsage"/>
 <!--    <rule ref="Squiz.PHP.DisallowInlineIf"/>-->
 <!--    <rule ref="Squiz.Scope.MethodScope"/>-->
 <!--    <rule ref="Squiz.Strings.ConcatenationSpacing"/>-->
@@ -30,20 +30,18 @@
 <!--    <rule ref="Squiz.WhiteSpace.OperatorSpacing"/>-->
 <!--    <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace"/>-->
 <!--    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>-->
-<!--    <rule ref="Generic.Commenting.Todo"/>-->
+    <rule ref="Generic.Commenting.Todo"/>
 <!--    <rule ref="Generic.ControlStructures.DisallowYodaConditions"/>-->
 <!--    <rule ref="Generic.ControlStructures.InlineControlStructure"/>-->
 <!--    <rule ref="Generic.Formatting.DisallowMultipleStatements"/>-->
 <!--    <rule ref="Generic.Formatting.SpaceAfterCast"/>-->
-<!--    <rule ref="Generic.NamingConventions.ConstructorName"/>-->
-<!--    <rule ref="Generic.PHP.DeprecatedFunctions"/>-->
-<!--    <rule ref="Generic.PHP.LowerCaseKeyword"/>-->
+    <rule ref="Generic.NamingConventions.ConstructorName"/>
+    <rule ref="Generic.PHP.DeprecatedFunctions"/>
+    <rule ref="Generic.PHP.LowerCaseKeyword"/>
 <!--    <rule ref="Generic.Strings.UnnecessaryStringConcat"/>-->
 <!--    <rule ref="Generic.WhiteSpace.IncrementDecrementSpacing"/>-->
-<!--    <rule ref="PSR2.Classes.PropertyDeclaration"/>-->
-<!--    <rule ref="PSR2.Methods.MethodDeclaration"/>-->
 <!--    <rule ref="PSR2.Files.EndFileNewline"/>-->
-<!--    <rule ref="PSR12.Files.OpenTag"/>-->
+    <rule ref="PSR12.Files.OpenTag"/>
 <!--    <rule ref="Zend.Files.ClosingTag"/>-->
 
     <!-- PEAR uses warnings for inline control structures, so switch back to errors -->

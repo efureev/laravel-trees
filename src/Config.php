@@ -78,11 +78,13 @@ class Config implements Contracts\NestedSetConfig
     }
 
     /**
+     * @param Model $model
+     *
      * @return bool
      */
-    public function isMultiTree(): bool
+    public static function isNode($model): bool
     {
-        return $this->treeAttribute !== null;
+        return is_object($model) && (class_uses_recursive($model)[NestedSetTrait::class]) ?? null;
     }
 
     /**
@@ -103,65 +105,6 @@ class Config implements Contracts\NestedSetConfig
                 ? [$this->getTreeAttributeName()]
                 : []
         );
-    }
-
-    /**
-     * @return string
-     */
-    public function getParentAttributeName(): string
-    {
-        return $this->parentAttribute;
-    }
-
-    /**
-     * @return string
-     */
-    public function getParentAttributeType(): string
-    {
-        return $this->parentAttributeType;
-    }
-
-    /**
-     * @return string
-     */
-    public function getTreeAttributeType(): string
-    {
-        return $this->treeAttributeType;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCastForParentAttribute(): ?string
-    {
-        return static::getCastForCustomAttribute($this->getParentAttributeType());
-    }
-
-    /**
-     * @return string|null
-     */
-    public function getCastForTreeAttribute(): ?string
-    {
-        return static::getCastForCustomAttribute($this->getTreeAttributeType());
-    }
-
-    /**
-     * @param string $attributeType
-     *
-     * @return string|null
-     */
-    protected static function getCastForCustomAttribute(string $attributeType): ?string
-    {
-        switch ($attributeType) {
-            case 'integer':
-            case 'unsignedInteger':
-                return 'integer';
-            case 'string':
-            case 'uuid':
-                return 'uuid';
-        }
-
-        return null;
     }
 
     /**
@@ -189,11 +132,78 @@ class Config implements Contracts\NestedSetConfig
     }
 
     /**
+     * @return string
+     */
+    public function getParentAttributeName(): string
+    {
+        return $this->parentAttribute;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMultiTree(): bool
+    {
+        return $this->treeAttribute !== null;
+    }
+
+    /**
      * @return string|null
      */
     public function getTreeAttributeName(): ?string
     {
         return $this->treeAttribute;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCastForParentAttribute(): ?string
+    {
+        return static::getCastForCustomAttribute($this->getParentAttributeType());
+    }
+
+    /**
+     * @param string $attributeType
+     *
+     * @return string|null
+     */
+    protected static function getCastForCustomAttribute(string $attributeType): ?string
+    {
+        switch ($attributeType) {
+            case 'integer':
+            case 'unsignedInteger':
+                return 'integer';
+            case 'string':
+            case 'uuid':
+                return 'uuid';
+        }
+
+        return null;
+    }
+
+    /**
+     * @return string
+     */
+    public function getParentAttributeType(): string
+    {
+        return $this->parentAttributeType;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCastForTreeAttribute(): ?string
+    {
+        return static::getCastForCustomAttribute($this->getTreeAttributeType());
+    }
+
+    /**
+     * @return string
+     */
+    public function getTreeAttributeType(): string
+    {
+        return $this->treeAttributeType;
     }
 
     /**
@@ -217,16 +227,6 @@ class Config implements Contracts\NestedSetConfig
             return $model->generateTreeId();
         }
 
-        return ((int)$model->max($this->getTreeAttributeName())) + 1;
-    }
-
-    /**
-     * @param Model $model
-     *
-     * @return bool
-     */
-    public static function isNode($model): bool
-    {
-        return is_object($model) && (class_uses_recursive($model)[NestedSetTrait::class]) ?? null;
+        return (((int)$model->max($this->getTreeAttributeName())) + 1);
     }
 }

@@ -9,6 +9,40 @@ class Collection extends BaseCollection
 {
 
     /**
+     * Build a tree from a list of nodes. Each item will have set children relation.
+     *
+     * If `$fromNode` is provided, the tree will contain only descendants of that node.
+     *
+     * @param Model|string|int|null $fromNode
+     *
+     * @return $this
+     */
+    public function toTree($fromNode = null): self
+    {
+        if ($this->isEmpty()) {
+            return new static();
+        }
+
+        $this->linkNodes(false);
+        $items = [];
+
+        if ($fromNode) {
+            if ($fromNode instanceof Model) {
+                $fromNode = $fromNode->getKey();
+            }
+        }
+
+        /** @var Model|NestedSetTrait $node */
+        foreach ($this->items as $node) {
+            if ($node->getParentId() === $fromNode) {
+                $items[] = $node;
+            }
+        }
+
+        return new static($items);
+    }
+
+    /**
      * Fill `parent` and `children` relationships for every node in the collection.
      *
      * This will overwrite any previously set relations.
@@ -45,41 +79,6 @@ class Collection extends BaseCollection
         }
 
         return $this;
-    }
-
-
-    /**
-     * Build a tree from a list of nodes. Each item will have set children relation.
-     *
-     * If `$fromNode` is provided, the tree will contain only descendants of that node.
-     *
-     * @param Model|string|int|null $fromNode
-     *
-     * @return $this
-     */
-    public function toTree($fromNode = null): self
-    {
-        if ($this->isEmpty()) {
-            return new static();
-        }
-
-        $this->linkNodes(false);
-        $items = [];
-
-        if ($fromNode) {
-            if ($fromNode instanceof Model) {
-                $fromNode = $fromNode->getKey();
-            }
-        }
-
-        /** @var Model|NestedSetTrait $node */
-        foreach ($this->items as $node) {
-            if ($node->getParentId() === $fromNode) {
-                $items[] = $node;
-            }
-        }
-
-        return new static($items);
     }
 
     /**
