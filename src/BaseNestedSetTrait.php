@@ -15,7 +15,7 @@ trait BaseNestedSetTrait
     /** @var Config */
     protected $_tree_config;
 
-    /** @var int */
+    /** @var integer */
     protected $operation;
 
     /** @var Model|NestedSetTrait|BaseNestedSetTrait */
@@ -24,7 +24,7 @@ trait BaseNestedSetTrait
     /**
      * Forced save
      *
-     * @var bool
+     * @var boolean
      */
     protected $forceSave = false;
 

@@ -62,7 +62,7 @@ class Config implements Contracts\NestedSetConfig
     /**
      * Auto generation ID for a new tree if TRUE. If FALSE: on empty treeId - will be exception.
      *
-     * @var bool
+     * @var boolean
      */
     protected $autoGenerateTreeId = true;
 
