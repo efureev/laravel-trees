@@ -2,7 +2,6 @@
 
 namespace Fureev\Trees;
 
-
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -407,5 +406,4 @@ class QueryBuilder extends Builder
 
         return $this;
     }
-
 }

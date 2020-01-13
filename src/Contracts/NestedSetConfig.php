@@ -40,5 +40,4 @@ interface NestedSetConfig
      * @return bool
      */
     public function isAutoGenerateTreeId(): bool;
-
 }

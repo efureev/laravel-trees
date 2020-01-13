@@ -49,7 +49,6 @@ class Migrate
     public function __construct(NestedSetConfig $config)
     {
         $this->config = $config;
-
     }
 
     /**

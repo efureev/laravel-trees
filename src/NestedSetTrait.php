@@ -150,17 +150,15 @@ trait NestedSetTrait
         $this->nodeRefresh();
 
         if (!$this->operation) {
-
             if ($this->parent) {
                 $this->saveWithParent();
-            } else if ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
+            } elseif ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
                 $this->saveWithOutTargets();
             }
         }
 
         switch ($this->operation) {
             case Config::OPERATION_MAKE_ROOT:
-
                 if (!$this->isMultiTree() && ($exist = $this->root()->first()) !== null) {
                     throw new UniqueRootException($exist);
                 }
@@ -644,13 +642,12 @@ trait NestedSetTrait
                 ->update([
                     $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
                     $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . $delta),
-                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . -$depth),
+                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
                     $this->getTreeAttributeName() => $tree,
                 ]);
 
             $this->shift($right + 1, null, $left - $right - 1);
         }
-
     }
 
     /**
@@ -674,7 +671,7 @@ trait NestedSetTrait
             ->update([
                 $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . (1 - $left)),
                 $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . (1 - $left)),
-                $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . -$depth),
+                $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
                 $this->getTreeAttributeName() => $tree,
             ]);
 
@@ -695,7 +692,6 @@ trait NestedSetTrait
             }
 
             foreach ([$this->getLeftAttributeName(), $this->getRightAttributeName()] as $i => $attribute) {
-
                 $query = $this->query();
                 if ($this->isMultiTree()) {
                     $query->where($this->getTreeAttributeName(), $tree);

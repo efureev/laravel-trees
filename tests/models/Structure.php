@@ -2,7 +2,6 @@
 
 namespace Fureev\Trees\Tests\models;
 
-use Faker\Provider\Uuid;
 use Fureev\Trees\Config;
 
 /**
@@ -26,12 +25,14 @@ class Structure extends Page
 
     protected static function buildTreeConfig(): Config
     {
-        return new Config([
-            'treeAttribute' => 'tree_id',
-            'parentAttributeType' => 'uuid',
-            'treeAttributeType' => 'uuid',
-            'autoGenerateTreeId' => false,
-        ]);
+        return new Config(
+            [
+                'treeAttribute' => 'tree_id',
+                'parentAttributeType' => 'uuid',
+                'treeAttributeType' => 'uuid',
+                'autoGenerateTreeId' => false,
+            ]
+        );
     }
 
     /*public function generateTreeId()

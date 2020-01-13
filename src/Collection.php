@@ -60,7 +60,7 @@ class Collection extends BaseCollection
     public function toTree($fromNode = null): self
     {
         if ($this->isEmpty()) {
-            return new static;
+            return new static();
         }
 
         $this->linkNodes(false);
@@ -93,5 +93,4 @@ class Collection extends BaseCollection
             return $item->getParentId() === null;
         });
     }
-
 }

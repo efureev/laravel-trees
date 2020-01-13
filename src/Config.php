@@ -229,5 +229,4 @@ class Config implements Contracts\NestedSetConfig
     {
         return is_object($model) && (class_uses_recursive($model)[NestedSetTrait::class]) ?? null;
     }
-
 }
