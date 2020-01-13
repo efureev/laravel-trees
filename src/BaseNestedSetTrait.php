@@ -33,9 +33,12 @@ trait BaseNestedSetTrait
      */
     protected function bootIfNotBooted()
     {
-        static::registerModelEvent('booting', static function ($model) {
-            $model->setTreeConfig(static::buildTreeConfig());
-        });
+        static::registerModelEvent(
+            'booting',
+            static function ($model) {
+                $model->setTreeConfig(static::buildTreeConfig());
+            }
+        );
 
         parent::bootIfNotBooted();
     }
@@ -169,9 +172,12 @@ trait BaseNestedSetTrait
      */
     public function getBounds(): array
     {
-        return array_map(function ($column) {
-            return $this->getAttributeValue($column);
-        }, $this->getTreeConfig()->getColumns());
+        return array_map(
+            function ($column) {
+                return $this->getAttributeValue($column);
+            },
+            $this->getTreeConfig()->getColumns()
+        );
     }
 
     /**

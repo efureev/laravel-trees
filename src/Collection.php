@@ -89,8 +89,10 @@ class Collection extends BaseCollection
      */
     public function getRoots(): self
     {
-        return $this->filter(static function ($item) {
-            return $item->getParentId() === null;
-        });
+        return $this->filter(
+            static function ($item) {
+                return $item->getParentId() === null;
+            }
+        );
     }
 }

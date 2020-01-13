@@ -334,9 +334,12 @@ class QueryBuilder extends Builder
     {
         $grammar = $this->query->getGrammar();
 
-        return array_map(static function ($col) use ($grammar) {
-            return $grammar->wrap($col);
-        }, $this->model->getTreeConfig()->getColumns());
+        return array_map(
+            static function ($col) use ($grammar) {
+                return $grammar->wrap($col);
+            },
+            $this->model->getTreeConfig()->getColumns()
+        );
     }
 
 

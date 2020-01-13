@@ -68,7 +68,7 @@ trait NestedSetTrait
     public function prependTo(Model $node): self
     {
         $this->operation = Config::OPERATION_PREPEND_TO;
-        $this->node = $node;
+        $this->node      = $node;
 
         return $this;
     }
@@ -81,7 +81,7 @@ trait NestedSetTrait
     public function appendTo($node): self
     {
         $this->operation = Config::OPERATION_APPEND_TO;
-        $this->node = $node;
+        $this->node      = $node;
 
         return $this;
     }
@@ -94,7 +94,7 @@ trait NestedSetTrait
     public function insertBefore($node): self
     {
         $this->operation = Config::OPERATION_INSERT_BEFORE;
-        $this->node = $node;
+        $this->node      = $node;
 
         return $this;
     }
@@ -107,7 +107,7 @@ trait NestedSetTrait
     public function insertAfter($node): self
     {
         $this->operation = Config::OPERATION_INSERT_AFTER;
-        $this->node = $node;
+        $this->node      = $node;
 
         return $this;
     }
@@ -139,7 +139,7 @@ trait NestedSetTrait
     protected function saveWithParent(): void
     {
         $this->operation = Config::OPERATION_APPEND_TO;
-        $this->node = $this->parent;
+        $this->node      = $this->parent;
     }
 
     /**
@@ -207,7 +207,7 @@ trait NestedSetTrait
     public function afterInsert(): void
     {
         $this->operation = null;
-        $this->node = null;
+        $this->node      = null;
     }
 
     /**
@@ -274,7 +274,7 @@ trait NestedSetTrait
      */
     public function afterDelete(): void
     {
-        $left = $this->getLeftOffset();
+        $left  = $this->getLeftOffset();
         $right = $this->getRightOffset();
 
         if ($this->operation === Config::OPERATION_DELETE_ALL || $this->isLeaf()) {
@@ -284,18 +284,20 @@ trait NestedSetTrait
 
             $query = $this->newNestedSetQuery()->descendants();
 
-            $query->update([
-                $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . '- 1'),
-                $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . '- 1'),
-                $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . '- 1'),
-                $this->getParentIdName() => $parentId,
-            ]);
+            $query->update(
+                [
+                    $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . '- 1'),
+                    $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . '- 1'),
+                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . '- 1'),
+                    $this->getParentIdName() => $parentId,
+                ]
+            );
 
             $this->shift($right + 1, null, -2);
         }
 
         $this->operation = null;
-        $this->node = null;
+        $this->node      = null;
     }
 
 
@@ -360,8 +362,8 @@ trait NestedSetTrait
                 break;
         }
 
-        $this->operation = null;
-        $this->node = null;
+        $this->operation  = null;
+        $this->node       = null;
         $this->treeChange = null;
 
         if ($this->forceSave) {
@@ -394,50 +396,68 @@ trait NestedSetTrait
      */
     public static function bootNestedSetTrait(): void
     {
-        static::creating(static function ($model) {
+        static::creating(
+            static function ($model) {
             /** @var NestedSetTrait $model */
-            $model->beforeInsert();
-        });
+                $model->beforeInsert();
+            }
+        );
 
-        static::created(static function ($model) {
+        static::created(
+            static function ($model) {
             /** @var NestedSetTrait $model */
-            $model->afterInsert();
-        });
+                $model->afterInsert();
+            }
+        );
 
-        static::updating(static function ($model) {
+        static::updating(
+            static function ($model) {
             /** @var NestedSetTrait $model */
-            $model->beforeUpdate();
-        });
+                $model->beforeUpdate();
+            }
+        );
 
-        static::updated(static function ($model) {
+        static::updated(
+            static function ($model) {
             /** @var NestedSetTrait $model */
-            $model->afterUpdate();
-        });
+                $model->afterUpdate();
+            }
+        );
 
-        static::saving(static function ($model) {
+        static::saving(
+            static function ($model) {
             /** @var NestedSetTrait $model */
-            $model->beforeSave();
-        });
+                $model->beforeSave();
+            }
+        );
 
-        static::deleting(static function ($model) {
+        static::deleting(
+            static function ($model) {
             // We will need fresh data to delete node safely
             /** @var NestedSetTrait $model */
-            $model->beforeDelete();
-        });
+                $model->beforeDelete();
+            }
+        );
 
-        static::deleted(static function ($model) {
+        static::deleted(
+            static function ($model) {
             /** @var NestedSetTrait $model */
-            $model->afterDelete();
-        });
+                $model->afterDelete();
+            }
+        );
 
         if (static::isSoftDelete()) {
-            static::restoring(static function ($model) {
-                static::$deletedAt = $model->{$model->getDeletedAtColumn()};
-            });
+            static::restoring(
+                static function ($model) {
+                    static::$deletedAt = $model->{$model->getDeletedAtColumn()};
+                }
+            );
 
-            static::restored(static function ($model) {
-                $model->restoreDescendants(static::$deletedAt);
-            });
+            static::restored(
+                static function ($model) {
+                    $model->restoreDescendants(static::$deletedAt);
+                }
+            );
         }
     }
 
@@ -601,7 +621,7 @@ trait NestedSetTrait
      */
     protected function moveNode($to, $depth = 0): void
     {
-        $left = $this->getLeftOffset();
+        $left  = $this->getLeftOffset();
         $right = $this->getRightOffset();
         $depth = $this->getLevel() - $this->node->getLevel() - $depth;
 
@@ -609,9 +629,11 @@ trait NestedSetTrait
             // same root
             $this->newQuery()
                 ->descendants(null, true)
-                ->update([
-                    $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()} + " . $depth),
-                ]);
+                ->update(
+                    [
+                        $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()} + " . $depth),
+                    ]
+                );
 
             $delta = $right - $left + 1;
 
@@ -626,11 +648,13 @@ trait NestedSetTrait
             $this->newQuery()
                 ->descendants(null, true)
                 ->where($this->getLevelAttributeName(), '<', 0)
-                ->update([
-                    $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
-                    $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . $delta),
-                    $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()}"),
-                ]);
+                ->update(
+                    [
+                        $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
+                        $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . $delta),
+                        $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()}"),
+                    ]
+                );
         } else {
             // move from other root
             $tree = $this->node->getTree();
@@ -639,12 +663,14 @@ trait NestedSetTrait
 
             $this->newQuery()
                 ->descendants(null, true)
-                ->update([
-                    $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
-                    $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . $delta),
-                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
-                    $this->getTreeAttributeName() => $tree,
-                ]);
+                ->update(
+                    [
+                        $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
+                        $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . $delta),
+                        $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
+                        $this->getTreeAttributeName() => $tree,
+                    ]
+                );
 
             $this->shift($right + 1, null, $left - $right - 1);
         }
@@ -655,7 +681,7 @@ trait NestedSetTrait
      */
     protected function moveNodeAsRoot(): void
     {
-        $left = $this->getLeftOffset();
+        $left  = $this->getLeftOffset();
         $right = $this->getRightOffset();
         $depth = $this->getLevel();
 
@@ -668,12 +694,14 @@ trait NestedSetTrait
 
         $this->newQuery()
             ->descendants(null, true)
-            ->update([
-                $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . (1 - $left)),
-                $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . (1 - $left)),
-                $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
-                $this->getTreeAttributeName() => $tree,
-            ]);
+            ->update(
+                [
+                    $this->getLeftAttributeName() => new Expression($this->getLeftAttributeName() . ' + ' . (1 - $left)),
+                    $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . ' + ' . (1 - $left)),
+                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
+                    $this->getTreeAttributeName() => $tree,
+                ]
+            );
 
         $this->shift($right + 1, null, $left - $right - 1);
     }
@@ -703,9 +731,11 @@ trait NestedSetTrait
                     $query->where($attribute, '>=', $from);
                 }
 
-                $query->update([
-                    $attribute => new Expression($attribute . '+ ' . $delta),
-                ]);
+                $query->update(
+                    [
+                        $attribute => new Expression($attribute . '+ ' . $delta),
+                    ]
+                );
             }
         }
     }

@@ -93,14 +93,16 @@ abstract class BaseRelation extends Relation
         // @link https://github.com/laravel/framework/pull/25240
         // @link https://github.com/lazychaser/laravel-nestedset/issues/351
         optional($models[0])->applyNestedSetScope($this->query);
-        $this->query->whereNested(function (Builder $inner) use ($models) {
+        $this->query->whereNested(
+            function (Builder $inner) use ($models) {
             // We will use this query in order to apply constraints to the
             // base query builder
-            $outer = $this->parent->newQuery()->setQuery($inner);
-            foreach ($models as $model) {
-                $this->addEagerConstraint($outer, $model);
+                $outer = $this->parent->newQuery()->setQuery($inner);
+                foreach ($models as $model) {
+                    $this->addEagerConstraint($outer, $model);
+                }
             }
-        });
+        );
     }
 
     /**
