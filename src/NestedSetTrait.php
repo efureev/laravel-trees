@@ -6,7 +6,8 @@ use Fureev\Trees\Exceptions\{DeleteRootException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
-    UniqueRootException};
+    UniqueRootException
+};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -415,7 +416,7 @@ trait NestedSetTrait
                     $this->getRightAttributeName() => new Expression(
                         $this->getRightAttributeName() . ' + ' . (1 - $left)
                     ),
-                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
+                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . -$depth),
                     $this->getTreeAttributeName()  => $tree,
                 ]
             );
@@ -460,7 +461,9 @@ trait NestedSetTrait
                 ->where($this->getLevelAttributeName(), '<', 0)
                 ->update(
                     [
-                        $this->getLeftAttributeName()  => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
+                        $this->getLeftAttributeName()  => new Expression(
+                            $this->getLeftAttributeName() . ' + ' . $delta
+                        ),
                         $this->getRightAttributeName() => new Expression(
                             $this->getRightAttributeName() . ' + ' . $delta
                         ),
@@ -477,12 +480,14 @@ trait NestedSetTrait
                 ->descendants(null, true)
                 ->update(
                     [
-                        $this->getLeftAttributeName()  => new Expression($this->getLeftAttributeName() . ' + ' . $delta),
+                        $this->getLeftAttributeName()  => new Expression(
+                            $this->getLeftAttributeName() . ' + ' . $delta
+                        ),
                         $this->getRightAttributeName() => new Expression(
                             $this->getRightAttributeName() . ' + ' . $delta
                         ),
                         $this->getLevelAttributeName() => new Expression(
-                            $this->getLevelAttributeName() . ' + ' . - $depth
+                            $this->getLevelAttributeName() . ' + ' . -$depth
                         ),
                         $this->getTreeAttributeName()  => $tree,
                     ]
@@ -546,6 +551,14 @@ trait NestedSetTrait
     }
 
     /**
+     * Logic for build query
+     */
+    protected function onDeleteQueryForChildren()
+    {
+        return $this->children(); // $this->newNestedSetQuery()->descendants();
+    }
+
+    /**
      * If deleted node has children - these will be moved to parent of deleted node
      */
     public function afterDelete(): void
@@ -554,11 +567,11 @@ trait NestedSetTrait
         $right = $this->getRightOffset();
 
         if ($this->operation === Config::OPERATION_DELETE_ALL || $this->isLeaf()) {
-            $this->shift(($right + 1), null, ($left - $right - 1));
+            $this->shift($right + 1, null, $left - $right - 1);
         } else {
             $parentId = $this->getParentId();
 
-            $query = $this->newNestedSetQuery()->descendants();
+            $query = $this->onDeleteQueryForChildren();
 
             $query->update(
                 [
@@ -569,7 +582,7 @@ trait NestedSetTrait
                 ]
             );
 
-            $this->shift(($right + 1), null, -2);
+            $this->shift($right + 1, null, -2);
         }
 
         $this->operation = null;
