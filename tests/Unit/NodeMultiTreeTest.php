@@ -2,11 +2,9 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
-use Faker\Provider\Uuid;
 use Fureev\Trees\Config;
-use Fureev\Trees\Exceptions\{DeleteRootException, Exception, TreeNeedValueException, UniqueRootException};
+use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException, Exception, TreeNeedValueException, UniqueRootException};
 use Fureev\Trees\Tests\models\Page;
-use Fureev\Trees\Tests\models\Structure;
 use Illuminate\Database\Eloquent\Model;
 
 class NodeMultiTreeTest extends AbstractUnitTestCase
@@ -201,7 +199,6 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $this->assertTrue($node22->equalTo($node21->prev()->first()));
         $this->assertTrue($node21->equalTo($node22->next()->first()));
-
     }
 
     public function testInsertAfterRootException(): void
@@ -239,7 +236,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
     public function testAppendToNonExistParentException(): void
     {
-        $root = new self::$modelClass(['title' => 'root']);
+        $root   = new self::$modelClass(['title' => 'root']);
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $this->expectException(Exception::class);
         $node21->appendTo($root)->save();
@@ -292,7 +289,17 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         static::makeTree(null, 10);
         $root = self::$modelClass::first();
 
-        $this->expectException(DeleteRootException::class);
+        $root->delete();
+
+        static::assertEquals(9, self::$modelClass::count());
+    }
+
+    public function testDeleteRootWithChildNode(): void
+    {
+        static::makeTree(null, 10, 1);
+        $root = self::$modelClass::first();
+
+        $this->expectException(DeletedNodeHasChildrenException::class);
         $root->delete();
     }
 
@@ -413,7 +420,6 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $node21->prependTo($root)->save();
         static::assertSame(1, $node21->getLevel());
-
     }
 
 
@@ -486,10 +492,10 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         static::makeTree(null, 10);
         $root = self::$modelClass::first();
 
-        $node21 = new self::$modelClass(['title' => 'child 2.1']);
-        $node31 = new self::$modelClass(['title' => 'child 3.1']);
-        $node41 = new self::$modelClass(['title' => 'child 4.1']);
-        $node32 = new self::$modelClass(['title' => 'child 3.2']);
+        $node21  = new self::$modelClass(['title' => 'child 2.1']);
+        $node31  = new self::$modelClass(['title' => 'child 3.1']);
+        $node41  = new self::$modelClass(['title' => 'child 4.1']);
+        $node32  = new self::$modelClass(['title' => 'child 3.2']);
         $node321 = new self::$modelClass(['title' => 'child 3.2.1']);
 
         $node21->appendTo($root)->save();
@@ -502,7 +508,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         // @todo: need benchmarks
         $listQ = $root->descendantsNew();
-        $list = $root->descendants();
+        $list  = $root->descendants();
 
         static::assertEquals(5, $list->count());
         static::assertEquals(5, $listQ->count());
@@ -583,9 +589,11 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $node31->appendTo($root)->save();
         $node41->appendTo($root)->save();
 
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
+        $children = $root->children()->defaultOrder()->get()->map(
+            function ($item) {
+                return $item->title;
+            }
+        );
 
         static::assertCount(3, $children);
         static::assertEquals(['child 2.1', 'child 3.1', 'child 4.1'], $children->toArray());
@@ -594,9 +602,11 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         static::assertFalse($node31->isForceSaving());
 
 
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
+        $children = $root->children()->defaultOrder()->get()->map(
+            function ($item) {
+                return $item->title;
+            }
+        );
 
         static::assertEquals(['child 3.1', 'child 2.1', 'child 4.1'], $children->toArray());
         $node31->refresh();
@@ -605,12 +615,13 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         static::assertFalse($node31->isForceSaving());
 
 
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
+        $children = $root->children()->defaultOrder()->get()->map(
+            function ($item) {
+                return $item->title;
+            }
+        );
 
         static::assertEquals(['child 3.1', 'child 2.1', 'child 4.1'], $children->toArray());
-
     }
 
     public function testDown(): void
@@ -626,9 +637,11 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $node31->appendTo($root)->save();
         $node41->appendTo($root)->save();
 
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
+        $children = $root->children()->defaultOrder()->get()->map(
+            function ($item) {
+                return $item->title;
+            }
+        );
 
         static::assertCount(3, $children);
         static::assertEquals(['child 2.1', 'child 3.1', 'child 4.1'], $children->toArray());
@@ -637,9 +650,11 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         static::assertFalse($node31->isForceSaving());
 
 
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
+        $children = $root->children()->defaultOrder()->get()->map(
+            function ($item) {
+                return $item->title;
+            }
+        );
 
         static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
 
@@ -648,12 +663,13 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         static::assertFalse($node31->isForceSaving());
 
 
-        $children = $root->children()->defaultOrder()->get()->map(function ($item) {
-            return $item->title;
-        });
+        $children = $root->children()->defaultOrder()->get()->map(
+            function ($item) {
+                return $item->title;
+            }
+        );
 
         static::assertEquals(['child 2.1', 'child 4.1', 'child 3.1'], $children->toArray());
-
     }
 
     public function testGetNodeData(): void
@@ -664,7 +680,10 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         /** @var Page $root */
         foreach ($roots as $root) {
             $data = self::$modelClass::getNodeData($root->getKey());
-            $this->assertEquals(['lft' => 1, 'rgt' => 2, 'lvl' => 0, 'parent_id' => null, 'tree_id' => $root->getKey()], $data);
+            $this->assertEquals(
+                ['lft' => 1, 'rgt' => 2, 'lvl' => 0, 'parent_id' => null, 'tree_id' => $root->getKey()],
+                $data
+            );
         }
     }
 
