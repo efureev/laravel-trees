@@ -2,7 +2,8 @@
 
 namespace Fureev\Trees;
 
-use Fureev\Trees\Exceptions\{DeleteRootException,
+use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
+    DeleteRootException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
@@ -514,11 +515,13 @@ trait NestedSetTrait
     /**
      * @throws DeleteRootException
      */
+    /**
+     * @throws DeleteRootException
+     */
     public function beforeDelete(): void
     {
-        // @todo скорей всего, надо позволять удалять с multiTree
         if ($this->operation !== Config::OPERATION_DELETE_ALL && $this->isRoot()) {
-            throw DeleteRootException::make($this);
+            $this->onDeletedRootNode();
         }
 
         if (!static::isSoftDelete() && $this->children()->count() > 0) {
@@ -526,6 +529,30 @@ trait NestedSetTrait
         }
 
         $this->refresh();
+    }
+
+    /**
+     * Callback on deleting root-node
+     */
+    protected function onDeletedRootNode(): void
+    {
+        if ($this->children()->count() > 0) {
+            throw DeletedNodeHasChildrenException::make($this);
+        }
+
+        if (!$this->isMultiTree()) {
+            throw DeleteRootException::make($this);
+        }
+    }
+
+
+    /**
+     * Callback on deleting node which has children
+     *
+     */
+    protected function onDeletedNodeHasChildren(): void
+    {
+        //throw DeletedNodeHasChildrenException::make($this);
     }
 
     /**
@@ -539,15 +566,6 @@ trait NestedSetTrait
         return $this
             ->hasMany(get_class($this), $this->getParentIdName())
             ->setModel($this);
-    }
-
-    /**
-     * Callback on deleting node which has children
-     *
-     */
-    protected function onDeletedNodeHasChildren(): void
-    {
-        //throw DeletedNodeHasChildrenException::make($this);
     }
 
     /**
