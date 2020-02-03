@@ -246,7 +246,8 @@ class QueryBuilder extends Builder
                 $this->model->getLeftAttributeName(),
                 '=',
                 new Expression($this->model->getRightAttributeName() . ' - 1')
-            );
+            )
+            ->treeCondition();
     }
 
     /**
