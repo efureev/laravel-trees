@@ -1,5 +1,6 @@
 {
   "name": "efureev/laravel-trees",
+  "description": "Multi-Tree structures for laravel",
   "license": "MIT",
   "authors": [
     {
