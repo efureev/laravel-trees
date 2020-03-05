@@ -1,0 +1,103 @@
+name: PHP Laravel Package
+
+on: [push]
+
+jobs:
+  phpcs:
+    name: PHPCS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: PHPCS check
+        uses: chekalsky/phpcs-action@v1
+        with:
+          enable_warnings: true
+
+  lint-changelog:
+    name: Lint changelog file
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Lint changelog file
+        uses: avto-dev/markdown-lint@v1
+        with:
+          rules: './.github/workflows/lint/rules/changelog.js'
+          config: '/lint/config/changelog.yml'
+          args: './CHANGELOG.md'
+
+  testing:
+    name: Test on PHP ${{ matrix.php }} with ${{ matrix.setup }} dependencies
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      fail-fast: false
+      matrix:
+        setup: ['basic', 'lowest']
+        php: ['7.2', '7.3', '7.4']
+
+    services:
+      postgres:
+        image: postgres:11
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v1 # Action page: <https://github.com/shivammathur/setup-php>
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring
+          coverage: xdebug
+
+      - name: Get Composer Cache Directory # Docs: <https://github.com/actions/cache/blob/master/examples.md#php---composer>
+        id: composer-cache
+        run: |
+          echo "::set-output name=dir::$(composer config cache-files-dir)"
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Validate composer.json
+        run: composer validate
+
+      - name: Install Composer 'hirak/prestissimo' package
+        run: composer global require hirak/prestissimo --update-no-dev
+
+      - name: Install [LOWEST] Composer dependencies
+        if: matrix.setup == 'lowest'
+        run: composer update --prefer-dist --no-interaction --no-suggest --prefer-lowest
+
+      - name: Install [BASIC] Composer dependencies
+        if: matrix.setup == 'basic'
+        run: composer update --prefer-dist --no-interaction --no-suggest
+
+      - name: Show most important packages' versions
+        run: composer info | grep -e efureev -e laravel/framework -e phpunit/phpunit
+
+      # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
+      # Docs: https://getcomposer.org/doc/articles/scripts.md
+
+      - name: Run test suite
+        run: composer test
+        env:
+          DB_HOST: localhost
+          DB_PORT: ${{ job.services.postgres.ports[5432] }}

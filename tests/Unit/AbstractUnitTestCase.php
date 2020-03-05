@@ -5,7 +5,6 @@ namespace Fureev\Trees\Tests\Unit;
 use Fureev\Trees\Migrate;
 use Fureev\Trees\Tests\AbstractTestCase;
 use Fureev\Trees\Tests\models\BaseModel;
-use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -20,68 +19,60 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
      */
     protected static $modelClass;
 
-    public static function setUpBeforeClass(): void
+    private static function setUpDb()
     {
+        /** @var \Illuminate\Database\PostgresConnection $connection */
+        $connection = app('db.connection');
+
+        $connectionDriver = $connection->getDriverName();
+        if ($connectionDriver === 'pgsql') {
+            app('db.connection')->statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
+        }
+
         /** @var BaseModel $model */
         $model = new static::$modelClass;
-        self::$modelClassTable = $model->getTable();
-
-        $schema = Capsule::schema();
-
-        $schema->dropIfExists(self::$modelClassTable);
-        Capsule::disableQueryLog();
 
         $config = $model->getTreeConfig();
 
-        $connectionDriver = $schema->getConnection()->getDriverName();
+        $connection->getSchemaBuilder()->create(
+            $model->getTable(),
+            static function (Blueprint $table) use ($config, $model, $connectionDriver) {
+                switch ($connectionDriver) {
+                    case 'pgsql':
+                        $expression = new Expression('uuid_generate_v4()');
+                        break;
+                    case 'mysql':
+                        $expression = new Expression('UUID()');
+                        break;
+                    default:
+                        throw new \Exception('Your DB driver [' . DB::getDriverName() . '] does not supported');
+                        break;
+                }
 
-        if ($connectionDriver === 'pgsql') {
-            $schema->getConnection()->statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-        }
 
-        $schema->create(self::$modelClassTable, static function (Blueprint $table) use ($config, $model, $connectionDriver) {
+                if ($model->getKeyType() === 'uuid') {
+                    $table->uuid('id')->default($expression)->primary();
+                } else {
+                    $table->integerIncrements('id');
+                }
 
-            switch ($connectionDriver) {
-                case 'pgsql':
-                    $expression = new Expression('uuid_generate_v4()');
-                    break;
-                case 'mysql':
-                    $expression = new Expression('UUID()');
-                    break;
-                default:
-                    throw new \Exception('Your DB driver [' . DB::getDriverName() . '] does not supported');
-                    break;
+                Migrate::getColumns($table, $config);
+                $table->string('title');
+                $table->string('path')->nullable();
+                $table->json('params')->default('{}');
+                if ($model::isSoftDelete()) {
+                    $table->softDeletes();
+                }
             }
+        );
 
-
-            if ($model->getKeyType() === 'uuid') {
-                $table->uuid('id')->default($expression)->primary();
-            } else {
-                $table->integerIncrements('id');
-            }
-
-            Migrate::getColumns($table, $config);
-            $table->string('title');
-            $table->string('path')->nullable();
-            $table->json('params')->default('{}');
-            if ($model::isSoftDelete()) {
-                $table->softDeletes();
-            }
-
-        });
-
-        Capsule::enableQueryLog();
+        $connection->enableQueryLog();
     }
 
     public function setUp(): void
     {
-        Capsule::flushQueryLog();
-        date_default_timezone_set('Europe/Moscow');
-    }
-
-    public function tearDown(): void
-    {
-        Capsule::table(self::$modelClassTable)->truncate();
+        parent::setUp();
+        static::setUpDb();
     }
 
     /**
@@ -101,15 +92,17 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
         for ($i = 1; $i <= $childrenCount; $i++) {
             if (!$parentNode) {
                 /** @var BaseModel $node */
-                $node = new static::$modelClass([
-                    '_setRoot' => true,
-                    'title' => "Root node $i",
-                    'params' => ['seo' => ['title' => "SEO: root node $i"]],
-                ]);
+                $node = new static::$modelClass(
+                    [
+                        '_setRoot' => true,
+                        'title'    => "Root node $i",
+                        'params'   => ['seo' => ['title' => "SEO: root node $i"]],
+                    ]
+                );
                 $path = [$i];
             } else {
-                $path = $parentNode->path;
-                $path[] = $i;
+                $path    = $parentNode->path;
+                $path[]  = $i;
                 $pathStr = implode('.', $path);
 
                 /** @var BaseModel $node */
@@ -147,17 +140,21 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
         }
 
         $childMap = array_slice($childMap, 0, $level + 1);
-        $res = array_reduce($childMap, static function ($prev, $next) {
-            if (!$prev) {
-                return [$next, $next];
+
+        $res = array_reduce(
+            $childMap,
+            static function ($prev, $next) {
+                if (!$prev) {
+                    return [$next, $next];
+                }
+
+                [$prevCount, $total] = $prev;
+                $prevTotal = $prevCount * $next;
+                $total     = $prevTotal + $total;
+
+                return [$prevTotal, $total];
             }
-
-            [$prevCount, $total] = $prev;
-            $prevTotal = $prevCount * $next;
-            $total = $prevTotal + $total;
-
-            return [$prevTotal, $total];
-        });
+        );
 
         return $res[1];
     }
