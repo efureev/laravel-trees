@@ -19,7 +19,7 @@
     <rule ref="Squiz.Commenting.VariableComment"/>
     <rule ref="Squiz.Formatting.OperatorBracket"/>
     <rule ref="Squiz.Functions.FunctionDeclarationArgumentSpacing"/>
-    <rule ref="Squiz.Operators.ComparisonOperatorUsage"/>
+<!--    <rule ref="Squiz.Operators.ComparisonOperatorUsage"/>-->
 <!--    <rule ref="Squiz.PHP.DisallowInlineIf"/>-->
 <!--    <rule ref="Squiz.Scope.MethodScope"/>-->
 <!--    <rule ref="Squiz.Strings.ConcatenationSpacing"/>-->
@@ -30,7 +30,7 @@
 <!--    <rule ref="Squiz.WhiteSpace.OperatorSpacing"/>-->
 <!--    <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace"/>-->
 <!--    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>-->
-    <rule ref="Generic.Commenting.Todo"/>
+<!--    <rule ref="Generic.Commenting.Todo"/>-->
 <!--    <rule ref="Generic.ControlStructures.DisallowYodaConditions"/>-->
 <!--    <rule ref="Generic.ControlStructures.InlineControlStructure"/>-->
 <!--    <rule ref="Generic.Formatting.DisallowMultipleStatements"/>-->

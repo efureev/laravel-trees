@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class DeleteRootException extends Exception
 {
+    /**
+     * @var Model
+     */
     protected $model;
 
     public function __construct(Model $model)

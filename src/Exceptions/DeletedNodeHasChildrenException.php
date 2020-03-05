@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class DeletedNodeHasChildrenException extends Exception
 {
+    /**
+     * @var Model
+     */
     protected $model;
 
     public function __construct(Model $model)

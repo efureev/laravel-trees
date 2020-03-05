@@ -310,7 +310,6 @@ trait NestedSetTrait
                 }
                 break;
 
-
             case Config::OPERATION_INSERT_BEFORE:
             case Config::OPERATION_INSERT_AFTER:
                 if ($this->node->isRoot()) {
@@ -417,7 +416,7 @@ trait NestedSetTrait
                     $this->getRightAttributeName() => new Expression(
                         $this->getRightAttributeName() . ' + ' . (1 - $left)
                     ),
-                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . -$depth),
+                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
                     $this->getTreeAttributeName()  => $tree,
                 ]
             );
@@ -488,7 +487,7 @@ trait NestedSetTrait
                             $this->getRightAttributeName() . ' + ' . $delta
                         ),
                         $this->getLevelAttributeName() => new Expression(
-                            $this->getLevelAttributeName() . ' + ' . -$depth
+                            $this->getLevelAttributeName() . ' + ' . - $depth
                         ),
                         $this->getTreeAttributeName()  => $tree,
                     ]
@@ -585,7 +584,7 @@ trait NestedSetTrait
         $right = $this->getRightOffset();
 
         if ($this->operation === Config::OPERATION_DELETE_ALL || $this->isLeaf()) {
-            $this->shift($right + 1, null, $left - $right - 1);
+            $this->shift(($right + 1), null, ($left - $right - 1));
         } else {
             $parentId = $this->getParentId();
 
@@ -600,7 +599,7 @@ trait NestedSetTrait
                 ]
             );
 
-            $this->shift($right + 1, null, -2);
+            $this->shift(($right + 1), null, -2);
         }
 
         $this->operation = null;

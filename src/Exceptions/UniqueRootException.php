@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class UniqueRootException extends Exception
 {
+    /**
+     * @var Model
+     */
     protected $existRootModel;
 
     public function __construct(Model $existRootModel, $message = null)
