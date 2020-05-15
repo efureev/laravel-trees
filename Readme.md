@@ -117,7 +117,7 @@ class Category extends Model implements TreeConfigurable
     use NestedSetTrait;
 
     //protected $fillable = ['title', '_setRoot'];
-    public function getTreeConfig(): Config
+    protected static function buildTreeConfig(): Config
     {
         return new Config(['parentAttributeType' => 'uuid']);
     } 
