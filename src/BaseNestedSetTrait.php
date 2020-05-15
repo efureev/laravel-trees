@@ -2,6 +2,7 @@
 
 namespace Fureev\Trees;
 
+use Fureev\Trees\Contracts\NestedSetConfig;
 use Illuminate\Database\Eloquent\Model;
 
 use function method_exists;
@@ -17,10 +18,14 @@ trait BaseNestedSetTrait
     /** @var Config */
     protected $_tree_config;
 
-    /** @var integer */
+    /**
+     * @var integer
+     */
     protected $operation;
 
-    /** @var Model|NestedSetTrait|BaseNestedSetTrait */
+    /**
+     * @var Model|NestedSetTrait|BaseNestedSetTrait
+     */
     protected $node;
 
     /**
@@ -29,7 +34,10 @@ trait BaseNestedSetTrait
      * @var boolean
      */
     protected $forceSave = false;
-    /** @var array|null For increase `getCast` function */
+
+    /**
+     * @var array|null For increase `getCast` function
+     */
     private $castsFill;
 
     /**
@@ -51,9 +59,9 @@ trait BaseNestedSetTrait
     }
 
     /**
-     * @return Config|null
+     * @return Config
      */
-    public function getTreeConfig(): ?Config
+    public function getTreeConfig(): NestedSetConfig
     {
         if (!$this->_tree_config) {
             $this->_tree_config = static::buildTreeConfig();
