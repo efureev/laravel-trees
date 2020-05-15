@@ -148,19 +148,26 @@ class Item extends Model
 
 Use in migrations:
 ```php
-public function up()
+<?php
+use Fureev\Trees\Migrate;
+use Illuminate\Database\Migrations\Migration;
+
+class AddTemplates extends Migration
 {
-    Schema::create('trees', function (Blueprint $table) {
-        $table->uuid('id')->primary();
-        $table->string('title');
-
-        \Fureev\Trees\Migrate::getColumns($table, (new Page)->getTreeConfig());
-        // or 
-        // \Fureev\Trees\Migrate::getColumnsFromModel($table, Page::class);
-
-        $table->timestamps();
-        $table->softDeletes();
-    });
+    public function up()
+    {
+        Schema::create('trees', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('title');
+    
+            Migrate::getColumns($table, (new Page)->getTreeConfig());
+            // or 
+            // Migrate::getColumnsFromModel($table, Page::class);
+    
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
 }
 ```
 
