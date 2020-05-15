@@ -3,7 +3,10 @@
 namespace Fureev\Trees;
 
 use Fureev\Trees\Contracts\NestedSetConfig;
+use Fureev\Trees\Contracts\TreeConfigurable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
+use Php\Support\Exceptions\InvalidConfigException;
 
 /**
  * Class Migrate
@@ -29,6 +32,25 @@ class Migrate
     }
 
     /**
+     * @param Blueprint $table
+     * @param string|Model $model
+     *
+     * @throws InvalidConfigException
+     */
+    public static function getColumnsFromModel(Blueprint $table, $model): void
+    {
+        if (is_string($model)) {
+            $model = new $model();
+        }
+
+        if ($model instanceof TreeConfigurable) {
+            static::getColumns($table, $model->getTreeConfig());
+        }
+
+        throw new InvalidConfigException();
+    }
+
+    /**
      * Add default nested set columns to the table. Also create an index.
      *
      * @param Blueprint $table
@@ -46,7 +68,7 @@ class Migrate
 
         $table->integer($this->config->getLevelAttributeName());
         // @todo: need next index ??
-//        $table->index($this->getDefaultColumns());
+        //        $table->index($this->getDefaultColumns());
 
         if ($this->config->isMultiTree()) {
             $table->index(
