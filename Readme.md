@@ -104,6 +104,25 @@ class Category extends Model
     //protected $fillable = ['title', '_setRoot']; 
 }
 ```
+or
+```php
+<?php
+namespace App\Models;
+
+use Fureev\Trees\{Config,NestedSetTrait,Contracts\TreeConfigurable};
+use Illuminate\Database\Eloquent\Model;
+
+class Category extends Model implements TreeConfigurable
+{
+    use NestedSetTrait;
+
+    //protected $fillable = ['title', '_setRoot'];
+    public function getTreeConfig(): Config
+    {
+        return new Config(['parentAttributeType' => 'uuid']);
+    } 
+}
+```
 The model will use an Attribute `_setRoot`. It's reserved word for this package and it allows to save root-node. 
 
 **Model for Multi tree structure and with primary key type `uuid`:**
@@ -136,6 +155,8 @@ public function up()
         $table->string('title');
 
         \Fureev\Trees\Migrate::getColumns($table, (new Page)->getTreeConfig());
+        // or 
+        // \Fureev\Trees\Migrate::getColumnsFromModel($table, Page::class);
 
         $table->timestamps();
         $table->softDeletes();
