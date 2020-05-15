@@ -45,6 +45,7 @@ class Migrate
 
         if ($model instanceof TreeConfigurable) {
             static::getColumns($table, $model->getTreeConfig());
+            return;
         }
 
         throw new InvalidConfigException();
