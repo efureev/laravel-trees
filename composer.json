@@ -9,12 +9,13 @@
     }
   ],
   "require": {
-    "illuminate/database": "^5.8 | ^6.2 | ^7.8",
-    "illuminate/events": "^5.8 | ^6.2 | ^7.8",
+    "php": ">=7.4",
+    "illuminate/database": "^7.1",
+    "illuminate/events": "^7.1",
     "efureev/support": "^2.6"
   },
   "require-dev": {
-    "phpunit/phpunit": "^8.5 || ^9.1",
+    "phpunit/phpunit": "^9.1",
     "orchestra/testbench": "^5.2",
     "fzaninotto/faker": "^1.9",
     "symfony/var-dumper": "^5.0",
