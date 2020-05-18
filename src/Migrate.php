@@ -2,6 +2,8 @@
 
 namespace Fureev\Trees;
 
+use Fureev\Trees\Config\AbstractAttribute;
+use Fureev\Trees\Config\Base;
 use Fureev\Trees\Contracts\NestedSetConfig;
 use Fureev\Trees\Contracts\TreeConfigurable;
 use Illuminate\Database\Eloquent\Model;
@@ -11,14 +13,24 @@ use Php\Support\Exceptions\InvalidConfigException;
 /**
  * Class Migrate
  * @package Fureev\Trees
+ *
+ * @mixin Base
  */
 class Migrate
 {
-    /** @var NestedSetConfig */
-    protected $config;
+    /**
+     * @var NestedSetConfig
+     */
+    protected NestedSetConfig $config;
 
-    public function __construct(NestedSetConfig $config)
+    /**
+     * @var Blueprint
+     */
+    protected Blueprint $table;
+
+    public function __construct(Blueprint $table, NestedSetConfig $config)
     {
+        $this->table  = $table;
         $this->config = $config;
     }
 
@@ -26,9 +38,9 @@ class Migrate
      * @param Blueprint $table
      * @param NestedSetConfig $config
      */
-    public static function getColumns(Blueprint $table, NestedSetConfig $config): void
+    public static function columns(Blueprint $table, NestedSetConfig $config): void
     {
-        (new static($config))->columns($table);
+        (new static($table, $config))->buildColumns();
     }
 
     /**
@@ -37,14 +49,14 @@ class Migrate
      *
      * @throws InvalidConfigException
      */
-    public static function getColumnsFromModel(Blueprint $table, $model): void
+    public static function columnsFromModel(Blueprint $table, $model): void
     {
         if (is_string($model)) {
             $model = new $model();
         }
 
         if ($model instanceof TreeConfigurable) {
-            static::getColumns($table, $model->getTreeConfig());
+            static::columns($table, $model->getTreeConfig());
             return;
         }
 
@@ -53,81 +65,57 @@ class Migrate
 
     /**
      * Add default nested set columns to the table. Also create an index.
-     *
-     * @param Blueprint $table
      */
-    public function columns(Blueprint $table): void
+    public function buildColumns(): void
     {
-        if ($this->config->isMultiTree()) {
-            $table->{$this->config->getTreeAttributeType()}($this->config->getTreeAttributeName());
+        /** @var AbstractAttribute $column */
+        foreach ($this->config->columns(false) as $column) {
+            $this->table->{$column->type()}($column->name())
+                ->default($column->default())
+                ->nullable($column->nullable());
         }
 
-        $table->unsignedInteger($this->config->getLeftAttributeName())->default(0);
-        $table->unsignedInteger($this->config->getRightAttributeName())->default(0);
+        $this->buildIndexes();
+    }
 
-        $table->{$this->config->getParentAttributeType()}($this->config->getParentAttributeName())->nullable();
-
-        $table->integer($this->config->getLevelAttributeName());
-        // @todo: need next index ??
-        //        $table->index($this->getDefaultColumns());
-
-        if ($this->config->isMultiTree()) {
-            $table->index(
-                [$this->config->getTreeAttributeName()],
-                $table->getTable() . "_{$this->config->getTreeAttributeName()}_idx"
-            );
-            $table->index(
-                [
-                    $this->config->getTreeAttributeName(),
-                    $this->config->getLeftAttributeName(),
-                    $this->config->getRightAttributeName(),
-                ],
-                $table->getTable() . "_{$this->config->getLeftAttributeName()}_idx"
-            );
-            $table->index(
-                [
-                    $this->config->getTreeAttributeName(),
-                    $this->config->getRightAttributeName(),
-                ],
-                $table->getTable() . "_{$this->config->getRightAttributeName()}_idx"
-            );
-            $table->index(
-                [
-                    $this->config->getTreeAttributeName(),
-                    $this->config->getParentAttributeName(),
-                ],
-                $table->getTable() . "_{$this->config->getParentAttributeName()}_idx"
-            );
-        } else {
-            $table->index(
-                [
-                    $this->config->getLeftAttributeName(),
-                    $this->config->getRightAttributeName(),
-                ],
-                $table->getTable() . "_{$this->config->getLeftAttributeName()}_idx"
-            );
-            $table->index(
-                [$this->config->getRightAttributeName()],
-                $table->getTable() . "_{$this->config->getRightAttributeName()}_idx"
-            );
-            $table->index(
-                [$this->config->getParentAttributeName()],
-                $table->getTable() . "_{$this->config->getParentAttributeName()}_idx"
-            );
+    private function buildIndexes(): void
+    {
+        foreach ($this->config->indexes() as $idx => $columns) {
+            $this->buildIndex($idx, $columns);
         }
+    }
+
+    private function buildIndex($name, $column): void
+    {
+        $cols = [];
+        if ($this->config->tree()) {
+            $cols[] = $this->config->tree()->name();
+        }
+
+        $cols = array_merge($cols, (array)$column);
+
+        $this->table->index(
+            $cols,
+            $this->table->getTable() . "_{$name}_idx"
+        );
     }
 
     /**
      * Drop NestedSet columns.
-     *
-     * @param Blueprint $table
-     * @param NestedSetConfig $config
      */
-    public static function dropColumns(Blueprint $table, NestedSetConfig $config): void
+    public function dropColumns(): void
     {
-        $columns = $config->columns();
+        foreach ($this->config->indexes() as $idx => $columns) {
+            $this->table->dropIndex($idx);
+        }
 
-        $table->dropIndex($columns);
-        $table->dropColumn($columns);
+        foreach ($this->config->columns() as $column) {
+            $this->table->dropColumn($column);
+        }
+    }
+
+    public function __call($method, $arguments)
+    {
+        return $this->config->$method(...$arguments);
     }
 }

@@ -3,6 +3,7 @@
 namespace Fureev\Trees\Tests\models;
 
 use Fureev\Trees\Config;
+use Fureev\Trees\Config\Base;
 
 /**
  * Class Structure
@@ -23,21 +24,13 @@ class Structure extends Page
 
     protected $fillable = ['title', 'tree_id', 'params', 'path'];
 
-    protected static function buildTreeConfig(): Config
+    protected static function buildTreeConfig(): Base
     {
-        return new Config(
-            [
-                'treeAttribute' => 'tree_id',
-                'parentAttributeType' => 'uuid',
-                'treeAttributeType' => 'uuid',
-                'autoGenerateTreeId' => false,
-            ]
-        );
+        $config = new Base();
+        $config
+            ->setAttribute('tree', (new Config\TreeAttribute())->setType('uuid')->setAutoGenerate(false))
+            ->parent()->setType('uuid');
+
+        return $config;
     }
-
-    /*public function generateTreeId()
-    {
-        return Uuid::uuid();
-    }*/
-
 }

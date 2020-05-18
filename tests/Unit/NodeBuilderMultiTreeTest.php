@@ -18,18 +18,25 @@ class NodeBuilderMultiTreeTest extends AbstractUnitTestCase
 
         /** @var Page $root */
         foreach ($roots as $node) {
-            $nodesRootCheck = self::$modelClass::root()->byTree($node->getTree())->get();
+            $nodesRootCheck = self::$modelClass::root()->byTree($node->treeValue())->get();
             static::assertCount(1, $nodesRootCheck);
             $nodeRootCheck = $nodesRootCheck->first();
             static::assertInstanceOf(self::$modelClass, $nodeRootCheck);
             static::assertTrue($node->equalTo($nodeRootCheck));
 
 
-            $nodesCheck = self::$modelClass::byTree($node->getTree())->get();
+            $nodesCheck = self::$modelClass::byTree($node->treeValue())->get();
             static::assertCount(5, $nodesCheck);
-            $nodeCheck = $nodesCheck->first();
-            static::assertInstanceOf(self::$modelClass, $nodeCheck);
-            static::assertEquals($nodeCheck->parent_id, $node->getKey());
+            $treeId = $node->treeValue();
+
+            static::assertCount(
+                5,
+                $nodesCheck->map->tree_id->filter(
+                    static function ($item) use ($treeId) {
+                        return $item === $treeId;
+                    }
+                )
+            );
         }
     }
 }

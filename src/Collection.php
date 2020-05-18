@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Collection extends BaseCollection
 {
-
     /**
      * Build a tree from a list of nodes. Each item will have set children relation.
      *
@@ -34,7 +33,7 @@ class Collection extends BaseCollection
 
         /** @var Model|NestedSetTrait $node */
         foreach ($this->items as $node) {
-            if ($node->getParentId() === $fromNode) {
+            if ($node->parentValue() === $fromNode) {
                 $items[] = $node;
             }
         }
@@ -59,11 +58,11 @@ class Collection extends BaseCollection
             return $this;
         }
 
-        $groupedNodes = $this->groupBy($this->first()->getParentIdName());
+        $groupedNodes = $this->groupBy($this->first()->parentAttribute()->name());
 
         /** @var NestedSetTrait|Model $node */
         foreach ($this->items as $node) {
-            if (!$node->getParentId()) {
+            if (!$node->parentValue()) {
                 $node->setRelation('parent', null);
             }
 
@@ -90,7 +89,7 @@ class Collection extends BaseCollection
     {
         return $this->filter(
             static function ($item) {
-                return $item->getParentId() === null;
+                return $item->parentValue() === null;
             }
         );
     }

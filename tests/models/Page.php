@@ -2,8 +2,7 @@
 
 namespace Fureev\Trees\Tests\models;
 
-use Fureev\Trees\Config;
-use Illuminate\Database\Eloquent\Builder;
+use Fureev\Trees\Config\Base;
 
 /**
  * Class Page
@@ -19,12 +18,12 @@ class Page extends BaseModel
 {
     protected $fillable = ['title', '_setRoot'];
 
-    protected $hidden = ['_setRoot', 'lft', 'rgt', 'lvl', 'tree_id', 'parent'];
+    protected $hidden = ['_setRoot', 'lft', 'rgt', 'lvl', 'tree_id', 'parent_id'];
 
     protected $table = 'pages';
 
-    protected static function buildTreeConfig(): Config
+    protected static function buildTreeConfig(): Base
     {
-        return new Config(['treeAttribute' => 'tree_id']);
+        return new Base(true);
     }
 }

@@ -2,42 +2,32 @@
 
 namespace Fureev\Trees\Contracts;
 
+use Fureev\Trees\Config\LeftAttribute;
+use Fureev\Trees\Config\LevelAttribute;
+use Fureev\Trees\Config\ParentAttribute;
+use Fureev\Trees\Config\RightAttribute;
+use Fureev\Trees\Config\TreeAttribute;
+
 interface NestedSetConfig
 {
     /**
      * Get a list of columns.
      *
+     * @param bool $names
+     *
      * @return array
      */
-    public function getColumns(): array;
+    public function columns($names = true): array;
 
-    /**
-     * @return string
-     */
-    public function getParentAttributeName(): string;
+    public function parent(): ParentAttribute;
 
-    /**
-     * @return string
-     */
-    public function getLeftAttributeName(): string;
+    public function level(): LevelAttribute;
 
-    /**
-     * @return string
-     */
-    public function getRightAttributeName(): string;
+    public function left(): LeftAttribute;
 
-    /**
-     * @return string
-     */
-    public function getLevelAttributeName(): string;
+    public function right(): RightAttribute;
 
-    /**
-     * @return string
-     */
-    public function getTreeAttributeName(): ?string;
+    public function tree(): ?TreeAttribute;
 
-    /**
-     * @return bool
-     */
-    public function isAutoGenerateTreeId(): bool;
+    public function indexes(): array;
 }

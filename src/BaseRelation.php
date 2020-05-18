@@ -2,6 +2,7 @@
 
 namespace Fureev\Trees;
 
+use Fureev\Trees\Config\Base;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -26,8 +27,8 @@ abstract class BaseRelation extends Relation
      */
     public function __construct(QueryBuilder $builder, Model $parent)
     {
-        if (!Config::isNode($parent)) {
-            throw new InvalidArgumentException('Model must be node.');
+        if (!Base::isNode($parent)) {
+            throw new InvalidArgumentException('Model must be a node.');
         }
         parent::__construct($builder, $parent);
     }

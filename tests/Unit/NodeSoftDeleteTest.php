@@ -146,8 +146,8 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
         $this->assertTrue($root->isLeaf());
         $this->assertEmpty($root->children()->count());
 
-        $this->assertEquals(1, $root->getLeftOffset());
-        $this->assertEquals(2, $root->getRightOffset());
+        $this->assertEquals(1, $root->leftOffset());
+        $this->assertEquals(2, $root->rightOffset());
 
 
         $node31 = new static::$modelClass(['title' => 'child 3.1 new']);
@@ -167,9 +167,8 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
         $this->assertTrue($node51->isChildOf($root));
         $this->assertTrue($node51->isChildOf($node31));
 
-        $this->assertEquals(1, $root->getLeftOffset());
-        $this->assertEquals(8, $root->getRightOffset());
-
+        $this->assertEquals(1, $root->leftOffset());
+        $this->assertEquals(8, $root->rightOffset());
     }
 
     /* public function testDeleteWithChildrenNodeAndRestore(): void

@@ -80,8 +80,6 @@ composer test
 ```
 
 
-
-
 Documentation
 -------------
 This package works with different model primary key: `int`, `uuid`.
@@ -101,36 +99,35 @@ class Category extends Model
 {
     use NestedSetTrait;
 
-    //protected $fillable = ['title', '_setRoot']; 
 }
 ```
-or
+or with custom config
 ```php
 <?php
 namespace App\Models;
 
-use Fureev\Trees\{Config,NestedSetTrait,Contracts\TreeConfigurable};
+use Fureev\Trees\{NestedSetTrait,Contracts\TreeConfigurable};
+use Fureev\Trees\Config\Base;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model implements TreeConfigurable
 {
     use NestedSetTrait;
 
-    //protected $fillable = ['title', '_setRoot'];
-    protected static function buildTreeConfig(): Config
+    protected static function buildTreeConfig(): Base
     {
-        return new Config(['parentAttributeType' => 'uuid']);
+        return new Base();
     } 
 }
-```
-The model will use an Attribute `_setRoot`. It's reserved word for this package and it allows to save root-node. 
+``` 
 
 **Model for Multi tree structure and with primary key type `uuid`:**
 ```php
 <?php
 namespace App\Models;
 
-use Fureev\Trees\{Config, NestedSetTrait};
+use Fureev\Trees\Config\TreeAttribute;use Fureev\Trees\NestedSetTrait;
+use Fureev\Trees\Config\Base;
 use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
@@ -139,10 +136,24 @@ class Item extends Model
     
     protected $keyType = 'uuid';
 
-    protected static function buildTreeConfig(): Config
+    protected static function buildTreeConfig(): Base
     {
-        return new Config(['treeAttribute' => 'tree_id', 'parentAttributeType' => 'uuid']);
+        $config= new Base();
+        $config->parent()->setType('uuid');
+
+        return $config;
     }
+    /*
+    protected static function buildTreeConfig(): Base
+    {
+        $config= new Base(
+            (new TreeAttribute())->setType('uuid')->setAutoGenerate(false)
+        );
+        $config->parent()->setType('uuid');
+
+        return $config;
+    }
+    */
 }
 ```
 
@@ -160,7 +171,7 @@ class AddTemplates extends Migration
             $table->uuid('id')->primary();
             $table->string('title');
     
-            Migrate::getColumns($table, (new Page)->getTreeConfig());
+            Migrate::columns($table, (new Page)->getTreeConfig());
             // or 
             // Migrate::getColumnsFromModel($table, Page::class);
     

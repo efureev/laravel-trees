@@ -139,11 +139,11 @@ class CollectionTest extends AbstractUnitTestCase
             static::assertCount(static::sum($childrenNodesMap, $level), $list);
 
             static::assertEmpty($list->filter(function ($item) use ($level) {
-                return $item->getLevel() > $level;
+                return $item->levelValue() > $level;
             }));
 
             static::assertCount(static::sum($childrenNodesMap, $level), $list->filter(function ($item) use ($level) {
-                return $item->getLevel() <= $level;
+                return $item->levelValue() <= $level;
             }));
 
             /** @var Collection $tree */

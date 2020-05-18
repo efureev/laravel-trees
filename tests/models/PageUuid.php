@@ -2,7 +2,7 @@
 
 namespace Fureev\Trees\Tests\models;
 
-use Fureev\Trees\Config;
+use Fureev\Trees\Config\Base;
 
 /**
  * Class Page
@@ -19,8 +19,11 @@ class PageUuid extends Page
 
     protected $table = 'pages_uuid';
 
-    protected static function buildTreeConfig(): Config
+    protected static function buildTreeConfig(): Base
     {
-        return new Config(['treeAttribute' => 'tree_id', 'parentAttributeType' => 'uuid']);
+        $config = new Base(true);
+        $config->parent()->setType('uuid');
+
+        return $config;
     }
 }

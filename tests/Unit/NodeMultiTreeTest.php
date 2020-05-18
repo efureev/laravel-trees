@@ -14,8 +14,10 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
     public function testCreateRootMissingTree(): void
     {
         /** @var Page $model */
-        $model = new self::$modelClass(['title' => 'root node']);
-        $model->setTreeConfig(new Config(['treeAttribute' => 'tree_id', 'autoGenerateTreeId' => false]));
+        $model  = new self::$modelClass(['title' => 'root node']);
+        $config = new Config\Base(true);
+        $config->tree()->setAutoGenerate(false);
+        $model->setTreeConfig($config);
 
         $this->expectException(TreeNeedValueException::class);
         $model->makeRoot()->save();
@@ -27,7 +29,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $model = self::$modelClass::first();
 
         $this->assertSame(1, $model->getKey());
-        $this->assertSame(1, $model->getTree());
+        $this->assertSame(1, $model->treeValue());
         $this->assertTrue($model->isRoot());
 
         $this->assertInstanceOf(self::$modelClass, $model->getRoot());
@@ -55,7 +57,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $this->assertEmpty($model->children);
         $this->assertInstanceOf(self::$modelClass, $model->getRoot());
         if (!$parent) { //root
-            $this->assertSame($no, $model->getTree());
+            $this->assertSame($no, $model->treeValue());
             $this->assertTrue($model->isRoot());
 
             $this->assertEquals($model->id, $model->getRoot()->id);
@@ -64,7 +66,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
             $this->assertEmpty($model->parents());
         } else { // sub-nodes
             $this->assertSame($model->getRoot()->getKey(), $model->parent->getKey());
-            $this->assertSame($model->parent->getTree(), $model->getTree());
+            $this->assertSame($model->parent->treeValue(), $model->treeValue());
         }
 
         return $model;
@@ -89,7 +91,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
             $node21 = new self::$modelClass(['title' => 'child 2.1']);
             $node21->prependTo($root)->save();
 
-            static::assertSame(1, $node21->getLevel());
+            static::assertSame(1, $node21->levelValue());
 
             $_root = $node21->parent()->first();
 
@@ -99,7 +101,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
             $node31 = new self::$modelClass(['title' => 'child 3.1']);
             $node31->prependTo($node21)->save();
-            static::assertSame(2, $node31->getLevel());
+            static::assertSame(2, $node31->levelValue());
 
 
             $_node21 = $node31->parent()->first();
@@ -116,7 +118,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
             $parents = $node31->parents();
             static::assertCount(2, $parents);
-            static::assertSame(2, $node31->getLevel());
+            static::assertSame(2, $node31->levelValue());
         }
     }
 
@@ -137,17 +139,17 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         [$root, $root2] = $roots;
 
-        static::assertSame(0, $root->getLevel());
-        static::assertSame(0, $root2->getLevel());
+        static::assertSame(0, $root->levelValue());
+        static::assertSame(0, $root2->levelValue());
 
         /** @var Page $node21 */
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $node21->appendTo($root)->save();
-        static::assertSame(1, $node21->getLevel());
+        static::assertSame(1, $node21->levelValue());
 
         $node22 = new self::$modelClass(['title' => 'child 2.2']);
         $node22->insertBefore($node21)->save();
-        static::assertSame(1, $node22->getLevel());
+        static::assertSame(1, $node22->levelValue());
 
         $this->assertCount(2, $root->children);
 
@@ -158,8 +160,8 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $this->assertTrue($root->equalTo($node21->parent));
         $this->assertTrue($root->equalTo($node22->parent));
 
-        $this->assertEquals(1, $node21->getLevel());
-        $this->assertEquals(1, $node22->getLevel());
+        $this->assertEquals(1, $node21->levelValue());
+        $this->assertEquals(1, $node22->levelValue());
 
         $this->assertTrue($node22->equalTo($node21->siblings()->get()->first()));
         $this->assertTrue($node21->equalTo($node22->siblings()->get()->first()));
@@ -176,11 +178,11 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $node22 = new self::$modelClass(['title' => 'child 2.2']);
         $node22->appendTo($root)->save();
-        static::assertSame(1, $node22->getLevel());
+        static::assertSame(1, $node22->levelValue());
 
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $node21->insertAfter($node22)->save();
-        static::assertSame(1, $node21->getLevel());
+        static::assertSame(1, $node21->levelValue());
 
         $this->assertCount(2, $root->children);
 
@@ -191,8 +193,8 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $this->assertTrue($root->equalTo($node21->parent));
         $this->assertTrue($root->equalTo($node22->parent));
 
-        $this->assertEquals(1, $node21->getLevel());
-        $this->assertEquals(1, $node22->getLevel());
+        $this->assertEquals(1, $node21->levelValue());
+        $this->assertEquals(1, $node22->levelValue());
 
         $this->assertTrue($node22->equalTo($node21->siblings()->get()->first()));
         $this->assertTrue($node21->equalTo($node22->siblings()->get()->first()));
@@ -310,7 +312,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $node21->prependTo($root)->save();
-        static::assertSame(1, $node21->getLevel());
+        static::assertSame(1, $node21->levelValue());
 
         $root->refresh();
         $this->assertTrue($node21->isLeaf());
@@ -335,11 +337,11 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $node21->prependTo($root)->save();
-        static::assertSame(1, $node21->getLevel());
+        static::assertSame(1, $node21->levelValue());
 
         $node31 = new self::$modelClass(['title' => 'child 3.1']);
         $node31->prependTo($node21)->save();
-        static::assertSame(2, $node31->getLevel());
+        static::assertSame(2, $node31->levelValue());
 
         $root->refresh();
         $node21->refresh();
@@ -351,7 +353,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $this->assertTrue($node21->delete());
         $node31->refresh();
 
-        static::assertSame(1, $node31->getLevel());
+        static::assertSame(1, $node31->levelValue());
 
         $this->assertTrue($node31->isLeaf());
     }
@@ -363,15 +365,15 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $node21->prependTo($root)->save();
-        static::assertSame(1, $node21->getLevel());
+        static::assertSame(1, $node21->levelValue());
 
         $node31 = new self::$modelClass(['title' => 'child 3.1']);
         $node31->prependTo($node21)->save();
-        static::assertSame(2, $node31->getLevel());
+        static::assertSame(2, $node31->levelValue());
 
         $node41 = new self::$modelClass(['title' => 'child 4.1']);
         $node41->prependTo($node31)->save();
-        static::assertSame(3, $node41->getLevel());
+        static::assertSame(3, $node41->levelValue());
 
         $root->refresh();
         $node21->refresh();
@@ -391,21 +393,21 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $this->assertTrue($root->isLeaf());
         $this->assertEmpty($root->children()->count());
 
-        $this->assertEquals(1, $root->getLeftOffset());
-        $this->assertEquals(2, $root->getRightOffset());
+        $this->assertEquals(1, $root->leftOffset());
+        $this->assertEquals(2, $root->rightOffset());
 
 
         $node31 = new self::$modelClass(['title' => 'child 3.1 new']);
         $node31->appendTo($root)->save();
-        static::assertSame(1, $node31->getLevel());
+        static::assertSame(1, $node31->levelValue());
 
         $node41 = new self::$modelClass(['title' => 'child 4.1 new ']);
         $node41->appendTo($node31)->save();
-        static::assertSame(2, $node41->getLevel());
+        static::assertSame(2, $node41->levelValue());
 
         $node51 = new self::$modelClass(['title' => 'child 5.1 new ']);
         $node51->prependTo($node41)->save();
-        static::assertSame(3, $node51->getLevel());
+        static::assertSame(3, $node51->levelValue());
 
         $root->refresh();
         $node51->refresh();
@@ -415,11 +417,11 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $this->assertTrue($node51->isChildOf($root));
         $this->assertTrue($node51->isChildOf($node31));
 
-        $this->assertEquals(1, $root->getLeftOffset());
-        $this->assertEquals(8, $root->getRightOffset());
+        $this->assertEquals(1, $root->leftOffset());
+        $this->assertEquals(8, $root->rightOffset());
 
         $node21->prependTo($root)->save();
-        static::assertSame(1, $node21->getLevel());
+        static::assertSame(1, $node21->levelValue());
     }
 
 
@@ -430,22 +432,22 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $node21->prependTo($root)->save();
-        static::assertSame(1, $node21->getLevel());
+        static::assertSame(1, $node21->levelValue());
 
         $node31 = new self::$modelClass(['title' => 'child 3.1']);
         $node31->prependTo($node21)->save();
-        static::assertSame(2, $node31->getLevel());
+        static::assertSame(2, $node31->levelValue());
 
         $node31->appendTo($root)->save();
         $node31->refresh();
-        static::assertSame(1, $node31->getLevel());
+        static::assertSame(1, $node31->levelValue());
 
         $this->assertTrue($root->equalTo($node31->parent));
         $this->assertCount(2, $root->children);
 
         $node31->appendTo($node21)->save();
         $node31->refresh();
-        static::assertSame(2, $node31->getLevel());
+        static::assertSame(2, $node31->levelValue());
 
         $node21->refresh();
         $root->refresh();
@@ -590,7 +592,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         $node41->appendTo($root)->save();
 
         $children = $root->children()->defaultOrder()->get()->map(
-            function ($item) {
+            static function ($item) {
                 return $item->title;
             }
         );
@@ -601,9 +603,8 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
         static::assertTrue($node31->up());
         static::assertFalse($node31->isForceSaving());
 
-
         $children = $root->children()->defaultOrder()->get()->map(
-            function ($item) {
+            static function ($item) {
                 return $item->title;
             }
         );
@@ -616,7 +617,7 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
 
         $children = $root->children()->defaultOrder()->get()->map(
-            function ($item) {
+            static function ($item) {
                 return $item->title;
             }
         );

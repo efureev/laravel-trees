@@ -56,7 +56,7 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
                     $table->integerIncrements('id');
                 }
 
-                Migrate::getColumns($table, $config);
+                Migrate::columns($table, $config);
                 $table->string('title');
                 $table->string('path')->nullable();
                 $table->json('params')->default('{}');

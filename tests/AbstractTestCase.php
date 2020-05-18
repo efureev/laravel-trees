@@ -33,7 +33,7 @@ abstract class AbstractTestCase extends TestCase
                 'url'            => env('DATABASE_URL'),
                 'host'           => env('DB_HOST', 'localhost'),
                 'port'           => env('DB_PORT', '5432'),
-                'database'       => env('POSTGRES_DB', 'postgres'),
+                'database'       => env('DB_DATABASE', 'postgres'),
                 'username'       => env('DB_USERNAME', 'postgres'),
                 'password'       => env('DB_PASSWORD', 'postgres'),
                 'charset'        => 'utf8',

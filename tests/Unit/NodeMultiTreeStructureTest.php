@@ -16,23 +16,27 @@ class NodeMultiTreeStructureTest extends AbstractUnitTestCase
         for ($i = 1; $i <= 10; $i++) {
             $trees[] = $uuid = Uuid::uuid();
 
-            $root = new static::$modelClass([
-                'title' => "Root structure site: #$i [$uuid]",
-                'tree_id' => $uuid,
-                'path' => [0],
-            ]);
+            $root = new static::$modelClass(
+                [
+                    'title'   => "Root structure site: #$i [$uuid]",
+                    'tree_id' => $uuid,
+                    'path'    => [0],
+                ]
+            );
 
             $root->save();
 
             foreach (['en', 'ru', 'es'] as $local) {
-                $path = $root->path;
+                $path   = $root->path;
                 $path[] = $local;
                 /** @var Structure $node */
-                $node = new static::$modelClass([
-                    'title' => "[$local] Locale structure",
-                    'path' => $path,
-                    'params' => ['local' => $local],
-                ]);
+                $node = new static::$modelClass(
+                    [
+                        'title'  => "[$local] Locale structure",
+                        'path'   => $path,
+                        'params' => ['local' => $local],
+                    ]
+                );
 
                 $node->appendTo($root);
                 $node->save();
@@ -53,16 +57,17 @@ class NodeMultiTreeStructureTest extends AbstractUnitTestCase
             $listNonRoot = static::$modelClass::notRoot()->byTree($tree)->get();
             static::assertCount(3, $listNonRoot);
 
-            $locals = $listNonRoot->map(static function ($item) {
-                return $item->params['local'];
-            })->unique();
+            $locals = $listNonRoot->map(
+                static function ($item) {
+                    return $item->params['local'];
+                }
+            )->unique();
 
             static::assertCount(3, $locals);
             $childrenMap = [3, 2];
 
             /** @var Structure $node */
             foreach ($listNonRoot as $node) {
-
                 $node->refresh();
                 static::makeTree($node, ...$childrenMap);
                 $node->refresh();

@@ -2,13 +2,13 @@
 
 namespace Fureev\Trees;
 
+use Fureev\Trees\Config\Base;
 use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
     DeleteRootException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
-    UniqueRootException
-};
+    UniqueRootException};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,7 +32,10 @@ trait NestedSetTrait
      * @var \Carbon\Carbon
      */
     public static $deletedAt;
-    /** @var integer */
+
+    /**
+     * @var integer
+     */
     protected $treeChange;
 
     /**
@@ -123,33 +126,33 @@ trait NestedSetTrait
         }
 
         switch ($this->operation) {
-            case Config::OPERATION_MAKE_ROOT:
+            case Base::OPERATION_MAKE_ROOT:
                 if (!$this->isMultiTree() && ($exist = $this->root()->first()) !== null) {
                     throw new UniqueRootException($exist);
                 }
 
                 $this->validateAndSetTreeID();
 
-                $this->setAttribute($this->getLeftAttributeName(), 1);
-                $this->setAttribute($this->getRightAttributeName(), 2);
-                $this->setAttribute($this->getLevelAttributeName(), 0);
+                $this->setAttribute($this->leftAttribute()->name(), 1);
+                $this->setAttribute($this->rightAttribute()->name(), 2);
+                $this->setAttribute($this->levelAttribute()->name(), 0);
 
                 break;
-            case Config::OPERATION_PREPEND_TO:
+            case Base::OPERATION_PREPEND_TO:
                 $this->validateExisted();
-                $this->insertNode(($this->node->getLeftOffset() + 1), 1);
+                $this->insertNode(($this->node->leftOffset() + 1), 1);
                 break;
-            case Config::OPERATION_APPEND_TO:
+            case Base::OPERATION_APPEND_TO:
                 $this->validateExisted();
-                $this->insertNode($this->node->getRightOffset(), 1);
+                $this->insertNode($this->node->rightOffset(), 1);
                 break;
-            case Config::OPERATION_INSERT_BEFORE:
+            case Base::OPERATION_INSERT_BEFORE:
                 $this->validateExisted();
-                $this->insertNode($this->node->getLeftOffset());
+                $this->insertNode($this->node->leftOffset());
                 break;
-            case Config::OPERATION_INSERT_AFTER:
+            case Base::OPERATION_INSERT_AFTER:
                 $this->validateExisted();
-                $this->insertNode($this->node->getRightOffset() + 1);
+                $this->insertNode($this->node->rightOffset() + 1);
                 break;
             default:
                 throw new NotSupportedException(
@@ -163,13 +166,13 @@ trait NestedSetTrait
 
     protected function saveWithParent(): void
     {
-        $this->operation = Config::OPERATION_APPEND_TO;
+        $this->operation = Base::OPERATION_APPEND_TO;
         $this->node      = $this->parent;
     }
 
     protected function saveWithOutTargets(): void
     {
-        $this->operation = Config::OPERATION_MAKE_ROOT;
+        $this->operation = Base::OPERATION_MAKE_ROOT;
         unset($this->attributes['_setRoot']);
     }
 
@@ -178,11 +181,11 @@ trait NestedSetTrait
      */
     protected function validateAndSetTreeID(): void
     {
-        if (!$this->isMultiTree() || $this->getTree() !== null) {
+        if (!$this->isMultiTree()  || $this->treeValue() !== null) {
             return;
         }
 
-        if ($this->getTreeConfig()->isAutogenerateTreeId()) {
+        if ($this->treeAttribute()->isAutoGenerate()) {
             $this->setTree($this->getTreeConfig()->generateTreeId($this));
 
             return;
@@ -200,7 +203,7 @@ trait NestedSetTrait
      */
     public function setTree($treeId): self
     {
-        $this->setAttribute($this->getTreeAttributeName(), $treeId);
+        $this->setAttribute($this->treeAttribute()->name(), $treeId);
 
         return $this;
     }
@@ -226,12 +229,12 @@ trait NestedSetTrait
         if ($depth === 0 && $this->node->isRoot()) {
             throw new UniqueRootException($this->node, 'Can not insert a node before/after root.');
         }
-        $this->setAttribute($this->getLeftAttributeName(), $to);
-        $this->setAttribute($this->getRightAttributeName(), ($to + 1));
-        $this->setAttribute($this->getLevelAttributeName(), ($this->node->getLevel() + $depth));
+        $this->setAttribute($this->leftAttribute()->name(), $to);
+        $this->setAttribute($this->rightAttribute()->name(), ($to + 1));
+        $this->setAttribute($this->levelAttribute()->name(), ($this->node->levelValue() + $depth));
 
         if ($this->isMultiTree()) {
-            $this->setAttribute($this->getTreeAttributeName(), $this->node->getTree());
+            $this->setAttribute($this->treeAttribute()->name(), $this->node->treeValue());
         }
 
         $this->shift($to, null, 2);
@@ -242,7 +245,7 @@ trait NestedSetTrait
      */
     public function isRoot(): bool
     {
-        return $this->getParentId() === null;
+        return $this->parentValue() === null;
     }
 
     /**
@@ -255,13 +258,13 @@ trait NestedSetTrait
     {
         if ($delta !== 0 && ($to === null || $to >= $from)) {
             if ($tree === null && $this->isMultiTree()) {
-                $tree = $this->getTree();
+                $tree = $this->treeValue();
             }
 
-            foreach ([$this->getLeftAttributeName(), $this->getRightAttributeName()] as $i => $attribute) {
+            foreach ([$this->leftAttribute()->name(), $this->rightAttribute()->name()] as $i => $attribute) {
                 $query = $this->query();
                 if ($this->isMultiTree()) {
-                    $query->where($this->getTreeAttributeName(), $tree);
+                    $query->where($this->treeAttribute()->name(), $tree);
                 }
 
                 if ($to !== null) {
@@ -296,27 +299,27 @@ trait NestedSetTrait
         $this->nodeRefresh();
 
         switch ($this->operation) {
-            case Config::OPERATION_MAKE_ROOT:
+            case Base::OPERATION_MAKE_ROOT:
                 if (!$this->isMultiTree()) {
                     throw new Exception('Can not move a node as the root when Model is not set to "MultiTree"');
                 }
 
-                if ($this->getOriginal($this->getTreeAttributeName()) !== $this->getTree()) {
-                    $this->treeChange = $this->getTree();
+                if ($this->getOriginal($this->treeAttribute()->name()) !== $this->treeValue()) {
+                    $this->treeChange = $this->treeValue();
                     $this->setAttribute(
-                        $this->getTreeAttributeName(),
-                        $this->getOriginal($this->getTreeAttributeName())
+                        $this->treeAttribute()->name(),
+                        $this->getOriginal($this->treeAttribute()->name())
                     );
                 }
                 break;
 
-            case Config::OPERATION_INSERT_BEFORE:
-            case Config::OPERATION_INSERT_AFTER:
+            case Base::OPERATION_INSERT_BEFORE:
+            case Base::OPERATION_INSERT_AFTER:
                 if ($this->node->isRoot()) {
                     throw new UniqueRootException($this->node, 'Can not move a node before/after root.');
                 }
-            case Config::OPERATION_PREPEND_TO:
-            case Config::OPERATION_APPEND_TO:
+            case Base::OPERATION_PREPEND_TO:
+            case Base::OPERATION_APPEND_TO:
                 if ($this->equalTo($this->node)) {
                     throw new Exception('Can not move a node when the target node is same.');
                 }
@@ -334,14 +337,14 @@ trait NestedSetTrait
     public function equalTo(Model $model): bool
     {
         return
-            $this->getLeftOffset() === $model->getLeftOffset() &&
-            $this->getRightOffset() === $model->getRightOffset() &&
-            $this->getLevel() === $model->getLevel() &&
-            $this->getParentId() === $model->getParentId() &&
-            ($this->isMultiTree()
-                ? $this->getTree() === $model->getTree()
+            $this->leftOffset() === $model->leftOffset() &&
+            $this->rightOffset() === $model->rightOffset() &&
+            $this->levelValue() === $model->levelValue() &&
+            $this->parentValue() === $model->parentValue() &&
+            $this->treeValue() === $model->treeValue()/*($this->isMultiTree()
+                ? $this->treeValue() === $model->treeValue()
                 : true
-            );
+            )*/ ;
     }
 
     /**
@@ -351,9 +354,10 @@ trait NestedSetTrait
      */
     public function isChildOf(Model $node): bool
     {
-        return ($this->isMultiTree() ? $this->getTree() === $node->getTree() : true) &&
-            $this->getLeftOffset() > $node->getLeftOffset() &&
-            $this->getRightOffset() < $node->getRightOffset();
+        //        return ($this->isMultiTree() ? $this->treeValue() === $node->treeValue() : true) &&
+        return $this->treeValue() === $node->treeValue() &&
+            $this->leftOffset() > $node->leftOffset() &&
+            $this->rightOffset() < $node->rightOffset();
     }
 
     /**
@@ -362,22 +366,22 @@ trait NestedSetTrait
     public function afterUpdate(): void
     {
         switch ($this->operation) {
-            case Config::OPERATION_MAKE_ROOT:
+            case Base::OPERATION_MAKE_ROOT:
                 if ($this->treeChange || $this->exists || !$this->isRoot()) {
                     $this->moveNodeAsRoot();
                 }
                 break;
-            case Config::OPERATION_PREPEND_TO:
-                $this->moveNode(($this->node->getLeftOffset() + 1), 1);
+            case Base::OPERATION_PREPEND_TO:
+                $this->moveNode(($this->node->leftOffset() + 1), 1);
                 break;
-            case Config::OPERATION_APPEND_TO:
-                $this->moveNode($this->node->getRightOffset(), 1);
+            case Base::OPERATION_APPEND_TO:
+                $this->moveNode($this->node->rightOffset(), 1);
                 break;
-            case Config::OPERATION_INSERT_BEFORE:
-                $this->moveNode($this->node->getLeftOffset());
+            case Base::OPERATION_INSERT_BEFORE:
+                $this->moveNode($this->node->leftOffset());
                 break;
-            case Config::OPERATION_INSERT_AFTER:
-                $this->moveNode($this->node->getRightOffset() + 1);
+            case Base::OPERATION_INSERT_AFTER:
+                $this->moveNode($this->node->rightOffset() + 1);
                 break;
         }
 
@@ -395,12 +399,12 @@ trait NestedSetTrait
      */
     protected function moveNodeAsRoot(): void
     {
-        $left  = $this->getLeftOffset();
-        $right = $this->getRightOffset();
-        $depth = $this->getLevel();
+        $left  = $this->leftOffset();
+        $right = $this->rightOffset();
+        $depth = $this->levelValue();
 
 
-        if (!$this->getTreeConfig()->isAutogenerateTreeId()) {
+        if (!$this->treeAttribute()->isAutogenerate()) {
             throw new TreeNeedValueException();
         }
 
@@ -410,14 +414,16 @@ trait NestedSetTrait
             ->descendants(null, true)
             ->update(
                 [
-                    $this->getLeftAttributeName()  => new Expression(
-                        $this->getLeftAttributeName() . ' + ' . (1 - $left)
+                    $this->leftAttribute()->name()  => new Expression(
+                        $this->leftAttribute()->name() . ' + ' . (1 - $left)
                     ),
-                    $this->getRightAttributeName() => new Expression(
-                        $this->getRightAttributeName() . ' + ' . (1 - $left)
+                    $this->rightAttribute()->name() => new Expression(
+                        $this->rightAttribute()->name() . ' + ' . (1 - $left)
                     ),
-                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . ' + ' . - $depth),
-                    $this->getTreeAttributeName()  => $tree,
+                    $this->levelAttribute()->name() => new Expression(
+                        $this->levelAttribute()->name() . ' + ' . - $depth
+                    ),
+                    $this->treeAttribute()->name()  => $tree,
                 ]
             );
 
@@ -430,18 +436,18 @@ trait NestedSetTrait
      */
     protected function moveNode($to, $depth = 0): void
     {
-        $left  = $this->getLeftOffset();
-        $right = $this->getRightOffset();
-        $depth = ($this->getLevel() - $this->node->getLevel() - $depth);
+        $left  = $this->leftOffset();
+        $right = $this->rightOffset();
+        $depth = ($this->levelValue() - $this->node->levelValue() - $depth);
 
-        if (!$this->isMultiTree() || $this->getTree() === $this->node->getTree()) {
+        if (!$this->isMultiTree() || $this->treeValue() === $this->node->treeValue()) {
             // same root
             $this->newQuery()
                 ->descendants(null, true)
                 ->update(
                     [
-                        $this->getLevelAttributeName() => new Expression(
-                            "-{$this->getLevelAttributeName()} + " . $depth
+                        $this->levelAttribute()->name() => new Expression(
+                            "-{$this->levelAttribute()->name()} + " . $depth
                         ),
                     ]
                 );
@@ -458,21 +464,21 @@ trait NestedSetTrait
 
             $this->newQuery()
                 ->descendants(null, true)
-                ->where($this->getLevelAttributeName(), '<', 0)
+                ->where($this->levelAttribute()->name(), '<', 0)
                 ->update(
                     [
-                        $this->getLeftAttributeName()  => new Expression(
-                            $this->getLeftAttributeName() . ' + ' . $delta
+                        $this->leftAttribute()->name()  => new Expression(
+                            $this->leftAttribute()->name() . ' + ' . $delta
                         ),
-                        $this->getRightAttributeName() => new Expression(
-                            $this->getRightAttributeName() . ' + ' . $delta
+                        $this->rightAttribute()->name() => new Expression(
+                            $this->rightAttribute()->name() . ' + ' . $delta
                         ),
-                        $this->getLevelAttributeName() => new Expression("-{$this->getLevelAttributeName()}"),
+                        $this->levelAttribute()->name() => new Expression("-{$this->levelAttribute()->name()}"),
                     ]
                 );
         } else {
             // move from other root
-            $tree = $this->node->getTree();
+            $tree = $this->node->treeValue();
             $this->shift($to, null, ($right - $left + 1), $tree);
             $delta = ($to - $left);
 
@@ -480,16 +486,16 @@ trait NestedSetTrait
                 ->descendants(null, true)
                 ->update(
                     [
-                        $this->getLeftAttributeName()  => new Expression(
-                            $this->getLeftAttributeName() . ' + ' . $delta
+                        $this->leftAttribute()->name()  => new Expression(
+                            $this->leftAttribute()->name() . ' + ' . $delta
                         ),
-                        $this->getRightAttributeName() => new Expression(
-                            $this->getRightAttributeName() . ' + ' . $delta
+                        $this->rightAttribute()->name() => new Expression(
+                            $this->rightAttribute()->name() . ' + ' . $delta
                         ),
-                        $this->getLevelAttributeName() => new Expression(
-                            $this->getLevelAttributeName() . ' + ' . - $depth
+                        $this->levelAttribute()->name() => new Expression(
+                            $this->levelAttribute()->name() . ' + ' . - $depth
                         ),
-                        $this->getTreeAttributeName()  => $tree,
+                        $this->treeAttribute()->name()  => $tree,
                     ]
                 );
 
@@ -500,13 +506,13 @@ trait NestedSetTrait
     public function beforeSave(): void
     {
         switch ($this->operation) {
-            case Config::OPERATION_PREPEND_TO:
-            case Config::OPERATION_APPEND_TO:
-                $this->setAttribute($this->getParentIdName(), $this->node->getKey());
+            case Base::OPERATION_PREPEND_TO:
+            case Base::OPERATION_APPEND_TO:
+                $this->setAttribute($this->parentAttribute()->name(), $this->node->getKey());
                 break;
-            case Config::OPERATION_INSERT_AFTER:
-            case Config::OPERATION_INSERT_BEFORE:
-                $this->setAttribute($this->getParentIdName(), $this->node->getParentId());
+            case Base::OPERATION_INSERT_AFTER:
+            case Base::OPERATION_INSERT_BEFORE:
+                $this->setAttribute($this->parentAttribute()->name(), $this->node->parentValue());
                 break;
         }
     }
@@ -519,7 +525,7 @@ trait NestedSetTrait
      */
     public function beforeDelete(): void
     {
-        if ($this->operation !== Config::OPERATION_DELETE_ALL && $this->isRoot()) {
+        if ($this->operation !== Base::OPERATION_DELETE_ALL && $this->isRoot()) {
             $this->onDeletedRootNode();
         }
 
@@ -563,7 +569,7 @@ trait NestedSetTrait
     public function children(): HasMany
     {
         return $this
-            ->hasMany(get_class($this), $this->getParentIdName())
+            ->hasMany(get_class($this), $this->parentAttribute()->name())
             ->setModel($this);
     }
 
@@ -580,22 +586,20 @@ trait NestedSetTrait
      */
     public function afterDelete(): void
     {
-        $left  = $this->getLeftOffset();
-        $right = $this->getRightOffset();
+        $left  = $this->leftOffset();
+        $right = $this->rightOffset();
 
-        if ($this->operation === Config::OPERATION_DELETE_ALL || $this->isLeaf()) {
+        if ($this->operation === Base::OPERATION_DELETE_ALL || $this->isLeaf()) {
             $this->shift(($right + 1), null, ($left - $right - 1));
         } else {
-            $parentId = $this->getParentId();
-
             $query = $this->onDeleteQueryForChildren();
 
             $query->update(
                 [
-                    $this->getLeftAttributeName()  => new Expression($this->getLeftAttributeName() . '- 1'),
-                    $this->getRightAttributeName() => new Expression($this->getRightAttributeName() . '- 1'),
-                    $this->getLevelAttributeName() => new Expression($this->getLevelAttributeName() . '- 1'),
-                    $this->getParentIdName()       => $parentId,
+                    $this->leftAttribute()->name()   => new Expression($this->leftAttribute()->name() . '- 1'),
+                    $this->rightAttribute()->name()  => new Expression($this->rightAttribute()->name() . '- 1'),
+                    $this->levelAttribute()->name()  => new Expression($this->levelAttribute()->name() . '- 1'),
+                    $this->parentAttribute()->name() => $this->parentValue(),
                 ]
             );
 
@@ -613,7 +617,7 @@ trait NestedSetTrait
      */
     public function isLeaf(): bool
     {
-        return ($this->getRightOffset() - $this->getLeftOffset()) === 1;
+        return ($this->rightOffset() - $this->leftOffset()) === 1;
     }
 
     /**
@@ -623,7 +627,7 @@ trait NestedSetTrait
      */
     public function prependTo(Model $node): self
     {
-        $this->operation = Config::OPERATION_PREPEND_TO;
+        $this->operation = Base::OPERATION_PREPEND_TO;
         $this->node      = $node;
 
         return $this;
@@ -636,7 +640,7 @@ trait NestedSetTrait
      */
     public function appendTo($node): self
     {
-        $this->operation = Config::OPERATION_APPEND_TO;
+        $this->operation = Base::OPERATION_APPEND_TO;
         $this->node      = $node;
 
         return $this;
@@ -675,7 +679,7 @@ trait NestedSetTrait
      */
     public function insertBefore($node): self
     {
-        $this->operation = Config::OPERATION_INSERT_BEFORE;
+        $this->operation = Base::OPERATION_INSERT_BEFORE;
         $this->node      = $node;
 
         return $this;
@@ -704,7 +708,7 @@ trait NestedSetTrait
      */
     public function insertAfter($node): self
     {
-        $this->operation = Config::OPERATION_INSERT_AFTER;
+        $this->operation = Base::OPERATION_INSERT_AFTER;
         $this->node      = $node;
 
         return $this;
@@ -718,7 +722,7 @@ trait NestedSetTrait
     public function parent(): BelongsTo
     {
         return $this
-            ->belongsTo(get_class($this), $this->getParentIdName())
+            ->belongsTo(get_class($this), $this->parentAttribute()->name())
             ->setModel($this);
     }
 
@@ -760,7 +764,7 @@ trait NestedSetTrait
      */
     public function deleteWithChildren()
     {
-        $this->operation = Config::OPERATION_DELETE_ALL;
+        $this->operation = Base::OPERATION_DELETE_ALL;
 
         if ($this->fireModelEvent('deleting') === false) {
             return false;
@@ -793,7 +797,7 @@ trait NestedSetTrait
      */
     public function makeRoot($tree = null): self
     {
-        $this->operation = Config::OPERATION_MAKE_ROOT;
+        $this->operation = Base::OPERATION_MAKE_ROOT;
 
         if ($tree) {
             $this->setTree($tree);

@@ -28,7 +28,7 @@ class QueryBuilder extends Builder
     {
         $this
             ->treeCondition()
-            ->whereNull($this->model->getParentIdName());
+            ->whereNull($this->model->parentAttribute()->name());
 
         return $this;
     }
@@ -38,8 +38,8 @@ class QueryBuilder extends Builder
      */
     public function treeCondition(): self
     {
-        if ($this->model->isMultiTree() && $this->model->getTree() !== null) {
-            $this->query->where($this->model->getTreeAttributeName(), $this->model->getTree());
+        if ($this->model->isMultiTree() && ($val = $this->model->treeValue()) !== null) {
+            $this->query->where($this->model->treeAttribute()->name(), $val);
         }
 
         return $this;
@@ -54,7 +54,7 @@ class QueryBuilder extends Builder
     {
         $this
             ->treeCondition()
-            ->whereNotNull($this->model->getParentIdName());
+            ->whereNotNull($this->model->parentAttribute()->name());
 
         return $this;
     }
@@ -68,19 +68,19 @@ class QueryBuilder extends Builder
     {
         $condition = [
             [
-                $this->model->getLeftAttributeName(),
+                $this->model->leftAttribute()->name(),
                 '<',
-                $this->model->getLeftOffset(),
+                $this->model->leftOffset(),
             ],
             [
-                $this->model->getRightAttributeName(),
+                $this->model->rightAttribute()->name(),
                 '>',
-                $this->model->getRightOffset(),
+                $this->model->rightOffset(),
             ],
         ];
         if ($level !== null) {
             $condition[] = [
-                $this->model->getLevelAttributeName(),
+                $this->model->levelAttribute()->name(),
                 '>=',
                 $level,
             ];
@@ -102,7 +102,7 @@ class QueryBuilder extends Builder
     public function defaultOrder($dir = 'asc'): self
     {
         $this->query->orders = null;
-        $this->query->orderBy($this->model->getLeftAttributeName(), $dir);
+        $this->query->orderBy($this->model->leftAttribute()->name(), $dir);
 
         return $this;
     }
@@ -125,7 +125,7 @@ class QueryBuilder extends Builder
     public function siblingsAndSelf(): self
     {
         return $this
-            ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
+            ->where($this->model->parentAttribute()->name(), '=', $this->model->parentValue());
     }
 
     /**
@@ -137,7 +137,7 @@ class QueryBuilder extends Builder
     {
         return $this
             ->prevNodes()
-            ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
+            ->where($this->model->parentAttribute()->name(), '=', $this->model->parentValue());
     }
 
     /**
@@ -148,7 +148,7 @@ class QueryBuilder extends Builder
     public function prevNodes(): self
     {
         return $this
-            ->where($this->model->getLeftAttributeName(), '<', $this->model->getLeftOffset())
+            ->where($this->model->leftAttribute()->name(), '<', $this->model->leftOffset())
             ->treeCondition();
     }
 
@@ -161,7 +161,7 @@ class QueryBuilder extends Builder
     {
         return $this
             ->prev()
-            ->where($this->model->getParentIdName(), $this->model->getParentId());
+            ->where($this->model->parentAttribute()->name(), $this->model->parentValue());
     }
 
     /**
@@ -172,7 +172,7 @@ class QueryBuilder extends Builder
     public function prev(): self
     {
         return $this
-            ->where($this->model->getRightAttributeName(), '=', ($this->model->getLeftOffset() - 1))
+            ->where($this->model->rightAttribute()->name(), '=', ($this->model->leftOffset() - 1))
             ->treeCondition();
     }
 
@@ -185,7 +185,7 @@ class QueryBuilder extends Builder
     {
         return $this
             ->next()
-            ->where($this->model->getParentIdName(), $this->model->getParentId());
+            ->where($this->model->parentAttribute()->name(), $this->model->parentValue());
     }
 
     /**
@@ -196,7 +196,7 @@ class QueryBuilder extends Builder
     public function next(): self
     {
         return $this
-            ->where($this->model->getLeftAttributeName(), '=', ($this->model->getRightOffset() + 1))
+            ->where($this->model->leftAttribute()->name(), '=', ($this->model->rightOffset() + 1))
             ->treeCondition();
     }
 
@@ -209,7 +209,7 @@ class QueryBuilder extends Builder
     {
         return $this
             ->nextNodes()
-            ->where($this->model->getParentIdName(), '=', $this->model->getParentId());
+            ->where($this->model->parentAttribute()->name(), '=', $this->model->parentValue());
     }
 
     /**
@@ -220,7 +220,7 @@ class QueryBuilder extends Builder
     public function nextNodes(): self
     {
         return $this
-            ->where($this->model->getLeftAttributeName(), '>', $this->model->getLeftOffset())
+            ->where($this->model->leftAttribute()->name(), '>', $this->model->leftOffset())
             ->treeCondition();
     }
 
@@ -243,9 +243,9 @@ class QueryBuilder extends Builder
     {
         return $this
             ->where(
-                $this->model->getLeftAttributeName(),
+                $this->model->leftAttribute()->name(),
                 '=',
-                new Expression($this->model->getRightAttributeName() . ' - 1')
+                new Expression($this->model->rightAttribute()->name() . ' - 1')
             )
             ->treeCondition();
     }
@@ -262,26 +262,26 @@ class QueryBuilder extends Builder
      */
     public function descendants(?int $level = null, $andSelf = false, $backOrder = false): self
     {
-        $attribute = $backOrder ? $this->model->getRightAttributeName() : $this->model->getLeftAttributeName();
+        $attribute = $backOrder ? $this->model->rightAttribute()->name() : $this->model->leftAttribute()->name();
 
         $condition = [
             [
                 $attribute,
                 $andSelf ? '>=' : '>',
-                $this->model->getLeftOffset(),
+                $this->model->leftOffset(),
             ],
             [
                 $attribute,
                 $andSelf ? '<=' : '<',
-                $this->model->getRightOffset(),
+                $this->model->rightOffset(),
             ],
         ];
 
         if ($level !== null) {
             $condition[] = [
-                $this->model->getLevelAttributeName(),
+                $this->model->levelAttribute()->name(),
                 '<=',
-                ($this->model->getLevel() + $level),
+                ($this->model->levelValue() + $level),
             ];
         }
 
@@ -334,7 +334,7 @@ class QueryBuilder extends Builder
 
         $this->query
             ->whereBetween(
-                $this->model->getTable() . '.' . $this->model->getLeftAttributeName(),
+                $this->model->getTable() . '.' . $this->model->leftAttribute()->name(),
                 [
                     $left,
                     $right,
@@ -345,7 +345,7 @@ class QueryBuilder extends Builder
 
         if ($this->model->isMultiTree()) {
             $treeId = end($values);
-            $this->query->where($this->model->getTable() . '.' . $this->model->getTreeAttributeName(), $treeId);
+            $this->query->where($this->model->getTable() . '.' . $this->model->treeAttribute()->name(), $treeId);
         }
 
         return $this;
@@ -377,7 +377,7 @@ class QueryBuilder extends Builder
         $query = $this->toBase();
         $query->where($this->model->getKeyName(), '=', $id);
 
-        $columns = $this->model->getTreeConfig()->getColumns();
+        $columns = $this->model->getTreeConfig()->columns();
 
         $data = $query->first($columns);
         if (!$data && $required) {
@@ -405,7 +405,7 @@ class QueryBuilder extends Builder
     public function byTree($treeId): self
     {
         if ($this->model->isMultiTree()) {
-            $this->query->where($this->model->getTreeAttributeName(), $treeId);
+            $this->query->where($this->model->treeAttribute()->name(), $treeId);
         }
 
         return $this;
@@ -421,7 +421,7 @@ class QueryBuilder extends Builder
     public function toLevel(?int $level): self
     {
         if ($level !== null) {
-            $this->query->where($this->model->getLevelAttributeName(), '<=', $level);
+            $this->query->where($this->model->levelAttribute()->name(), '<=', $level);
         }
 
         return $this;
@@ -440,7 +440,7 @@ class QueryBuilder extends Builder
             static function ($col) use ($grammar) {
                 return $grammar->wrap($col);
             },
-            $this->model->getTreeConfig()->getColumns()
+            $this->model->getTreeConfig()->columns()
         );
     }
 }
