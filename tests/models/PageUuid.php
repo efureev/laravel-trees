@@ -21,9 +21,6 @@ class PageUuid extends Page
 
     protected static function buildTreeConfig(): Base
     {
-        $config = new Base(true);
-        $config->parent()->setType('uuid');
-
-        return $config;
+        return new Base(true);
     }
 }

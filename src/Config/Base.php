@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Base implements NestedSetConfig
 {
-    //    use ConfigurableTrait;
-
     public const OPERATION_MAKE_ROOT     = 1;
     public const OPERATION_PREPEND_TO    = 2;
     public const OPERATION_APPEND_TO     = 3;
@@ -135,7 +133,7 @@ class Base implements NestedSetConfig
     {
         if ($treeAttribute === false) {
             $treeAttribute = null;
-        } else if ($treeAttribute === null || $treeAttribute === true) {
+        } elseif ($treeAttribute === null || $treeAttribute === true) {
             $treeAttribute = new TreeAttribute();
         }
 
@@ -161,9 +159,10 @@ class Base implements NestedSetConfig
      *
      * @return string|null
      */
-    protected static function getCastForCustomAttribute(string $attributeType): ?string
+    public static function getCastForCustomAttribute(string $attributeType): ?string
     {
         switch ($attributeType) {
+            case 'int':
             case 'integer':
             case 'unsignedInteger':
                 return 'integer';

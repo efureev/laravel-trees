@@ -49,7 +49,9 @@ trait BaseNestedSetTrait
             'booting',
             static function ($model) {
                 /** @var $model static */
-                $model->setTreeConfig(static::buildTreeConfig());
+                $config = static::buildTreeConfig();
+                $config->parent()->setType($model->getKeyType());
+                $model->setTreeConfig($config);
             }
         );
 
@@ -73,6 +75,7 @@ trait BaseNestedSetTrait
     {
         if (!$this->tree_config__) {
             $this->tree_config__ = static::buildTreeConfig();
+            $this->tree_config__->parent()->setType($this->getKeyType());
         }
 
         return $this->tree_config__;

@@ -27,9 +27,7 @@ class Structure extends Page
     protected static function buildTreeConfig(): Base
     {
         $config = new Base();
-        $config
-            ->setAttribute('tree', (new Config\TreeAttribute())->setType('uuid')->setAutoGenerate(false))
-            ->parent()->setType('uuid');
+        $config->setAttribute('tree', (new Config\TreeAttribute())->setType('uuid')->setAutoGenerate(false));
 
         return $config;
     }

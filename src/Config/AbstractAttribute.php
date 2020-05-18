@@ -2,6 +2,8 @@
 
 namespace Fureev\Trees\Config;
 
+use Fureev\Trees\Exceptions\Exception;
+
 /**
  * Class AbstractAttribute
  * @package Fureev\Trees\Config
@@ -18,8 +20,6 @@ abstract class AbstractAttribute
      * @var mixed
      */
     protected $default;
-
-    protected array $params = [];
 
     public function __construct(string $name = null)
     {
@@ -43,14 +43,13 @@ abstract class AbstractAttribute
         return $this->default;
     }
 
-    /*   public function hasIndex(): bool
-       {
-           return $this->hasIndex;
-       }*/
-
     public function setType(string $type): self
     {
-        $this->type = $type;
+        $typeOpt = Base::getCastForCustomAttribute($type);
+        if ($typeOpt === null) {
+            throw Exception::make("Invalid type {$type}");
+        }
+        $this->type = $typeOpt;
 
         return $this;
     }

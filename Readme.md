@@ -126,11 +126,13 @@ class Category extends Model implements TreeConfigurable
 <?php
 namespace App\Models;
 
-use Fureev\Trees\Config\TreeAttribute;use Fureev\Trees\NestedSetTrait;
+// use Fureev\Trees\Config\TreeAttribute;
+use Fureev\Trees\Contracts\TreeConfigurable;
+use Fureev\Trees\NestedSetTrait;
 use Fureev\Trees\Config\Base;
 use Illuminate\Database\Eloquent\Model;
 
-class Item extends Model
+class Item extends Model implements TreeConfigurable
 {
     use NestedSetTrait;
     
@@ -139,7 +141,7 @@ class Item extends Model
     protected static function buildTreeConfig(): Base
     {
         $config= new Base();
-        $config->parent()->setType('uuid');
+//        $config->parent()->setType('uuid'); <-- `parent type` set up automatically from `$model->keyType`
 
         return $config;
     }
@@ -149,7 +151,6 @@ class Item extends Model
         $config= new Base(
             (new TreeAttribute())->setType('uuid')->setAutoGenerate(false)
         );
-        $config->parent()->setType('uuid');
 
         return $config;
     }

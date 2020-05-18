@@ -55,7 +55,7 @@ class Migrate
             $model = new $model();
         }
 
-        if ($model instanceof TreeConfigurable) {
+        if ($model instanceof TreeConfigurable || method_exists($model, 'getTreeConfig')) {
             static::columns($table, $model->getTreeConfig());
             return;
         }
