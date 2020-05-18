@@ -10,9 +10,9 @@ use Illuminate\Database\Schema\ColumnDefinition;
 
 class MigrateTest extends AbstractTestCase
 {
-    private static string $tableName = 'test_config';
+    private static $tableName = 'test_config';
 
-    private static array $singleColumns = ['lft', 'rgt', 'lvl', 'parent_id'];
+    private static $singleColumns = ['lft', 'rgt', 'lvl', 'parent_id'];
 
 
     public function testSingleGetColumns(): void

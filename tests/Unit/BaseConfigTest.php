@@ -7,8 +7,8 @@ use Fureev\Trees\Tests\AbstractTestCase;
 
 class BaseConfigTest extends AbstractTestCase
 {
-    private static array $singleColumns = ['lft', 'rgt', 'lvl', 'parent_id'];
-    private static string $treeColumn = 'tree_id';
+    private static $singleColumns = ['lft', 'rgt', 'lvl', 'parent_id'];
+    private static $treeColumn = 'tree_id';
 
 
     public function testSingleTreeColumns(): void
