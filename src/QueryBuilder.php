@@ -428,6 +428,20 @@ class QueryBuilder extends Builder
     }
 
     /**
+     * @param int|null $level
+     *
+     * @return $this
+     */
+    public function byLevel(?int $level): self
+    {
+        if ($level !== null) {
+            $this->query->where($this->model->levelAttribute()->name(), $level);
+        }
+
+        return $this;
+    }
+
+    /**
      * Get wrapped column names.
      *
      * @return array
