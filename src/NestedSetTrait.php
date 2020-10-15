@@ -8,7 +8,8 @@ use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
-    UniqueRootException};
+    UniqueRootException
+};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -181,7 +182,7 @@ trait NestedSetTrait
      */
     protected function validateAndSetTreeID(): void
     {
-        if (!$this->isMultiTree()  || $this->treeValue() !== null) {
+        if (!$this->isMultiTree() || $this->treeValue() !== null) {
             return;
         }
 
@@ -315,8 +316,11 @@ trait NestedSetTrait
 
             case Base::OPERATION_INSERT_BEFORE:
             case Base::OPERATION_INSERT_AFTER:
-                if ($this->node->isRoot()) {
-                    throw new UniqueRootException($this->node, 'Can not move a node before/after root.');
+                if (!$this->isMultiTree() && $this->node->isRoot()) {
+                    throw new UniqueRootException(
+                        $this->node,
+                        'Can not move a node before/after root. Model must be "MultiTree"'
+                    );
                 }
             case Base::OPERATION_PREPEND_TO:
             case Base::OPERATION_APPEND_TO:
