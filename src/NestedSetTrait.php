@@ -742,6 +742,11 @@ trait NestedSetTrait
         return $this->parents($level)->first();
     }
 
+    public function isLevel(int $level): bool
+    {
+        return $this->levelValue() === $level;
+    }
+
     /**
      * @param int|null $level
      *
