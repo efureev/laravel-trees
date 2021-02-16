@@ -425,7 +425,7 @@ trait NestedSetTrait
                         $this->rightAttribute()->name() . ' + ' . (1 - $left)
                     ),
                     $this->levelAttribute()->name() => new Expression(
-                        $this->levelAttribute()->name() . ' + ' . - $depth
+                        $this->levelAttribute()->name() . ' + ' . -$depth
                     ),
                     $this->treeAttribute()->name()  => $tree,
                 ]
@@ -497,7 +497,7 @@ trait NestedSetTrait
                             $this->rightAttribute()->name() . ' + ' . $delta
                         ),
                         $this->levelAttribute()->name() => new Expression(
-                            $this->levelAttribute()->name() . ' + ' . - $depth
+                            $this->levelAttribute()->name() . ' + ' . -$depth
                         ),
                         $this->treeAttribute()->name()  => $tree,
                     ]
@@ -728,6 +728,18 @@ trait NestedSetTrait
         return $this
             ->belongsTo(get_class($this), $this->parentAttribute()->name())
             ->setModel($this);
+    }
+
+    /**
+     * Return parent by level
+     *
+     * @param int $level
+     *
+     * @return $this
+     */
+    public function parentByLevel(int $level): self
+    {
+        return $this->parents($level)->first();
     }
 
     /**
