@@ -735,13 +735,18 @@ trait NestedSetTrait
      *
      * @param int $level
      *
-     * @return $this
+     * @return $this|null
      */
-    public function parentByLevel(int $level): self
+    public function parentByLevel(int $level): ?self
     {
         return $this->parents($level)->first();
     }
 
+    /**
+     * @param int $level
+     *
+     * @return bool
+     */
     public function isLevel(int $level): bool
     {
         return $this->levelValue() === $level;
