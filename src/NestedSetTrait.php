@@ -87,6 +87,13 @@ trait NestedSetTrait
             }
         );
 
+        static::deleted(
+            static function ($model) {
+                /** @var NestedSetTrait $model */
+                $model->afterDelete();
+            }
+        );
+
         if (static::isSoftDelete()) {
             static::restoring(
                 static function ($model) {
@@ -97,20 +104,6 @@ trait NestedSetTrait
             static::restored(
                 static function ($model) {
                     $model->restoreDescendants(static::$deletedAt);
-                }
-            );
-
-            static::forceDeleted(
-                static function ($model) {
-                    /** @var NestedSetTrait $model */
-                    $model->afterDelete();
-                }
-            );
-        } else {
-            static::deleted(
-                static function ($model) {
-                    /** @var NestedSetTrait $model */
-                    $model->afterDelete();
                 }
             );
         }
@@ -534,7 +527,7 @@ trait NestedSetTrait
      */
     public function beforeDelete(): void
     {
-        if ($this->operation !== Base::OPERATION_DELETE_ALL && $this->isRoot() && ! static::isSoftDelete()) {
+        if ($this->operation !== Base::OPERATION_DELETE_ALL && $this->isRoot()) {
             $this->onDeletedRootNode();
         }
 

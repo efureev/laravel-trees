@@ -79,9 +79,6 @@ jobs:
       - name: Validate composer.json
         run: composer validate
 
-      - name: Install Composer 'hirak/prestissimo' package
-        run: composer global require hirak/prestissimo --update-no-dev
-
       - name: Install [LOWEST] Composer dependencies
         if: matrix.setup == 'lowest'
         run: composer update --prefer-dist --no-interaction --no-suggest --prefer-lowest
