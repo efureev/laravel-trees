@@ -1,17 +1,17 @@
 name: PHP Laravel Package
 
-on: [push]
+on: [ push, pull_request ]
 
 jobs:
-#  phpcs:
-#    name: PHPCS
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - name: PHPCS check
-#        uses: chekalsky/phpcs-action@v1
-#        with:
-#          enable_warnings: true
+  #  phpcs:
+  #    name: PHPCS
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - uses: actions/checkout@v2
+  #      - name: PHPCS check
+  #        uses: chekalsky/phpcs-action@v1
+  #        with:
+  #          enable_warnings: true
 
   lint-changelog:
     name: Lint changelog file
@@ -35,8 +35,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        setup: ['basic', 'lowest']
-        php: ['7.4']
+        setup: [ 'basic', 'lowest' ]
+        php: [ '7.4' ]
 
     services:
       postgres:
@@ -78,9 +78,6 @@ jobs:
 
       - name: Validate composer.json
         run: composer validate
-
-      - name: Install Composer 'hirak/prestissimo' package
-        run: composer global require hirak/prestissimo --update-no-dev
 
       - name: Install [LOWEST] Composer dependencies
         if: matrix.setup == 'lowest'

@@ -133,7 +133,7 @@ class Base implements NestedSetConfig
     {
         if ($treeAttribute === false) {
             $treeAttribute = null;
-        } elseif ($treeAttribute === null || $treeAttribute === true) {
+        } else if ($treeAttribute === null || $treeAttribute === true) {
             $treeAttribute = new TreeAttribute();
         }
 

@@ -55,7 +55,7 @@ Requirements
 ------------
 
 - PHP >= 7.4
-- Laravel >= 7.1
+- Laravel >= 7.30
 
 It is highly suggested to use database that supports transactions (like MySql's InnoDb, Postgres)
 to secure a tree from possible corruption.

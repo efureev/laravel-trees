@@ -8,7 +8,8 @@ use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
-    UniqueRootException};
+    UniqueRootException
+};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -157,9 +158,9 @@ trait NestedSetTrait
             default:
                 throw new NotSupportedException(
                     null,
-                    'Method "' . get_class(
+                    'Method "'.get_class(
                         $this
-                    ) . '::insert" is not supported for inserting new nodes.'
+                    ).'::insert" is not supported for inserting new nodes.'
                 );
         }
     }
@@ -181,7 +182,7 @@ trait NestedSetTrait
      */
     protected function validateAndSetTreeID(): void
     {
-        if (!$this->isMultiTree()  || $this->treeValue() !== null) {
+        if (!$this->isMultiTree() || $this->treeValue() !== null) {
             return;
         }
 
@@ -197,7 +198,7 @@ trait NestedSetTrait
     /**
      * Set treeID to model
      *
-     * @param int|string $treeId
+     * @param  int|string  $treeId
      *
      * @return $this
      */
@@ -219,8 +220,8 @@ trait NestedSetTrait
     }
 
     /**
-     * @param int $to Left attribute
-     * @param int $depth
+     * @param  int  $to  Left attribute
+     * @param  int  $depth
      *
      * @throws Exception
      */
@@ -249,10 +250,10 @@ trait NestedSetTrait
     }
 
     /**
-     * @param int $from
-     * @param int $to
-     * @param int $delta
-     * @param int|null $tree
+     * @param  int  $from
+     * @param  int  $to
+     * @param  int  $delta
+     * @param  int|null  $tree
      */
     protected function shift($from, $to, $delta, $tree = null): void
     {
@@ -275,7 +276,7 @@ trait NestedSetTrait
 
                 $query->update(
                     [
-                        $attribute => new Expression($attribute . '+ ' . $delta),
+                        $attribute => new Expression($attribute.'+ '.$delta),
                     ]
                 );
             }
@@ -315,8 +316,11 @@ trait NestedSetTrait
 
             case Base::OPERATION_INSERT_BEFORE:
             case Base::OPERATION_INSERT_AFTER:
-                if ($this->node->isRoot()) {
-                    throw new UniqueRootException($this->node, 'Can not move a node before/after root.');
+                if (!$this->isMultiTree() && $this->node->isRoot()) {
+                    throw new UniqueRootException(
+                        $this->node,
+                        'Can not move a node before/after root. Model must be "MultiTree"'
+                    );
                 }
             case Base::OPERATION_PREPEND_TO:
             case Base::OPERATION_APPEND_TO:
@@ -330,7 +334,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @param Model|NestedSetTrait $model
+     * @param  Model|NestedSetTrait  $model
      *
      * @return bool
      */
@@ -348,7 +352,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @param Model|self $node
+     * @param  Model|self  $node
      *
      * @return bool
      */
@@ -415,13 +419,13 @@ trait NestedSetTrait
             ->update(
                 [
                     $this->leftAttribute()->name()  => new Expression(
-                        $this->leftAttribute()->name() . ' + ' . (1 - $left)
+                        $this->leftAttribute()->name().' + '.(1 - $left)
                     ),
                     $this->rightAttribute()->name() => new Expression(
-                        $this->rightAttribute()->name() . ' + ' . (1 - $left)
+                        $this->rightAttribute()->name().' + '.(1 - $left)
                     ),
                     $this->levelAttribute()->name() => new Expression(
-                        $this->levelAttribute()->name() . ' + ' . - $depth
+                        $this->levelAttribute()->name().' + '.-$depth
                     ),
                     $this->treeAttribute()->name()  => $tree,
                 ]
@@ -431,8 +435,8 @@ trait NestedSetTrait
     }
 
     /**
-     * @param int $to Left attribute
-     * @param int $depth
+     * @param  int  $to  Left attribute
+     * @param  int  $depth
      */
     protected function moveNode($to, $depth = 0): void
     {
@@ -447,7 +451,7 @@ trait NestedSetTrait
                 ->update(
                     [
                         $this->levelAttribute()->name() => new Expression(
-                            "-{$this->levelAttribute()->name()} + " . $depth
+                            "-{$this->levelAttribute()->name()} + ".$depth
                         ),
                     ]
                 );
@@ -468,10 +472,10 @@ trait NestedSetTrait
                 ->update(
                     [
                         $this->leftAttribute()->name()  => new Expression(
-                            $this->leftAttribute()->name() . ' + ' . $delta
+                            $this->leftAttribute()->name().' + '.$delta
                         ),
                         $this->rightAttribute()->name() => new Expression(
-                            $this->rightAttribute()->name() . ' + ' . $delta
+                            $this->rightAttribute()->name().' + '.$delta
                         ),
                         $this->levelAttribute()->name() => new Expression("-{$this->levelAttribute()->name()}"),
                     ]
@@ -487,13 +491,13 @@ trait NestedSetTrait
                 ->update(
                     [
                         $this->leftAttribute()->name()  => new Expression(
-                            $this->leftAttribute()->name() . ' + ' . $delta
+                            $this->leftAttribute()->name().' + '.$delta
                         ),
                         $this->rightAttribute()->name() => new Expression(
-                            $this->rightAttribute()->name() . ' + ' . $delta
+                            $this->rightAttribute()->name().' + '.$delta
                         ),
                         $this->levelAttribute()->name() => new Expression(
-                            $this->levelAttribute()->name() . ' + ' . - $depth
+                            $this->levelAttribute()->name().' + '.-$depth
                         ),
                         $this->treeAttribute()->name()  => $tree,
                     ]
@@ -519,9 +523,7 @@ trait NestedSetTrait
 
     /**
      * @throws DeleteRootException
-     */
-    /**
-     * @throws DeleteRootException
+     * @throws DeletedNodeHasChildrenException
      */
     public function beforeDelete(): void
     {
@@ -596,9 +598,9 @@ trait NestedSetTrait
 
             $query->update(
                 [
-                    $this->leftAttribute()->name()   => new Expression($this->leftAttribute()->name() . '- 1'),
-                    $this->rightAttribute()->name()  => new Expression($this->rightAttribute()->name() . '- 1'),
-                    $this->levelAttribute()->name()  => new Expression($this->levelAttribute()->name() . '- 1'),
+                    $this->leftAttribute()->name()   => new Expression($this->leftAttribute()->name().'- 1'),
+                    $this->rightAttribute()->name()  => new Expression($this->rightAttribute()->name().'- 1'),
+                    $this->levelAttribute()->name()  => new Expression($this->levelAttribute()->name().'- 1'),
                     $this->parentAttribute()->name() => $this->parentValue(),
                 ]
             );
@@ -621,7 +623,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @param Model $node
+     * @param  Model  $node
      *
      * @return $this
      */
@@ -634,7 +636,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @param Model $node
+     * @param  Model  $node
      *
      * @return $this
      */
@@ -673,7 +675,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @param Model $node
+     * @param  Model  $node
      *
      * @return $this
      */
@@ -702,7 +704,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @param Model $node
+     * @param  Model  $node
      *
      * @return $this
      */
@@ -727,7 +729,29 @@ trait NestedSetTrait
     }
 
     /**
-     * @param int|null $level
+     * Return parent by level
+     *
+     * @param  int  $level
+     *
+     * @return $this|null
+     */
+    public function parentByLevel(int $level): ?self
+    {
+        return $this->parents($level)->first();
+    }
+
+    /**
+     * @param  int  $level
+     *
+     * @return bool
+     */
+    public function isLevel(int $level): bool
+    {
+        return $this->levelValue() === $level;
+    }
+
+    /**
+     * @param  int|null  $level
      *
      * @return QueryBuilder[]|Collection
      */
@@ -791,7 +815,7 @@ trait NestedSetTrait
     }
 
     /**
-     * @param int|string|null $tree
+     * @param  int|string|null  $tree
      *
      * @return $this
      */
@@ -842,8 +866,8 @@ trait NestedSetTrait
     /**
      * Populate children relations for self and all descendants
      *
-     * @param int $depth = null
-     * @param mixed $with = null. Set the relationships that should be eager loaded.
+     * @param  int  $depth  = null
+     * @param  mixed  $with  = null. Set the relationships that should be eager loaded.
      *
      * @return static
      */

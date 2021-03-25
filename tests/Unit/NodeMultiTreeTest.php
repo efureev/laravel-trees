@@ -210,8 +210,9 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $node21->appendTo($root)->save();
-        $this->expectException(UniqueRootException::class);
+        //        $this->expectException(UniqueRootException::class);
         $node21->insertAfter($root)->save();
+        static::assertTrue($node21->isRoot());
     }
 
     public function testInsertBeforeRootException(): void
@@ -221,8 +222,9 @@ class NodeMultiTreeTest extends AbstractUnitTestCase
 
         $node21 = new self::$modelClass(['title' => 'child 2.1']);
         $node21->appendTo($root)->save();
-        $this->expectException(UniqueRootException::class);
+        //        $this->expectException(UniqueRootException::class);
         $node21->insertBefore($root)->save();
+        static::assertTrue($node21->isRoot());
     }
 
     public function testAppendToSameException(): void
