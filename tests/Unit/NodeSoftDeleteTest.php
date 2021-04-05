@@ -69,11 +69,12 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
     {
         $root = static::createRoot();
 
-        $this->expectException(DeleteRootException::class);
         $root->delete();
+
+        $this->assertTrue($root->trashed());
     }
 
-    public function testDeleteNode(): void
+    public function testSoftDeleteNode(): void
     {
         $root = static::createRoot();
 
@@ -206,5 +207,38 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
         $model = new static::$modelClass(['id' => 1, 'title' => 'root node']);
 
         $this->assertInstanceOf(QueryBuilder::class, $model->newNestedSetQuery());
+    }
+
+
+    public function testRestoreNode(): void
+    {
+        $root = static::createRoot();
+
+        $node21 = new static::$modelClass(['title' => 'child 2.1']);
+        $node21->prependTo($root)->save();
+
+        $node31 = new static::$modelClass(['title' => 'child 3.1']);
+        $node31->prependTo($node21)->save();
+
+        $node21->refresh();
+        $root->refresh();
+
+        $this->assertTrue($node31->isLeaf());
+
+        $node31->delete();
+
+        $node21->refresh();
+        $root->refresh();
+
+        $this->assertTrue($node21->isLeaf());
+
+        $node31->restore();
+
+        $node31->refresh();
+        $node21->refresh();
+        $root->refresh();
+
+        $this->assertTrue($node31->isLeaf());
+        $this->assertFalse($node21->isLeaf());
     }
 }
