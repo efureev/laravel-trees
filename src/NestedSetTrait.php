@@ -19,6 +19,7 @@ use Illuminate\Database\Query\Expression;
  * Trait NestedSetTrait
  *
  * @property Model $parent
+ * @property Model $parentWithTrashed
  * @property Collection|Model[] $children
  * @method QueryBuilder newQuery()
  * @method QueryBuilder query()
@@ -97,13 +98,13 @@ trait NestedSetTrait
         if (static::isSoftDelete()) {
             static::restoring(
                 static function ($model) {
-                    static::$deletedAt = $model->{$model->getDeletedAtColumn()};
+                    $model->beforeRestore();
                 }
             );
 
             static::restored(
                 static function ($model) {
-                    $model->restoreDescendants(static::$deletedAt);
+                    $model->afterRestore();
                 }
             );
         }
@@ -117,12 +118,10 @@ trait NestedSetTrait
         $this->nodeRefresh();
 
         if (!$this->operation) {
-            if ($this->parent) {
+            if ($this->parentWithTrashed) {
                 $this->saveWithParent();
-            } else {
-                if ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
-                    $this->saveWithOutTargets();
-                }
+            } elseif ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
+                $this->saveWithOutTargets();
             }
         }
 
@@ -168,7 +167,7 @@ trait NestedSetTrait
     protected function saveWithParent(): void
     {
         $this->operation = Base::OPERATION_APPEND_TO;
-        $this->node      = $this->parent;
+        $this->node      = $this->parentWithTrashed;
     }
 
     protected function saveWithOutTargets(): void
@@ -719,6 +718,23 @@ trait NestedSetTrait
             ->setModel($this);
     }
 
+
+    /**
+     * Relation to the parent.
+     *
+     * @return BelongsTo
+     */
+    public function parentWithTrashed(): BelongsTo
+    {
+        $query = $this->parent();
+
+        if (static::isSoftDelete()) {
+            $query->withTrashed();
+        }
+
+        return $query;
+    }
+
     /**
      * Return parent by level
      *
@@ -775,9 +791,11 @@ trait NestedSetTrait
     }
 
     /**
+     * @param bool $forceDelete
+     *
      * @return false|int
      */
-    public function deleteWithChildren()
+    public function deleteWithChildren(bool $forceDelete = true)
     {
         $this->operation = Base::OPERATION_DELETE_ALL;
 
@@ -785,7 +803,13 @@ trait NestedSetTrait
             return false;
         }
 
-        $result = $this->newQuery()->descendants(null, true)->forceDelete();
+        $result = $this->newQuery()
+            ->descendants(null, true)
+            ->when(
+                $forceDelete,
+                static fn ($query) => $query->forceDelete(),
+                static fn ($query) => $query->delete(),
+            );
 
         $this->fireModelEvent('deleted', false);
 
@@ -822,6 +846,11 @@ trait NestedSetTrait
     protected function onDeleteNodeWeShouldToDeleteChildrenBy(): void
     {
         $this->moveChildrenToParent();
+    }
+
+    protected function onRestoredNodeWeShouldToRestoredChildrenBy(): void
+    {
+        $this->restoreDescendants(static::$deletedAt);
     }
 
     /**
@@ -873,6 +902,20 @@ trait NestedSetTrait
             ->descendants(null, true)
             ->where($this->getDeletedAtColumn(), '>=', $deletedAt)
             ->restore();
+    }
+
+    public function afterRestore(): void
+    {
+        $this->onRestoredNodeWeShouldToRestoredChildrenBy();
+
+        $this->afterInsert();
+    }
+
+    public function beforeRestore(): void
+    {
+        $this->beforeInsert();
+
+        static::$deletedAt = $this->{$this->getDeletedAtColumn()};
     }
 
     /**
