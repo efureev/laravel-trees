@@ -98,19 +98,13 @@ trait NestedSetTrait
         if (static::isSoftDelete()) {
             static::restoring(
                 static function ($model) {
-                    $model->beforeInsert();
-
-                    static::$deletedAt = $model->{$model->getDeletedAtColumn()};
+                    $model->beforeRestore();
                 }
             );
 
             static::restored(
                 static function ($model) {
-                    if ($model->needTouchDescendants()) {
-                        $model->restoreDescendants(static::$deletedAt);
-                    }
-
-                    $model->afterInsert();
+                    $model->afterRestore();
                 }
             );
         }
@@ -854,6 +848,11 @@ trait NestedSetTrait
         $this->moveChildrenToParent();
     }
 
+    protected function onRestoredNodeWeShouldToRestoredChildrenBy(): void
+    {
+        $this->restoreDescendants(static::$deletedAt);
+    }
+
     /**
      * @return bool
      */
@@ -905,9 +904,18 @@ trait NestedSetTrait
             ->restore();
     }
 
-    protected function needTouchDescendants(): bool
+    public function afterRestore(): void
     {
-        return true;
+        $this->onRestoredNodeWeShouldToRestoredChildrenBy();
+
+        $this->afterInsert();
+    }
+
+    public function beforeRestore(): void
+    {
+        $this->beforeInsert();
+
+        static::$deletedAt = $this->{$this->getDeletedAtColumn()};
     }
 
     /**
