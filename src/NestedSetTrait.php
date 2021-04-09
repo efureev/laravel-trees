@@ -526,7 +526,7 @@ trait NestedSetTrait
      */
     public function beforeDelete(): void
     {
-        if ($this->operation !== Base::OPERATION_DELETE_ALL && $this->isRoot() && ! static::isSoftDelete()) {
+        if ($this->operation !== Base::OPERATION_DELETE_ALL && $this->isRoot()) {
             $this->onDeletedRootNode();
         }
 
