@@ -69,9 +69,9 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
     {
         $root = static::createRoot();
 
-        $root->delete();
+        $this->expectException(DeleteRootException::class);
 
-        $this->assertTrue($root->trashed());
+        $root->delete();
     }
 
     public function testSoftDeleteNode(): void
