@@ -594,16 +594,7 @@ trait NestedSetTrait
         if ($this->operation === Base::OPERATION_DELETE_ALL || $this->isLeaf()) {
             $this->shift(($right + 1), null, ($left - $right - 1));
         } else {
-            $query = $this->onDeleteQueryForChildren();
-
-            $query->update(
-                [
-                    $this->leftAttribute()->name()   => new Expression($this->leftAttribute()->name().'- 1'),
-                    $this->rightAttribute()->name()  => new Expression($this->rightAttribute()->name().'- 1'),
-                    $this->levelAttribute()->name()  => new Expression($this->levelAttribute()->name().'- 1'),
-                    $this->parentAttribute()->name() => $this->parentValue(),
-                ]
-            );
+            $this->onDeleteNodeWeShouldToDeleteChildrenBy();
 
             $this->shift(($right + 1), null, -2);
         }
@@ -794,12 +785,43 @@ trait NestedSetTrait
             return false;
         }
 
-        // $result = $this->newQuery()->descendants(null, true)->delete();
         $result = $this->newQuery()->descendants(null, true)->forceDelete();
 
         $this->fireModelEvent('deleted', false);
 
         return $result;
+    }
+
+    /**
+     * Move target node's children to it's parent
+     */
+    public function moveChildrenToParent(): void
+    {
+        $query = $this->onDeleteQueryForChildren();
+
+        $query->update(
+            [
+                $this->leftAttribute()->name()   => new Expression($this->leftAttribute()->name().'- 1'),
+                $this->rightAttribute()->name()  => new Expression($this->rightAttribute()->name().'- 1'),
+                $this->levelAttribute()->name()  => new Expression($this->levelAttribute()->name().'- 1'),
+                $this->parentAttribute()->name() => $this->parentValue(),
+            ]
+        );
+    }
+
+    /**
+     * Remove target node's children
+     */
+    public function removeChildren(): void
+    {
+        $query = $this->onDeleteQueryForChildren();
+
+        $query->delete();
+    }
+
+    protected function onDeleteNodeWeShouldToDeleteChildrenBy(): void
+    {
+        $this->moveChildrenToParent();
     }
 
     /**
