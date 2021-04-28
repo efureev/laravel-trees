@@ -91,7 +91,7 @@ class Base implements NestedSetConfig
     /**
      * Get a list of default columns.
      *
-     * @param bool $names
+     * @param  bool  $names
      *
      * @return array
      */
@@ -115,7 +115,7 @@ class Base implements NestedSetConfig
 
         return array_map(
             static function (AbstractAttribute $item) {
-                return (string)$item;
+                return (string) $item;
             },
             $list
         );
@@ -133,8 +133,10 @@ class Base implements NestedSetConfig
     {
         if ($treeAttribute === false) {
             $treeAttribute = null;
-        } else if ($treeAttribute === null || $treeAttribute === true) {
-            $treeAttribute = new TreeAttribute();
+        } else {
+            if ($treeAttribute === null || $treeAttribute === true) {
+                $treeAttribute = new TreeAttribute();
+            }
         }
 
         $this->tree = $treeAttribute;
@@ -144,7 +146,7 @@ class Base implements NestedSetConfig
 
 
     /**
-     * @param Model $model
+     * @param  Model  $model
      *
      * @return bool
      */
@@ -155,7 +157,7 @@ class Base implements NestedSetConfig
 
 
     /**
-     * @param string $attributeType
+     * @param  string  $attributeType
      *
      * @return string|null
      */
@@ -168,14 +170,14 @@ class Base implements NestedSetConfig
                 return 'integer';
             case 'string':
             case 'uuid':
-                return 'uuid';
+                return 'string';
         }
 
         return null;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getCastForParentAttribute(): ?string
     {
@@ -194,7 +196,7 @@ class Base implements NestedSetConfig
     /**
      * Generate function
      *
-     * @param Model|NestedSetTrait $model
+     * @param  Model|NestedSetTrait  $model
      *
      * @return mixed
      */
@@ -204,7 +206,7 @@ class Base implements NestedSetConfig
             return $model->generateTreeId();
         }
 
-        return (((int)$model->max($this->tree())) + 1);
+        return (((int) $model->max($this->tree())) + 1);
     }
 
     /**

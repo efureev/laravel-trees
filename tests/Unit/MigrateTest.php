@@ -69,7 +69,7 @@ class MigrateTest extends AbstractTestCase
             /** @var ColumnDefinition $col */
             static::assertContains($column->getAttributes()['name'], $multiColumns);
             if ($column->getAttributes()['name'] === 'tid') {
-                static::assertEquals('uuid', $column->getAttributes()['type']);
+                static::assertEquals('string', $column->getAttributes()['type']);
                 static::assertTrue($column->getAttributes()['nullable']);
                 static::assertNull($column->getAttributes()['default']);
             }

@@ -16,7 +16,7 @@ use Fureev\Trees\Config\Base;
  */
 class Structure extends Page
 {
-    protected $keyType = 'uuid';
+    protected $keyType = 'string';
 
     protected $hidden = ['_setRoot'];
 

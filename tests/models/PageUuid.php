@@ -15,7 +15,7 @@ use Fureev\Trees\Config\Base;
  */
 class PageUuid extends Page
 {
-    protected $keyType = 'uuid';
+    protected $keyType = 'string';
 
     protected $table = 'pages_uuid';
 

@@ -54,8 +54,8 @@ categories for shop.
 Requirements
 ------------
 
-- PHP >= 7.4
-- Laravel >= 7.30
+- PHP >= 8.0
+- Laravel >= 8.38
 
 It is highly suggested to use database that supports transactions (like MySql's InnoDb, Postgres)
 to secure a tree from possible corruption.

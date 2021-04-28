@@ -58,11 +58,11 @@ class BaseConfigTest extends AbstractTestCase
 
         static::assertEquals('_pid', (string)$config->parent());
         static::assertEquals('_pid', $config->parent()->name());
-        static::assertEquals('uuid', $config->parent()->type());
+        static::assertEquals('string', $config->parent()->type());
 
         static::assertEquals('_tree', (string)$config->tree());
         static::assertEquals('_tree', $config->tree()->name());
-        static::assertEquals('uuid', $config->tree()->type());
+        static::assertEquals('string', $config->tree()->type());
 
         $config = new Base();
         static::assertNull($config->tree());
