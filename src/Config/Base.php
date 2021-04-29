@@ -158,10 +158,11 @@ class Base implements NestedSetConfig
 
     /**
      * @param  string  $attributeType
+     * @param  bool  $forModel  For a Model or a Migration
      *
      * @return string|null
      */
-    public static function getCastForCustomAttribute(string $attributeType): ?string
+    public static function getCastForCustomAttribute(string $attributeType, bool $forModel = false): ?string
     {
         switch ($attributeType) {
             case 'int':
@@ -170,7 +171,7 @@ class Base implements NestedSetConfig
                 return 'integer';
             case 'string':
             case 'uuid':
-                return 'string';
+                return $forModel ? 'string' : 'uuid';
         }
 
         return null;
@@ -181,7 +182,7 @@ class Base implements NestedSetConfig
      */
     public function getCastForParentAttribute(): ?string
     {
-        return static::getCastForCustomAttribute($this->parent->type());
+        return static::getCastForCustomAttribute($this->parent->type(), true);
     }
 
     /**

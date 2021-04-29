@@ -44,25 +44,25 @@ class BaseConfigTest extends AbstractTestCase
 
         static::assertTrue($config->isMultiTree());
 
-        static::assertEquals('_left', (string)$config->left());
+        static::assertEquals('_left', (string) $config->left());
         static::assertEquals('_left', $config->left()->name());
         static::assertEquals('unsignedInteger', $config->left()->type());
 
-        static::assertEquals('_right', (string)$config->right());
+        static::assertEquals('_right', (string) $config->right());
         static::assertEquals('_right', $config->right()->name());
         static::assertEquals('unsignedInteger', $config->right()->type());
 
-        static::assertEquals('_level', (string)$config->level());
+        static::assertEquals('_level', (string) $config->level());
         static::assertEquals('_level', $config->level()->name());
         static::assertEquals('integer', $config->level()->type());
 
-        static::assertEquals('_pid', (string)$config->parent());
+        static::assertEquals('_pid', (string) $config->parent());
         static::assertEquals('_pid', $config->parent()->name());
-        static::assertEquals('string', $config->parent()->type());
+        static::assertEquals('uuid', $config->parent()->type());
 
-        static::assertEquals('_tree', (string)$config->tree());
+        static::assertEquals('_tree', (string) $config->tree());
         static::assertEquals('_tree', $config->tree()->name());
-        static::assertEquals('string', $config->tree()->type());
+        static::assertEquals('uuid', $config->tree()->type());
 
         $config = new Base();
         static::assertNull($config->tree());

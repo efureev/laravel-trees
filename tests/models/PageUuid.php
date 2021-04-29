@@ -2,8 +2,6 @@
 
 namespace Fureev\Trees\Tests\models;
 
-use Fureev\Trees\Config\Base;
-
 /**
  * Class Page
  *
@@ -18,9 +16,4 @@ class PageUuid extends Page
     protected $keyType = 'string';
 
     protected $table = 'pages_uuid';
-
-    protected static function buildTreeConfig(): Base
-    {
-        return new Base(true);
-    }
 }

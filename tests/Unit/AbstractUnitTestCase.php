@@ -45,12 +45,12 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
                         $expression = new Expression('UUID()');
                         break;
                     default:
-                        throw new \Exception('Your DB driver [' . DB::getDriverName() . '] does not supported');
+                        throw new \Exception('Your DB driver ['.DB::getDriverName().'] does not supported');
                         break;
                 }
 
 
-                if ($model->getKeyType() === 'uuid') {
+                if (in_array($model->getKeyType(), ['uuid', 'string'])) {
                     $table->uuid('id')->default($expression)->primary();
                 } else {
                     $table->integerIncrements('id');
@@ -78,8 +78,8 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
     /**
      * Helper for creating a tree
      *
-     * @param BaseModel|null $parentNode
-     * @param mixed ...$childrenNodesCount
+     * @param  BaseModel|null  $parentNode
+     * @param  mixed  ...$childrenNodesCount
      */
     protected static function makeTree($parentNode = null, ...$childrenNodesCount): void
     {

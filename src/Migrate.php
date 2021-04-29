@@ -35,8 +35,8 @@ class Migrate
     }
 
     /**
-     * @param Blueprint $table
-     * @param NestedSetConfig $config
+     * @param  Blueprint  $table
+     * @param  NestedSetConfig  $config
      */
     public static function columns(Blueprint $table, NestedSetConfig $config): void
     {
@@ -44,19 +44,18 @@ class Migrate
     }
 
     /**
-     * @param Blueprint $table
-     * @param string|Model $model
+     * @param  Blueprint  $table
+     * @param  string|Model  $model
      *
      * @throws InvalidConfigException
      */
-    public static function columnsFromModel(Blueprint $table, $model): void
+    public static function columnsFromModel(Blueprint $table, Model|string $model): void
     {
-        if (is_string($model)) {
-            $model = new $model();
-        }
+        /** @var Model $m */
+        $m = instance($model);
 
-        if ($model instanceof TreeConfigurable || method_exists($model, 'getTreeConfig')) {
-            static::columns($table, $model->getTreeConfig());
+        if ($m instanceof TreeConfigurable || method_exists($m, 'getTreeConfig')) {
+            static::columns($table, $m->getTreeConfig());
             return;
         }
 
@@ -92,11 +91,11 @@ class Migrate
             $cols[] = $this->config->tree()->name();
         }
 
-        $cols = array_merge($cols, (array)$column);
+        $cols = array_merge($cols, (array) $column);
 
         $this->table->index(
             $cols,
-            $this->table->getTable() . "_{$name}_idx"
+            $this->table->getTable()."_{$name}_idx"
         );
     }
 

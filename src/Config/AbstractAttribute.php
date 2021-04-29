@@ -43,12 +43,16 @@ abstract class AbstractAttribute
         return $this->default;
     }
 
+    /**
+     * @throws Exception
+     */
     public function setType(string $type): self
     {
         $typeOpt = Base::getCastForCustomAttribute($type);
         if ($typeOpt === null) {
             throw Exception::make("Invalid type {$type}");
         }
+
         $this->type = $typeOpt;
 
         return $this;

@@ -16,7 +16,7 @@ class CollectionTest extends AbstractUnitTestCase
         $childrenTree = [2, 3, 2, 3];
         static::makeTree(null, ...$childrenTree);
 
-        $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+        $preQueryCount      = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
 
         $collection = static::$modelClass::byTree(1)->get();
@@ -50,7 +50,7 @@ class CollectionTest extends AbstractUnitTestCase
         $childrenTree = [2, 3, 2, 3];
         static::makeTree(null, ...$childrenTree);
 
-        $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+        $preQueryCount      = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
 
         $collection = static::$modelClass::byTree(1)->get();
@@ -77,7 +77,7 @@ class CollectionTest extends AbstractUnitTestCase
         $childrenNodesMap = [2, 3, 2, 3];
         static::makeTree(null, ...$childrenNodesMap);
 
-        $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+        $preQueryCount      = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
 
         $list = static::$modelClass::byTree(1)->get();
@@ -98,7 +98,6 @@ class CollectionTest extends AbstractUnitTestCase
         }
 
         static::assertCount($expectedQueryCount + $root->children->count(), $root->getConnection()->getQueryLog());
-
     }
 
     public function testToTreeWithOutRootNode(): void
@@ -106,7 +105,7 @@ class CollectionTest extends AbstractUnitTestCase
         $childrenNodesMap = [2, 3];
         static::makeTree(null, ...$childrenNodesMap);
 
-        $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+        $preQueryCount      = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
 
         $list = static::$modelClass::all();
@@ -131,7 +130,7 @@ class CollectionTest extends AbstractUnitTestCase
         static::makeTree(null, ...$childrenNodesMap);
 
         foreach ($childrenNodesMap as $level => $childrenCount) {
-            $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+            $preQueryCount      = count((new static::$modelClass)->getConnection()->getQueryLog());
             $expectedQueryCount = $preQueryCount + 1;
 
 
@@ -160,7 +159,7 @@ class CollectionTest extends AbstractUnitTestCase
         $childrenNodesMap = [5, 3, 2];
         static::makeTree(null, ...$childrenNodesMap);
 
-        $preQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
+        $preQueryCount      = count((new static::$modelClass)->getConnection()->getQueryLog());
         $expectedQueryCount = $preQueryCount + 1;
 
         $list = static::$modelClass::all();
@@ -187,7 +186,7 @@ class CollectionTest extends AbstractUnitTestCase
     {
         static::makeTree(null, 6, 1, 2, 1);
 
-        $list = static::$modelClass::all();
+        $list               = static::$modelClass::all();
         $expectedQueryCount = count((new static::$modelClass)->getConnection()->getQueryLog());
 
         static::assertCount(36, $list);
