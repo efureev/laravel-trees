@@ -6,9 +6,12 @@ use Fureev\Trees\Contracts\NestedSetConfig;
 use Fureev\Trees\Exceptions\Exception;
 use Fureev\Trees\NestedSetTrait;
 use Illuminate\Database\Eloquent\Model;
+use Php\Support\Traits\Maker;
 
 class Base implements NestedSetConfig
 {
+    use Maker;
+
     public const OPERATION_MAKE_ROOT     = 1;
     public const OPERATION_PREPEND_TO    = 2;
     public const OPERATION_APPEND_TO     = 3;
@@ -84,6 +87,13 @@ class Base implements NestedSetConfig
         }
 
         $this->$name = $attribute;
+
+        return $this;
+    }
+
+    public function setAttributeTree(TreeAttribute $attribute): self
+    {
+        $this->tree = $attribute;
 
         return $this;
     }
@@ -201,7 +211,7 @@ class Base implements NestedSetConfig
      *
      * @return mixed
      */
-    public function generateTreeId(Model $model)
+    public function generateTreeId(Model $model): mixed
     {
         if (method_exists($model, 'generateTreeId')) {
             return $model->generateTreeId();

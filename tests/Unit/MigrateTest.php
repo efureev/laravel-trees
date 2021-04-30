@@ -57,7 +57,7 @@ class MigrateTest extends AbstractTestCase
         Migrate::columns(
             $table,
             new Config\Base(
-                (new Config\TreeAttribute('tid'))->setType('uuid')->setNullable()
+                (new Config\TreeAttribute('uuid'))->setName('tid')->setNullable()
             )
         );
 

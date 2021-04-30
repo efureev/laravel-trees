@@ -3,6 +3,7 @@
 namespace Fureev\Trees\Config;
 
 use Fureev\Trees\Exceptions\Exception;
+use Php\Support\Traits\Maker;
 
 /**
  * Class AbstractAttribute
@@ -10,6 +11,8 @@ use Fureev\Trees\Exceptions\Exception;
  */
 abstract class AbstractAttribute
 {
+    use Maker;
+
     protected string $name;
 
     protected string $type = 'unsignedInteger';
@@ -21,10 +24,10 @@ abstract class AbstractAttribute
      */
     protected $default;
 
-    public function __construct(string $name = null)
+    public function __construct(string $type = null)
     {
-        if ($name) {
-            $this->name = $name;
+        if ($type) {
+            $this->setType($type);
         }
     }
 
@@ -50,7 +53,7 @@ abstract class AbstractAttribute
     {
         $typeOpt = Base::getCastForCustomAttribute($type);
         if ($typeOpt === null) {
-            throw Exception::make("Invalid type {$type}");
+            throw Exception::make("Invalid type $type");
         }
 
         $this->type = $typeOpt;

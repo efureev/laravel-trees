@@ -51,9 +51,9 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
 
 
                 if (in_array($model->getKeyType(), ['uuid', 'string'])) {
-                    $table->uuid('id')->default($expression)->primary();
+                    $table->uuid($model->getKeyName())->default($expression)->primary();
                 } else {
-                    $table->integerIncrements('id');
+                    $table->integerIncrements($model->getKeyName());
                 }
 
                 Migrate::columns($table, $config);
