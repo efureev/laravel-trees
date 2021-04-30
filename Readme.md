@@ -103,7 +103,7 @@ class Category extends Model
 
 }
 ```
-or with custom config
+or with custom base config
 ```php
 <?php
 namespace App\Models;
@@ -121,6 +121,18 @@ class Category extends Model implements TreeConfigurable
         return new Base();
     } 
 }
+```
+
+or with custom config
+```php
+    protected static function buildTreeConfig(): Base
+    {
+        return Base::make()
+            ->setAttribute('parent', ParentAttribute::make()->setName('papa_id'))
+            ->setAttribute('left', LeftAttribute::make()->setName('left_offset'))
+            ->setAttribute('right', RightAttribute::make()->setName('right_offset'))
+            ->setAttribute('level', LevelAttribute::make()->setName('deeeeep'));
+    }
 ``` 
 
 **Model for Multi tree structure and with primary key type `uuid`:**
@@ -142,19 +154,29 @@ class Item extends Model implements TreeConfigurable
 
     protected static function buildTreeConfig(): Base
     {
-        $config= new Base();
-//        $config->parent()->setType('uuid'); <-- `parent type` set up automatically from `$model->keyType`
+        $config= new Base(true);
+        // $config->parent()->setType('uuid'); <-- `parent type` set up automatically from `$model->keyType`
 
         return $config;
     }
     /*
+    or:
+     
     protected static function buildTreeConfig(): Base
     {
-        $config= new Base(
-            (new TreeAttribute())->setType('uuid')->setAutoGenerate(false)
-        );
-
-        return $config;
+        return Base(TreeAttribute::make('uuid')->setAutoGenerate(false));
+    }
+    
+    or:
+     
+    protected static function buildTreeConfig(): Base
+    {
+       return Base::make()
+            ->setAttributeTree(TreeAttribute::make()->setName('big_tree_id'))
+            ->setAttribute('parent', ParentAttribute::make()->setName('pid'))
+            ->setAttribute('left', LeftAttribute::make()->setName('left_offset'))
+            ->setAttribute('right', RightAttribute::make()->setName('right_offset'))
+            ->setAttribute('level', LevelAttribute::make()->setName('deeeeep'));
     }
     */
 }
