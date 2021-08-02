@@ -197,4 +197,32 @@ class CollectionTest extends AbstractUnitTestCase
 
         static::assertCount($expectedQueryCount, $list->first()->getConnection()->getQueryLog());
     }
+
+    public function testToTreeWithMissingParent(): void
+    {
+        $childrenNodesMap = [1, 1, 3];
+        static::makeTree(null, ...$childrenNodesMap);
+
+        $list = static::$modelClass::toLevel(3)->get();
+        $listBeforeSpliced = $list->count();
+        $chunkItem = null;
+
+        foreach ($list as $key => $item) {
+            if ($item->parent !== null && $item->children !== null) {
+                $chunkItem = $list->splice($key, 1)->first();
+                break;
+            }
+        }
+
+        static::assertEquals($listBeforeSpliced, $list->count() + 1);
+        static::assertFalse($list->search(static fn ($model) => $model->id === $chunkItem->id));
+
+        /** @var Collection $tree */
+        $tree = $list->toTree(fillMissingIntermediateNodes: true);
+
+        $actual = $tree->first()->children->first();
+        static::assertEquals($chunkItem->id, $actual->id);
+        static::assertCount(3, $actual->children);
+
+    }
 }

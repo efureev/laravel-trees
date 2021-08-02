@@ -11,15 +11,20 @@ class Collection extends BaseCollection
      * Build a tree from a list of nodes. Each item will have set children relation.
      *
      * If `$fromNode` is provided, the tree will contain only descendants of that node.
+     * If `$fillMissingIntermediateNodes` is provided, the tree will get missing intermediate nodes from database.
      *
      * @param Model|string|int|null $fromNode
      *
      * @return $this
      */
-    public function toTree($fromNode = null): self
+    public function toTree($fromNode = null, bool $fillMissingIntermediateNodes = false): self
     {
         if ($this->isEmpty()) {
             return new static();
+        }
+
+        if ($fillMissingIntermediateNodes) {
+            $this->fillMissingIntermediateNodes();
         }
 
         $this->linkNodes(false);
@@ -91,6 +96,29 @@ class Collection extends BaseCollection
             static function ($item) {
                 return $item->parentValue() === null;
             }
+        );
+    }
+
+    /**
+     * Add items that are not in the collection but are intermediate nodes
+     */
+    public function fillMissingIntermediateNodes(): void
+    {
+        $items   = [];
+        $nodeIds = $this->pluck('id')->all();
+
+        foreach ($this->items as $node) {
+            if ($node instanceof Model && !$node->isRoot() && !in_array($node->parentValue(), $nodeIds, true)) {
+                $items[] = $node->parents()
+                    ->filter(
+                        static fn(Model $model) => ! in_array($model->id, $nodeIds, true)
+                    );
+            }
+        }
+
+        $this->items = array_merge(
+            $this->items,
+            collect($items)->flatten()->all(),
         );
     }
 }
