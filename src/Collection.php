@@ -17,14 +17,10 @@ class Collection extends BaseCollection
      *
      * @return $this
      */
-    public function toTree($fromNode = null, bool $fillMissingIntermediateNodes = false): self
+    public function toTree(Model|string|int|null $fromNode = null): self
     {
         if ($this->isEmpty()) {
             return new static();
-        }
-
-        if ($fillMissingIntermediateNodes) {
-            $this->fillMissingIntermediateNodes();
         }
 
         $this->linkNodes(false);
@@ -104,21 +100,31 @@ class Collection extends BaseCollection
      */
     public function fillMissingIntermediateNodes(): void
     {
-        $items   = [];
-        $nodeIds = $this->pluck('id')->all();
+        $nodeIds    = $this->pluck('id', 'id')->all();
+        $collection = $this->sortByDesc(static fn($item) => $item->levelValue());
 
-        foreach ($this->items as $node) {
-            if ($node instanceof Model && !$node->isRoot() && !in_array($node->parentValue(), $nodeIds, true)) {
-                $items[] = $node->parents()
+        foreach ($collection as $node) {
+            if ($node instanceof Model && !$node->isRoot() && !(isset($nodeIds[$node->parentValue()]) ?? false)) {
+                $parents = $node->parents()
                     ->filter(
-                        static fn(Model $model) => ! in_array($model->id, $nodeIds, true)
+                        static fn(Model $model) => !(isset($nodeIds[$node->parentValue()]) ?? false)
                     );
+
+                $this->items = array_merge($this->items, $parents->all());
+                $nodeIds     = array_merge($parents->pluck('id', 'id')->all(), $nodeIds);
             }
         }
+    }
 
-        $this->items = array_merge(
-            $this->items,
-            collect($items)->flatten()->all(),
-        );
+    /**
+     * @param Model|string|int|null $fromNode
+     *
+     * @return $this
+     */
+    public function toBreadcrumbs(Model|string|int|null $fromNode = null): static
+    {
+        $this->fillMissingIntermediateNodes();
+
+        return $this->toTree($fromNode);
     }
 }

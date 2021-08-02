@@ -198,7 +198,7 @@ class CollectionTest extends AbstractUnitTestCase
         static::assertCount($expectedQueryCount, $list->first()->getConnection()->getQueryLog());
     }
 
-    public function testToTreeWithMissingParent(): void
+    public function testToBreadcrumbs(): void
     {
         $childrenNodesMap = [1, 1, 3];
         static::makeTree(null, ...$childrenNodesMap);
@@ -218,7 +218,7 @@ class CollectionTest extends AbstractUnitTestCase
         static::assertFalse($list->search(static fn ($model) => $model->id === $chunkItem->id));
 
         /** @var Collection $tree */
-        $tree = $list->toTree(fillMissingIntermediateNodes: true);
+        $tree = $list->toBreadcrumbs();
 
         $actual = $tree->first()->children->first();
         static::assertEquals($chunkItem->id, $actual->id);
