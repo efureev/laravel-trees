@@ -104,15 +104,16 @@ class Collection extends BaseCollection
         $collection = $this->sortByDesc(static fn($item) => $item->levelValue());
 
         foreach ($collection as $node) {
-            if ($node instanceof Model && !$node->isRoot() && !(isset($nodeIds[$node->parentValue()]) ?? false)) {
-                $parents = $node->parents()
-                    ->filter(
-                        static fn(Model $model) => !(isset($nodeIds[$node->parentValue()]) ?? false)
-                    );
-
-                $this->items = array_merge($this->items, $parents->all());
-                $nodeIds     = array_merge($parents->pluck('id', 'id')->all(), $nodeIds);
+            if (!$node instanceof Model || $node->isRoot() || isset($nodeIds[$node->parentValue()])) {
+                continue;
             }
+
+            $parents = $node->parentsBuilder()
+                ->whereNotIn($node->getKeyName(), $nodeIds)
+                ->get();
+
+            $this->items = array_merge($this->items, $parents->all());
+            $nodeIds     = array_merge($parents->pluck('id', 'id')->all(), $nodeIds);
         }
     }
 
