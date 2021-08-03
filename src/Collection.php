@@ -11,12 +11,13 @@ class Collection extends BaseCollection
      * Build a tree from a list of nodes. Each item will have set children relation.
      *
      * If `$fromNode` is provided, the tree will contain only descendants of that node.
+     * If `$fillMissingIntermediateNodes` is provided, the tree will get missing intermediate nodes from database.
      *
      * @param Model|string|int|null $fromNode
      *
      * @return $this
      */
-    public function toTree($fromNode = null): self
+    public function toTree(Model|string|int|null $fromNode = null): self
     {
         if ($this->isEmpty()) {
             return new static();
@@ -92,5 +93,39 @@ class Collection extends BaseCollection
                 return $item->parentValue() === null;
             }
         );
+    }
+
+    /**
+     * Add items that are not in the collection but are intermediate nodes
+     */
+    public function fillMissingIntermediateNodes(): void
+    {
+        $nodeIds    = $this->pluck('id', 'id')->all();
+        $collection = $this->sortByDesc(static fn($item) => $item->levelValue());
+
+        foreach ($collection as $node) {
+            if (!$node instanceof Model || $node->isRoot() || isset($nodeIds[$node->parentValue()])) {
+                continue;
+            }
+
+            $parents = $node->parentsBuilder()
+                ->whereNotIn($node->getKeyName(), $nodeIds)
+                ->get();
+
+            $this->items = array_merge($this->items, $parents->all());
+            $nodeIds     = array_merge($parents->pluck('id', 'id')->all(), $nodeIds);
+        }
+    }
+
+    /**
+     * @param Model|string|int|null $fromNode
+     *
+     * @return $this
+     */
+    public function toBreadcrumbs(Model|string|int|null $fromNode = null): static
+    {
+        $this->fillMissingIntermediateNodes();
+
+        return $this->toTree($fromNode);
     }
 }
