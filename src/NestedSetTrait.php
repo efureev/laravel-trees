@@ -764,7 +764,7 @@ trait NestedSetTrait
      */
     public function parents(?int $level = null)
     {
-        return $this->parentsBuilder()->get();
+        return $this->parentsBuilder($level)->get();
     }
 
     /**

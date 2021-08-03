@@ -133,10 +133,10 @@ abstract class BaseRelation extends Relation
      */
     abstract protected function matches(Model $model, $related): bool;
 
-    public function getRelationQuery(EloquentBuilder $query, EloquentBuilder $parent, $columns = ['*'])
+    /*public function getRelationQuery(EloquentBuilder $query, EloquentBuilder $parent, $columns = ['*'])
     {
         dd(debug_print_backtrace(), 'stop here: ' . __FUNCTION__);
-    }
+    }*/
 
     /**
      * @param $hash
