@@ -360,6 +360,11 @@ trait BaseNestedSetTrait
         return method_exists(static::class, 'bootSoftDeletes');
     }
 
+    public function newScopedQuery($table = null)
+    {
+        return $this->applyNestedSetScope($this->newQuery(), $table);
+    }
+    
     /**
      * @param mixed $query
      * @param string $table

@@ -15,6 +15,7 @@ use Illuminate\Database\Query\Expression;
 class QueryBuilder extends Builder
 {
     use Healthy;
+    use Fixing;
 
     /**
      * @var Model|NestedSetTrait

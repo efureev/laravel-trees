@@ -8,7 +8,6 @@ class NodeBuilderHealthyTreeTest extends AbstractUnitTestCase
 {
     protected static $modelClass = Category::class;
 
-
     public function testCountErrors(): void
     {
         static::makeTree(null, 1, 3, 2, 1, 1);
@@ -24,6 +23,10 @@ class NodeBuilderHealthyTreeTest extends AbstractUnitTestCase
             ],
             $data
         );
+
+        $oddness = Category::countErrors('oddness');
+
+        static::assertEquals(0, $oddness);
     }
 
     public function testIsBroken(): void

@@ -4,14 +4,19 @@ namespace Fureev\Trees;
 
 use Illuminate\Database\Query\Builder;
 
+/**
+ * @mixin QueryBuilder
+ */
 trait Healthy
 {
     /**
      * Get statistics of errors of the tree.
      *
-     * @return array
+     * @param string|null $errorKey
+     *
+     * @return array|int
      */
-    public function countErrors(): array
+    public function countErrors(string $errorKey = null): array|int
     {
         $checks = [];
 
@@ -35,7 +40,7 @@ trait Healthy
             $query->selectSub($inner, $key);
         }
 
-        return (array)$query->first();
+        return $errorKey ? (int)$query->first()->$errorKey : (array)$query->first('*');
     }
 
 
