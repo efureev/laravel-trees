@@ -14,6 +14,8 @@ use Illuminate\Database\Query\Expression;
  */
 class QueryBuilder extends Builder
 {
+    use Healthy;
+
     /**
      * @var Model|NestedSetTrait
      */
@@ -359,7 +361,7 @@ class QueryBuilder extends Builder
      *
      * @return array
      */
-    public function getPlainNodeData($id, $required = false): array
+    public function getPlainNodeData(string|int $id, bool $required = false): array
     {
         return array_values($this->getNodeData($id, $required));
     }
@@ -372,7 +374,7 @@ class QueryBuilder extends Builder
      *
      * @return array
      */
-    public function getNodeData($id, $required = false): array
+    public function getNodeData(string|int $id, bool $required = false): array
     {
         $query = $this->toBase();
         $query->where($this->model->getKeyName(), '=', $id);
@@ -392,7 +394,7 @@ class QueryBuilder extends Builder
      *
      * @return $this
      */
-    public function applyNestedSetScope($table = null): self
+    public function applyNestedSetScope(?string $table = null): self
     {
         return $this->model->applyNestedSetScope($this, $table);
     }
@@ -402,7 +404,7 @@ class QueryBuilder extends Builder
      *
      * @return $this
      */
-    public function byTree($treeId): self
+    public function byTree(int|string $treeId): self
     {
         if ($this->model->isMultiTree()) {
             $this->query->where($this->model->treeAttribute()->name(), $treeId);
@@ -414,7 +416,7 @@ class QueryBuilder extends Builder
     /**
      * Returns items from level 0 to level <= {$level}
      *
-     * @param int $level
+     * @param int|null $level
      *
      * @return $this
      */
@@ -442,7 +444,7 @@ class QueryBuilder extends Builder
     }
 
     /**
-     * Get wrapped column names.
+     * Get wrapped column names
      *
      * @return array
      */
@@ -456,5 +458,20 @@ class QueryBuilder extends Builder
             },
             $this->model->getTreeConfig()->columns()
         );
+    }
+
+    /**
+     * Get a wrapped table name
+     *
+     * @return string
+     */
+    protected function wrappedTable(): string
+    {
+        return $this->query->getGrammar()->wrapTable($this->getQuery()->from);
+    }
+
+    protected function wrappedKey(): string
+    {
+        return $this->query->getGrammar()->wrap($this->model->getKeyName());
     }
 }

@@ -41,17 +41,17 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
         static::makeTree(null, 1, 3, 2, 1, 1);
 
         $node12211 = static::$modelClass::where(['title' => 'child 1.2.2.1.1'])->first();
-        $parents = $node12211->parents()->map(static function ($item) {
+        $parents   = $node12211->parents()->map(static function ($item) {
             return $item->title;
         });
 
         static::assertCount(4, $parents);
         static::assertEquals([
-            'Root node 1',
-            'child 1.2',
-            'child 1.2.2',
-            'child 1.2.2.1',
-        ], $parents->toArray());
+                                 'Root node 1',
+                                 'child 1.2',
+                                 'child 1.2.2',
+                                 'child 1.2.2.1',
+                             ], $parents->toArray());
 
 
         $parents = $node12211->parents(2)->map(static function ($item) {
@@ -61,9 +61,9 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(2, $parents);
         static::assertEquals([
-            'child 1.2.2',
-            'child 1.2.2.1',
-        ], $parents->toArray());
+                                 'child 1.2.2',
+                                 'child 1.2.2.1',
+                             ], $parents->toArray());
     }
 
 
@@ -80,10 +80,10 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(3, $nodes);
         static::assertEquals([
-            'child 1.2.4',
-            'child 1.2.3',
-            'child 1.2.1',
-        ], $nodes->toArray());
+                                 'child 1.2.4',
+                                 'child 1.2.3',
+                                 'child 1.2.1',
+                             ], $nodes->toArray());
 
 
         $nodes = $node122->siblingsAndSelf()->defaultOrder()->get()->map(static function ($item) {
@@ -92,12 +92,11 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 1.2.4',
-            'child 1.2.3',
-            'child 1.2.2',
-            'child 1.2.1',
-        ], $nodes->toArray());
-
+                                 'child 1.2.4',
+                                 'child 1.2.3',
+                                 'child 1.2.2',
+                                 'child 1.2.1',
+                             ], $nodes->toArray());
     }
 
     public function testPrev(): void
@@ -129,15 +128,19 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
     {
         static::makeTree(null, 1, 3, 4);
 
+        /** @var Category $node3 */
         $node3 = static::$modelClass::where(['title' => 'child 1.2.1'])->first();
+        /** @var Category $node2 */
         $node2 = static::$modelClass::where(['title' => 'child 1.2.2'])->first();
+        /** @var Category $node1 */
         $node1 = static::$modelClass::where(['title' => 'child 1.2.3'])->first();
+        /** @var Category $node0 */
         $node0 = static::$modelClass::where(['title' => 'child 1.2.4'])->first();
 
         static::assertCount(3, $node3->prevSiblings()->get());
         static::assertCount(2, $node2->prevSiblings()->get());
-        static::assertTrue($node0->equalTo($node2->prevSiblings()->get()->first()));
-        static::assertTrue($node1->equalTo($node2->prevSiblings()->get()->last()));
+        static::assertContains($node0->id, $node2->prevSiblings()->pluck('id')->toArray());
+        static::assertContains($node1->id, $node2->prevSiblings()->pluck('id')->toArray());
         static::assertCount(1, $node1->prevSiblings()->get());
         static::assertCount(0, $node0->prevSiblings()->get());
 
@@ -204,11 +207,11 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 1.2.4',
-            'child 1.2.3',
-            'child 1.2.2',
-            'child 1.2.1',
-        ], $nodes->toArray());
+                                 'child 1.2.4',
+                                 'child 1.2.3',
+                                 'child 1.2.2',
+                                 'child 1.2.1',
+                             ], $nodes->toArray());
     }
 
 
@@ -223,11 +226,11 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 1.3.4.1',
-            'child 1.3.3.1',
-            'child 1.3.2.1',
-            'child 1.3.1.1',
-        ], $nodes->toArray());
+                                 'child 1.3.4.1',
+                                 'child 1.3.3.1',
+                                 'child 1.3.2.1',
+                                 'child 1.3.1.1',
+                             ], $nodes->toArray());
 
         $nodes = $node->descendants()->leaves(1)->defaultOrder()->get()->map(static function ($item) {
             return $item->title;
@@ -247,13 +250,13 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(6, $nodes);
         static::assertEquals([
-            'child 1.3.3',
-            'child 1.3.3.1',
-            'child 1.3.2',
-            'child 1.3.2.1',
-            'child 1.3.1',
-            'child 1.3.1.1',
-        ], $nodes->toArray());
+                                 'child 1.3.3',
+                                 'child 1.3.3.1',
+                                 'child 1.3.2',
+                                 'child 1.3.2.1',
+                                 'child 1.3.1',
+                                 'child 1.3.1.1',
+                             ], $nodes->toArray());
 
 
         $nodes = $node->descendants(1)->get()->map(static function ($item) {
@@ -262,10 +265,10 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(3, $nodes);
         static::assertEquals([
-            'child 1.3.3',
-            'child 1.3.2',
-            'child 1.3.1',
-        ], $nodes->toArray());
+                                 'child 1.3.3',
+                                 'child 1.3.2',
+                                 'child 1.3.1',
+                             ], $nodes->toArray());
 
 
         $nodes = $node->descendants(0)->get()->map(static function ($item) {
@@ -281,11 +284,11 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 1.3',
-            'child 1.3.3',
-            'child 1.3.2',
-            'child 1.3.1',
-        ], $nodes->toArray());
+                                 'child 1.3',
+                                 'child 1.3.3',
+                                 'child 1.3.2',
+                                 'child 1.3.1',
+                             ], $nodes->toArray());
 
 
         $nodes = $node->descendants(1, true, true)->get()->map(static function ($item) {
@@ -294,12 +297,11 @@ class NodeBuilderSingleTreeTest extends AbstractUnitTestCase
 
         static::assertCount(4, $nodes);
         static::assertEquals([
-            'child 1.3',
-            'child 1.3.1',
-            'child 1.3.2',
-            'child 1.3.3',
-        ], $nodes->toArray());
-
+                                 'child 1.3',
+                                 'child 1.3.1',
+                                 'child 1.3.2',
+                                 'child 1.3.3',
+                             ], $nodes->toArray());
     }
 
 
