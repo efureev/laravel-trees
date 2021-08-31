@@ -61,6 +61,13 @@ abstract class AbstractAttribute
         return $this;
     }
 
+    public function setUuidType(): self
+    {
+        $this->type = 'uuid';
+
+        return $this;
+    }
+
     public function setName(string $name): self
     {
         $this->name = $name;

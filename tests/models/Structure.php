@@ -24,10 +24,13 @@ class Structure extends Page
 
     protected $fillable = ['title', 'tree_id', 'params', 'path'];
 
+    /**
+     * @throws \Fureev\Trees\Exceptions\Exception
+     */
     protected static function buildTreeConfig(): Base
     {
         $config = new Base();
-        $config->setAttribute('tree', (new Config\TreeAttribute())->setType('uuid')->setAutoGenerate(false));
+        $config->setAttributeTree((new Config\TreeAttribute('uuid'))->setAutoGenerate(false));
 
         return $config;
     }

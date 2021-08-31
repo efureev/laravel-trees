@@ -10,7 +10,7 @@ class FixTreeTest extends AbstractUnitTestCase
 
     public function testFixWithoutErrors(): void
     {
-        static::makeTree(null, 1, 2, 3);
+        static::makeTree(null, 1, 2, 4);
 
         static::assertEquals(0, Category::fixTree());
     }

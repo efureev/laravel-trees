@@ -67,14 +67,19 @@ trait Healthy
         $firstAlias  = 'c1';
         $secondAlias = 'c2';
 
-        $waFirst  = $this->query->getGrammar()->wrapTable($firstAlias);
-        $waSecond = $this->query->getGrammar()->wrapTable($secondAlias);
+        $waFirst     = $this->query->getGrammar()->wrapTable($firstAlias);
+        $waSecond    = $this->query->getGrammar()->wrapTable($secondAlias);
+        $isMultiTree = $this->model->isMultiTree();
 
         $query = $this->model
             ->newNestedSetQuery($firstAlias)
             ->toBase()
             ->from($this->query->raw("{$table} as {$waFirst}, {$table} {$waSecond}"))
-            ->whereRaw("{$waFirst}.{$keyName} < {$waSecond}.{$keyName}")
+            ->whereRaw("{$waFirst}.{$keyName} <> {$waSecond}.{$keyName}")
+            ->when($isMultiTree, function (Builder $q) use ($waFirst, $waSecond) {
+                $tid = $this->model->treeAttribute()->name();
+                $q->whereRaw("{$waFirst}.{$tid} = {$waSecond}.{$tid}");
+            })
             ->whereNested(function (Builder $inner) use ($waFirst, $waSecond) {
                 [$lft, $rgt] = $this->wrappedColumns();
 
@@ -105,10 +110,18 @@ trait Healthy
         $waChild  = $grammar->wrapTable($childAlias);
         $waInterm = $grammar->wrapTable($intermAlias);
 
+        $isMultiTree = $this->model->isMultiTree();
+
         $query = $this->model
             ->newNestedSetQuery('c')
             ->toBase()
             ->from($this->query->raw("{$table} as {$waChild}, {$table} as {$waParent}, $table as {$waInterm}"))
+            ->when($isMultiTree, function (Builder $q) use ($waChild, $waParent, $waInterm) {
+                $tid = $this->model->treeAttribute()->name();
+                $q
+                    ->whereRaw("{$waChild}.{$tid} = {$waParent}.{$tid}")
+                    ->whereRaw("{$waInterm}.{$tid} = {$waParent}.{$tid}");
+            })
             ->whereRaw("{$waChild}.{$parentIdName}={$waParent}.{$keyName}")
             ->whereRaw("{$waInterm}.{$keyName} <> {$waParent}.{$keyName}")
             ->whereRaw("{$waInterm}.{$keyName} <> {$waChild}.{$keyName}")
