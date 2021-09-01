@@ -91,7 +91,7 @@ trait Fixing
         }
 
         foreach ($updated as $model) {
-            $model->save();
+            $model->saveQuietly();
         }
 
         return count($updated) + $moved;
