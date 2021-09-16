@@ -68,7 +68,7 @@ trait Fixing
     {
         $parentId    = $parent ? $parent->getKey() : null;
         $parentLevel = $parent ? $parent->levelValue() : 0;
-        $cut         = $parent ? $parent->leftOffset() + 1 : 1;
+        $cut         = $parent ? abs($parent->leftOffset()) + 1 : 1;
 
         $updated = [];
         $moved   = 0;
@@ -84,8 +84,8 @@ trait Fixing
             $cut = self::reorderNodes($dictionary, $updated, $parentId, $cut, $parentLevel);
         }
 
-        if ($parent && ($grown = $cut - $parent->rightOffset()) !== 0) {
-            $moved = $parent->newScopedQuery()->makeGap($parent->rightOffset() + 1, $grown);
+        if ($parent && ($grown = $cut - abs($parent->rightOffset())) !== 0) {
+            $moved = $parent->newScopedQuery()->makeGap(abs($parent->rightOffset()) + 1, $grown);
 
             $updated[] = $parent->setAttribute($parent->rightAttribute()->name(), $cut);
         }
