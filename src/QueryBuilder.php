@@ -445,6 +445,22 @@ class QueryBuilder extends Builder
     }
 
     /**
+     * @param int|string|Model|null $parent
+     *
+     * @return $this
+     */
+    public function byParent(int|string|Model|null $parent): self
+    {
+        if ($parent !== null) {
+            $key = $parent instanceof Model ? $parent->getKey() : $parent;
+
+            $this->query->where($this->model->parentAttribute()->name(), $key);
+        }
+
+        return $this;
+    }
+
+    /**
      * Get wrapped column names
      *
      * @return array
