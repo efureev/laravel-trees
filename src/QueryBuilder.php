@@ -454,7 +454,7 @@ class QueryBuilder extends Builder
         if ($parent !== null) {
             $key = $parent instanceof Model ? $parent->getKey() : $parent;
 
-            $this->query->where($this->model->parentAttribute()->name(), $key);
+            $this->treeCondition()->where($this->model->parentAttribute()->name(), $key);
         }
 
         return $this;
