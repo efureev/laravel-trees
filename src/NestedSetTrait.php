@@ -587,6 +587,10 @@ trait NestedSetTrait
      */
     public function afterDelete(): void
     {
+        if (static::isSoftDelete() && $this->isForceDeleting()) {
+            return;
+        }
+
         $left  = $this->leftOffset();
         $right = $this->rightOffset();
 
