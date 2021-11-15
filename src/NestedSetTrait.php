@@ -91,6 +91,10 @@ trait NestedSetTrait
         static::deleted(
             static function ($model) {
                 /** @var NestedSetTrait $model */
+                if ($model::isSoftDelete() && $model->isForceDeleting()) {
+                    return;
+                }
+
                 $model->afterDelete();
             }
         );
@@ -587,10 +591,6 @@ trait NestedSetTrait
      */
     public function afterDelete(): void
     {
-        if (static::isSoftDelete() && $this->isForceDeleting()) {
-            return;
-        }
-
         $left  = $this->leftOffset();
         $right = $this->rightOffset();
 
