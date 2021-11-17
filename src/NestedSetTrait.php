@@ -91,7 +91,7 @@ trait NestedSetTrait
         static::deleted(
             static function ($model) {
                 /** @var NestedSetTrait $model */
-                if ($model::isSoftDelete() && $model->isForceDeleting()) {
+                if ($model::isSoftDelete() && !$model->isForceDeleting()) {
                     return;
                 }
 
@@ -574,17 +574,17 @@ trait NestedSetTrait
     public function children(): HasMany
     {
         return $this
-            ->hasMany(get_class($this), $this->parentAttribute()->name())
+            ->hasMany($this::class, $this->parentAttribute()->name())
             ->setModel($this);
     }
 
     /**
      * Logic for build query
      */
-    protected function onDeleteQueryForChildren()
+    /*protected function onDeleteQueryForChildren()
     {
         return $this->children(); // $this->newNestedSetQuery()->descendants();
-    }
+    }*/
 
     /**
      * If deleted node has children - these will be moved to parent of deleted node
@@ -613,6 +613,10 @@ trait NestedSetTrait
      */
     public function isLeaf(): bool
     {
+        if (self::isSoftDelete()) {
+            return $this->children()->count() === 0;
+        }
+
         return ($this->rightOffset() - $this->leftOffset()) === 1;
     }
 
@@ -834,7 +838,7 @@ trait NestedSetTrait
      */
     public function moveChildrenToParent(): void
     {
-        $query = $this->onDeleteQueryForChildren();
+        $query = $this->children();
 
         $query->update(
             [
@@ -849,9 +853,9 @@ trait NestedSetTrait
     /**
      * Remove target node's children
      */
-    public function removeChildren(): void
+    public function removeDescendants(): void
     {
-        $query = $this->onDeleteQueryForChildren();
+        $query = $this->newNestedSetQuery()->descendants();
 
         $query->delete();
     }

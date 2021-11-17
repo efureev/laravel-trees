@@ -364,7 +364,7 @@ trait BaseNestedSetTrait
     {
         return $this->applyNestedSetScope($this->newQuery(), $table);
     }
-    
+
     /**
      * @param mixed $query
      * @param string $table
