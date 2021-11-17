@@ -2,6 +2,7 @@
 
 namespace Fureev\Trees;
 
+use Closure;
 use Fureev\Trees\Config\Base;
 use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
     DeleteRootException,
@@ -101,13 +102,13 @@ trait NestedSetTrait
 
         if (static::isSoftDelete()) {
             static::restoring(
-                static function ($model) {
+                static function (Model $model) {
                     $model->beforeRestore();
                 }
             );
 
             static::restored(
-                static function ($model) {
+                static function (Model $model) {
                     $model->afterRestore();
                 }
             );
@@ -807,10 +808,34 @@ trait NestedSetTrait
         return new DescendantsRelation($this->newQuery(), $this);
     }
 
+    protected static ?Closure $customDeleteWithChildrenFn = null;
+
+    public static function setCustomDeleteWithChildrenFn(callable $fn): void
+    {
+        static::$customDeleteWithChildrenFn = $fn;
+    }
+
+    protected static function getCustomDeleteWithChildrenFn($model, $forceDelete): mixed
+    {
+        return (
+            static::$customDeleteWithChildrenFn ??
+            static fn($model, $forceDelete) => $model->newQuery()
+                ->descendants(null, true)
+                ->when(
+                    $forceDelete,
+                    static fn($query) => $query->forceDelete(),
+                    static fn($query) => $query->delete(),
+                )
+        )(
+            $model,
+            $forceDelete
+        );
+    }
+
     /**
      * @param bool $forceDelete
      *
-     * @return false|int
+     * @return mixed
      */
     public function deleteWithChildren(bool $forceDelete = true)
     {
@@ -820,14 +845,10 @@ trait NestedSetTrait
             return false;
         }
 
-        $result = $this->newQuery()
-            ->descendants(null, true)
-            ->when(
-                $forceDelete,
-                static fn($query) => $query->forceDelete(),
-                static fn($query) => $query->delete(),
-            );
+        $result = static::getCustomDeleteWithChildrenFn($this, $forceDelete);
 
+
+        //dd($result);
         $this->fireModelEvent('deleted', false);
 
         return $result;
@@ -925,12 +946,12 @@ trait NestedSetTrait
     {
         $this->onRestoredNodeWeShouldToRestoredChildrenBy();
 
-        $this->afterInsert();
+        $this->afterUpdate();
     }
 
     public function beforeRestore(): void
     {
-        $this->beforeInsert();
+        $this->beforeUpdate();
 
         static::$deletedAt = $this->{$this->getDeletedAtColumn()};
     }

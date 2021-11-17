@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fureev\Trees\Tests\models;
 
 use Fureev\Trees\Config\Base;
 use Fureev\Trees\Config\TreeAttribute;
 use Fureev\Trees\QueryBuilder;
-use Ramsey\Uuid\Uuid;
 
 /**
  * Class Structure
@@ -38,9 +39,4 @@ class Structure extends Page
     {
         return new Base((new TreeAttribute('uuid'))->setName('tree_id'));
     }
-
-    /*public function generateTreeId(): string
-    {
-        return Uuid::uuid4()->toString();
-    }*/
 }

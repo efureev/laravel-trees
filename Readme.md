@@ -27,6 +27,7 @@ __Contents:__
   - [Retrieving nodes](#retrieving-nodes)
   - [Nodes queries](#nodes-queries)
   - [Model's helpers](#models-helpers)
+  - [Console Tree](#console-tree)
 
 Information
 --------------
@@ -426,6 +427,31 @@ isRoot() | bool | `$node->isRoot();`
 isChildOf(Model $node) | bool | `$node->isChildOf($parentNode);`
 isLeaf() | bool | `$node->isLeaf();`
 equalTo(Model $node) | bool | `$node->equalTo($parentNode);`
+
+### Console Tree
+
+```php
+Table::fromModel($root->refresh())->draw();
+```
+
+```php
+$collection = Structure::all();
+Table::fromTree($collection->toTree())
+    ->hideLevel()
+    ->setExtraColumns(
+        [
+            'title'                         => 'Label',
+            $root->leftAttribute()->name()  => 'Left',
+            $root->rightAttribute()->name() => 'Right',
+            $root->levelAttribute()->name() => 'Deep',
+        ]
+    )
+    ->draw($output);
+```
+
+```php
+Structure::all()->toOutput([],null,'...');
+```
 
 ## Checking consistency
 

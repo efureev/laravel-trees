@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Collection extends BaseCollection
 {
+    private bool $linked = false;
+
+    private bool $handledToTree = false;
+
+    private int $totalCount = 0;
+
+    public function setToTree(int $count): static
+    {
+        $this->handledToTree = true;
+        $this->totalCount    = $count;
+
+        return $this;
+    }
+
     /**
      * Build a tree from a list of nodes. Each item will have set children relation.
      *
@@ -19,6 +33,10 @@ class Collection extends BaseCollection
      */
     public function toTree(Model|string|int|null $fromNode = null): self
     {
+        if ($this->handledToTree) {
+            return $this;
+        }
+
         if ($this->isEmpty()) {
             return new static();
         }
@@ -38,9 +56,17 @@ class Collection extends BaseCollection
                 $items[] = $node;
             }
         }
-
-        return new static($items);
+        return (new static($items))->setToTree($this->count());
     }
+
+    public function toOutput(array $extraColumns = [], $output = null, $offset = "   "): void
+    {
+        Table::fromTree($this->toTree())
+            ->setOffset($offset)
+            ->setExtraColumns($extraColumns)
+            ->draw($output);
+    }
+
 
     /**
      * Fill `parent` and `children` relationships for every node in the collection.
@@ -55,6 +81,10 @@ class Collection extends BaseCollection
      */
     public function linkNodes($setParentRelations = true): self
     {
+        if ($this->linked) {
+            return $this;
+        }
+
         if ($this->isEmpty()) {
             return $this;
         }
@@ -78,6 +108,8 @@ class Collection extends BaseCollection
             $node->setRelation('children', static::make($children));
         }
 
+        $this->linked = true;
+
         return $this;
     }
 
@@ -95,12 +127,18 @@ class Collection extends BaseCollection
         );
     }
 
+    public function totalCount(): int
+    {
+        return $this->totalCount;
+    }
+
+
     /**
      * Add items that are not in the collection but are intermediate nodes
      */
     public function fillMissingIntermediateNodes(): void
     {
-        $nodeIds    = $this->pluck('id', 'id')->all();
+        $nodeIds = $this->pluck('id', 'id')->all();
         $collection = $this->sortByDesc(static fn($item) => $item->levelValue());
 
         foreach ($collection as $node) {

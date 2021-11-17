@@ -11,6 +11,8 @@ use Illuminate\Database\Query\Expression;
  * Class QueryBuilder
  *
  * @package Fureev\Trees
+ * @method Collection get($columns = ['*'])
+ * @method Collection all($columns = ['*'])
  */
 class QueryBuilder extends Builder
 {
