@@ -1,13 +1,12 @@
 ![PHP Laravel Package](https://github.com/efureev/laravel-trees/workflows/PHP%20Laravel%20Package/badge.svg?branch=master)
 ![](https://img.shields.io/badge/php-^8.0-blue.svg)
-![](https://img.shields.io/badge/Laravel-^8.38-red.svg)
+![](https://img.shields.io/badge/Laravel-^8.50-red.svg)
 [![Total Downloads](https://poser.pugx.org/efureev/laravel-trees/downloads)](https://packagist.org/packages/efureev/laravel-trees)
 [![Latest Unstable Version](https://poser.pugx.org/efureev/laravel-trees/v/unstable)](https://packagist.org/packages/efureev/laravel-trees)
 [![License](https://poser.pugx.org/efureev/laravel-trees/license)](https://packagist.org/packages/efureev/laravel-trees)
 [![composer.lock available](https://poser.pugx.org/efureev/laravel-trees/composerlock)](https://packagist.org/packages/efureev/laravel-trees)
 
 [![Latest Stable Version](https://poser.pugx.org/efureev/laravel-trees/version)](https://packagist.org/packages/efureev/laravel-trees)
-[![Build Status](https://travis-ci.org/efureev/laravel-trees.svg?branch=master)](https://travis-ci.org/efureev/laravel-trees)
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/69eff0098adbf728341d/maintainability)](https://codeclimate.com/github/efureev/laravel-trees/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/69eff0098adbf728341d/test_coverage)](https://codeclimate.com/github/efureev/laravel-trees/test_coverage)
@@ -32,6 +31,8 @@ __Contents:__
 Information
 --------------
 This package is Multi-Tree structures (a lot of root-nodes).
+
+![table image](./docs/assets/tree.png)
 
 ### What are nested sets?
 
@@ -429,6 +430,8 @@ isLeaf() | bool | `$node->isLeaf();`
 equalTo(Model $node) | bool | `$node->equalTo($parentNode);`
 
 ### Console Tree
+
+![table image](./docs/assets/table.png)
 
 ```php
 Table::fromModel($root->refresh())->draw();
