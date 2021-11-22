@@ -951,7 +951,7 @@ trait NestedSetTrait
 
     public function beforeRestore(): void
     {
-        $this->beforeUpdate();
+//        $this->beforeUpdate();
 
         static::$deletedAt = $this->{$this->getDeletedAtColumn()};
     }
