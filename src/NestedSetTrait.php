@@ -837,7 +837,7 @@ trait NestedSetTrait
      *
      * @return mixed
      */
-    public function deleteWithChildren(bool $forceDelete = true)
+    public function deleteWithChildren(bool $forceDelete = true): mixed
     {
         $this->operation = Base::OPERATION_DELETE_ALL;
 
@@ -847,8 +847,6 @@ trait NestedSetTrait
 
         $result = static::getCustomDeleteWithChildrenFn($this, $forceDelete);
 
-
-        //dd($result);
         $this->fireModelEvent('deleted', false);
 
         return $result;
@@ -886,9 +884,28 @@ trait NestedSetTrait
         $this->moveChildrenToParent();
     }
 
-    protected function onRestoredNodeWeShouldToRestoredChildrenBy(): void
+    protected static ?Closure $customRestoreWithChildrenFn = null;
+
+    /**
+     * @param callable(Model, string): string|int|null $fn
+     */
+    public static function setCustomRestoreWithChildrenFn(callable $fn): void
     {
-        $this->restoreDescendants(static::$deletedAt);
+        static::$customRestoreWithChildrenFn = $fn;
+    }
+
+    protected static function getCustomRestoreWithChildrenFn(Model $model, string $deletedAt): string|int|null
+    {
+        if ($fn = static::$customRestoreWithChildrenFn) {
+            return $fn($model, $deletedAt);
+        }
+
+        return static::restoreDescendants($model, $deletedAt);
+    }
+
+    protected function onRestoredNodeWeShouldToRestoredChildrenBy(): string|int|null
+    {
+        return static::getCustomRestoreWithChildrenFn($this, static::$deletedAt);
     }
 
     /**
@@ -908,7 +925,7 @@ trait NestedSetTrait
      *
      * @return $this
      */
-    public function makeRoot($tree = null): self
+    public function makeRoot(int|string|null $tree = null): self
     {
         $this->operation = Base::OPERATION_MAKE_ROOT;
 
@@ -929,30 +946,54 @@ trait NestedSetTrait
         return new Collection($models);
     }
 
+    public function restoreWithChildren(): mixed
+    {
+        if ($this->fireModelEvent('restoring') === false) {
+            return false;
+        }
+
+        $this->beforeRestore();
+
+        $result = static::getCustomRestoreWithChildrenFn($this, self::$deletedAt);
+
+        $this->fireModelEvent('restored', false);
+
+        return $result;
+    }
+
     /**
      * Restore the descendants.
      *
+     * @param Model|static $model
      * @param $deletedAt
+     *
+     * @return mixed
      */
-    protected function restoreDescendants($deletedAt): void
+    protected static function restoreDescendants(Model $model, $deletedAt): string|int|null
     {
-        $this->newNestedSetQuery()
+        $result = $model->newNestedSetQuery()
             ->descendants(null, true)
-            ->where($this->getDeletedAtColumn(), '>=', $deletedAt)
+            ->where($model->getDeletedAtColumn(), '>=', $deletedAt)
             ->restore();
+
+        return $result ? $model->getKey() : null;
     }
 
     public function afterRestore(): void
     {
         $this->onRestoredNodeWeShouldToRestoredChildrenBy();
 
-        $this->afterUpdate();
+        $this->operation  = null;
+        $this->node       = null;
+        $this->treeChange = null;
+
+        if ($this->forceSave) {
+            $this->forceSave = false;
+        }
     }
 
     public function beforeRestore(): void
     {
-//        $this->beforeUpdate();
-
         static::$deletedAt = $this->{$this->getDeletedAtColumn()};
     }
 }

@@ -343,7 +343,7 @@ trait BaseNestedSetTrait
      *
      * @return QueryBuilder
      */
-    public function newNestedSetQuery($table = null): QueryBuilder
+    public function newNestedSetQuery(string $table = null): QueryBuilder
     {
         $builder = self::isSoftDelete()
             ? $this->withTrashed()
