@@ -885,19 +885,19 @@ trait NestedSetTrait
         $this->moveChildrenToParent();
     }
 
-    protected static ?Closure $customRestoreWithChildrenFn = null;
+    protected static ?Closure $customRestoreWithDescendantsFn = null;
 
     /**
      * @param callable(Model, ?string): string|int|null $fn
      */
-    public static function setCustomRestoreWithChildrenFn(callable $fn): void
+    public static function setCustomRestoreWithDescendantsFn(callable $fn): void
     {
-        static::$customRestoreWithChildrenFn = $fn;
+        static::$customRestoreWithDescendantsFn = $fn;
     }
 
-    protected static function getCustomRestoreWithChildrenFn(Model $model, ?string $deletedAt = null): mixed
+    protected static function getCustomRestoreWithDescendantsFn(Model $model, ?string $deletedAt = null): mixed
     {
-        if ($fn = static::$customRestoreWithChildrenFn) {
+        if ($fn = static::$customRestoreWithDescendantsFn) {
             return $fn($model, $deletedAt);
         }
 
@@ -906,7 +906,7 @@ trait NestedSetTrait
 
     protected function onRestoredNodeWeShouldToRestoredChildrenBy(): mixed
     {
-        return static::getCustomRestoreWithChildrenFn($this, static::$deletedAt);
+        return static::getCustomRestoreWithDescendantsFn($this, static::$deletedAt);
     }
 
     /**
@@ -947,13 +947,13 @@ trait NestedSetTrait
         return new Collection($models);
     }
 
-    public function restoreWithChildren(): mixed
+    public function restoreWithDescendants(): mixed
     {
         if ($this->fireModelEvent('restoring') === false) {
             return false;
         }
 
-        $result = static::getCustomRestoreWithChildrenFn($this, self::$deletedAt);
+        $result = static::getCustomRestoreWithDescendantsFn($this, self::$deletedAt);
 
         $this->fireModelEvent('restored', false);
 
