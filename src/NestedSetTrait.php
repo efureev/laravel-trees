@@ -888,14 +888,14 @@ trait NestedSetTrait
     protected static ?Closure $customRestoreWithChildrenFn = null;
 
     /**
-     * @param callable(Model, string): string|int|null $fn
+     * @param callable(Model, ?string): string|int|null $fn
      */
     public static function setCustomRestoreWithChildrenFn(callable $fn): void
     {
         static::$customRestoreWithChildrenFn = $fn;
     }
 
-    protected static function getCustomRestoreWithChildrenFn(Model $model, string $deletedAt): string|int|null
+    protected static function getCustomRestoreWithChildrenFn(Model $model, ?string $deletedAt = null): mixed
     {
         if ($fn = static::$customRestoreWithChildrenFn) {
             return $fn($model, $deletedAt);
@@ -904,7 +904,7 @@ trait NestedSetTrait
         return static::restoreDescendants($model, $deletedAt);
     }
 
-    protected function onRestoredNodeWeShouldToRestoredChildrenBy(): string|int|null
+    protected function onRestoredNodeWeShouldToRestoredChildrenBy(): mixed
     {
         return static::getCustomRestoreWithChildrenFn($this, static::$deletedAt);
     }
@@ -947,7 +947,7 @@ trait NestedSetTrait
         return new Collection($models);
     }
 
-    public function restoreWithChildren(): string|int|null
+    public function restoreWithChildren(): mixed
     {
         if ($this->fireModelEvent('restoring') === false) {
             return false;
