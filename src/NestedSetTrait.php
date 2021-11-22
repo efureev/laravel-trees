@@ -14,6 +14,7 @@ use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Expression;
 
 /**
@@ -946,13 +947,11 @@ trait NestedSetTrait
         return new Collection($models);
     }
 
-    public function restoreWithChildren(): mixed
+    public function restoreWithChildren(): string|int|null
     {
         if ($this->fireModelEvent('restoring') === false) {
             return false;
         }
-
-        $this->beforeRestore();
 
         $result = static::getCustomRestoreWithChildrenFn($this, self::$deletedAt);
 
@@ -964,7 +963,7 @@ trait NestedSetTrait
     /**
      * Restore the descendants.
      *
-     * @param Model|static $model
+     * @param Model|static|SoftDeletes $model
      * @param $deletedAt
      *
      * @return mixed
@@ -981,7 +980,7 @@ trait NestedSetTrait
 
     public function afterRestore(): void
     {
-        $this->onRestoredNodeWeShouldToRestoredChildrenBy();
+        // $this->onRestoredNodeWeShouldToRestoredChildrenBy();
 
         $this->operation  = null;
         $this->node       = null;
@@ -994,6 +993,7 @@ trait NestedSetTrait
 
     public function beforeRestore(): void
     {
-        static::$deletedAt = $this->{$this->getDeletedAtColumn()};
+        $this->operation = Base::OPERATION_RESTORE_SELF_ONLY;
+        //        static::$deletedAt = $this->{$this->getDeletedAtColumn()};
     }
 }

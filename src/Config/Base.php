@@ -12,13 +12,13 @@ class Base implements NestedSetConfig
 {
     use Maker;
 
-    public const OPERATION_MAKE_ROOT     = 1;
-    public const OPERATION_PREPEND_TO    = 2;
-    public const OPERATION_APPEND_TO     = 3;
-    public const OPERATION_INSERT_BEFORE = 4;
-    public const OPERATION_INSERT_AFTER  = 5;
-    public const OPERATION_DELETE_ALL    = 6;
-
+    public const OPERATION_MAKE_ROOT         = 1;
+    public const OPERATION_PREPEND_TO        = 2;
+    public const OPERATION_APPEND_TO         = 3;
+    public const OPERATION_INSERT_BEFORE     = 4;
+    public const OPERATION_INSERT_AFTER      = 5;
+    public const OPERATION_DELETE_ALL        = 6;
+    public const OPERATION_RESTORE_SELF_ONLY = 7;
 
     protected LeftAttribute $left;
 
