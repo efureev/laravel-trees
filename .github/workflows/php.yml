@@ -13,18 +13,18 @@ jobs:
   #        with:
   #          enable_warnings: true
 
-  lint-changelog:
-    name: Lint changelog file
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v2
-      - name: Lint changelog file
-        uses: avto-dev/markdown-lint@v1
-        with:
-          rules: './.github/workflows/lint/rules/changelog.js'
-          config: '/lint/config/changelog.yml'
-          args: './CHANGELOG.md'
+  #  lint-changelog:
+  #    name: Lint changelog file
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Check out code
+  #        uses: actions/checkout@v2
+  #      - name: Lint changelog file
+  #        uses: avto-dev/markdown-lint@v1
+  #        with:
+  #          rules: './.github/workflows/lint/rules/changelog.js'
+  #          config: '/lint/config/changelog.yml'
+  #          args: './CHANGELOG.md'
 
   testing:
     name: Test on PHP ${{ matrix.php }} with ${{ matrix.setup }} dependencies
