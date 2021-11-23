@@ -955,6 +955,8 @@ trait NestedSetTrait
 
         $result = static::getCustomRestoreWithDescendantsFn($this, self::$deletedAt);
 
+        $this->exists = true;
+
         $this->fireModelEvent('restored', false);
 
         return $result;
@@ -970,10 +972,14 @@ trait NestedSetTrait
      */
     protected static function restoreDescendants(Model $model, $deletedAt): string|int|null
     {
-        $result = $model->newNestedSetQuery()
-            ->descendants(null, true)
-            ->where($model->getDeletedAtColumn(), '>=', $deletedAt)
-            ->restore();
+        $query = $model->newNestedSetQuery()
+            ->descendants(null, true);
+
+        if ($deletedAt) {
+            $query->where($model->getDeletedAtColumn(), '>=', $deletedAt);
+        }
+
+        $result = $query->restore();
 
         return $result ? $model->getKey() : null;
     }

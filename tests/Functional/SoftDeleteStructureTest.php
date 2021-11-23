@@ -188,4 +188,80 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(5, SoftDeleteStructure::withTrashed()->count());
     }
 
+
+    /**
+     * @test
+     */
+    public function deleteAndRestoreNodes(): void
+    {
+        $root = $this->createSoftDeleteStructure();
+
+        $structure1  = $this->createSoftDeleteStructure($root);
+        $structure2  = $this->createSoftDeleteStructure($root);
+        $structure11 = $this->createSoftDeleteStructure($structure1);
+        $structure12 = $this->createSoftDeleteStructure($structure1);
+
+        self::refreshModels($root, $structure1, $structure2, $structure11, $structure12);
+        static::assertEquals([1, 10, 0, null, $root->treeValue()], $root->getBounds());
+        static::assertEquals([2, 7, 1, $root->id, $structure1->treeValue()], $structure1->getBounds());
+        static::assertEquals([3, 4, 2, $structure1->id, $structure11->treeValue()], $structure11->getBounds());
+        static::assertEquals([5, 6, 2, $structure1->id, $structure12->treeValue()], $structure12->getBounds());
+        static::assertEquals([8, 9, 1, $root->id, $structure2->treeValue()], $structure2->getBounds());
+
+        $structure1->deleteWithChildren(false);
+
+        static::assertFalse(SoftDeleteStructure::isBroken());
+        static::assertEquals(2, SoftDeleteStructure::count());
+
+        self::refreshModels($root, $structure1, $structure2, $structure11, $structure12);
+
+        static::assertEquals([1, 10, 0, null, $root->treeValue()], $root->getBounds());
+        static::assertEquals([2, 7, 1, $root->id, $structure1->treeValue()], $structure1->getBounds());
+        static::assertEquals([3, 4, 2, $structure1->id, $structure11->treeValue()], $structure11->getBounds());
+        static::assertEquals([5, 6, 2, $structure1->id, $structure12->treeValue()], $structure12->getBounds());
+        static::assertEquals([8, 9, 1, $root->id, $structure2->treeValue()], $structure2->getBounds());
+
+        static::assertEquals(5, SoftDeleteStructure::withTrashed()->count());
+        static::assertTrue($structure12->trashed());
+
+        $structure12->restore();
+
+        static::assertFalse($structure12->trashed());
+        static::assertTrue($structure11->trashed());
+        static::assertTrue($structure1->trashed());
+        static::assertFalse(SoftDeleteStructure::isBroken());
+        static::assertEquals(3, SoftDeleteStructure::count());
+
+        self::refreshModels($root, $structure1, $structure2, $structure11, $structure12);
+
+        static::assertEquals([1, 10, 0, null, $root->treeValue()], $root->getBounds());
+        static::assertEquals([2, 7, 1, $root->id, $structure1->treeValue()], $structure1->getBounds());
+        static::assertEquals([3, 4, 2, $structure1->id, $structure11->treeValue()], $structure11->getBounds());
+        static::assertEquals([5, 6, 2, $structure1->id, $structure12->treeValue()], $structure12->getBounds());
+        static::assertEquals([8, 9, 1, $root->id, $structure2->treeValue()], $structure2->getBounds());
+
+        static::assertEquals(5, SoftDeleteStructure::withTrashed()->count());
+
+        $structure1->restoreWithDescendants();
+
+        self::refreshModels($structure1, $structure11, $structure12);
+
+        static::assertFalse($structure12->trashed());
+        static::assertFalse($structure11->trashed());
+        static::assertFalse($structure1->trashed());
+
+        static::assertFalse(SoftDeleteStructure::isBroken());
+        static::assertEquals(5, SoftDeleteStructure::count());
+
+        self::refreshModels($root, $structure1, $structure2, $structure11, $structure12);
+
+        static::assertEquals([1, 10, 0, null, $root->treeValue()], $root->getBounds());
+        static::assertEquals([2, 7, 1, $root->id, $structure1->treeValue()], $structure1->getBounds());
+        static::assertEquals([3, 4, 2, $structure1->id, $structure11->treeValue()], $structure11->getBounds());
+        static::assertEquals([5, 6, 2, $structure1->id, $structure12->treeValue()], $structure12->getBounds());
+        static::assertEquals([8, 9, 1, $root->id, $structure2->treeValue()], $structure2->getBounds());
+
+        static::assertEquals(5, SoftDeleteStructure::withTrashed()->count());
+    }
+
 }
