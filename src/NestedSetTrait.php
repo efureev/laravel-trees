@@ -239,7 +239,7 @@ trait NestedSetTrait
         $this->setAttribute($this->rightAttribute()->name(), ($to + 1));
         $this->setAttribute($this->levelAttribute()->name(), ($this->node->levelValue() + $depth));
 
-        if ($this->isMultiTree()) {
+        if ($this->isMultiTree() || ($depth > 0 && $this->node->isMultiTree())) {
             $this->setAttribute($this->treeAttribute()->name(), $this->node->treeValue());
         }
 

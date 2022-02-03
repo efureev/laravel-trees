@@ -97,6 +97,10 @@ trait BaseNestedSetTrait
      */
     public function isMultiTree(): bool
     {
+        if ($this->node) {
+            return $this->node->getTreeConfig()->isMultiTree();
+        }
+
         return $this->getTreeConfig()->isMultiTree();
     }
 
