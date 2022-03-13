@@ -27,7 +27,7 @@ jobs:
   #          args: './CHANGELOG.md'
 
   testing:
-    name: Test on PHP ${{ matrix.php }} with ${{ matrix.setup }} dependencies
+    name: Test on PHP ${{ matrix.php }} on laravel ${{ matrix.laravel }} with ${{ matrix.setup }} dependencies
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -36,7 +36,15 @@ jobs:
       fail-fast: false
       matrix:
         setup: [ 'basic', 'lowest' ]
-        php: [ '8.0' ]
+        php: [ '8.0' , '8.1' ]
+        laravel: [ 8.*, 9.*]
+        include:
+          - laravel: 9.*
+            testbench: 7.*
+            vardumper: 6.*
+          - laravel: 8.*
+            testbench: 6.*
+            vardumper: 5.*
 
     services:
       postgres:
@@ -81,11 +89,15 @@ jobs:
 
       - name: Install [LOWEST] Composer dependencies
         if: matrix.setup == 'lowest'
-        run: composer update --prefer-dist --no-interaction --no-suggest --prefer-lowest
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "symfony/var-dumper:${{ matrix.vardumper }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction --no-suggest --prefer-lowest
 
       - name: Install [BASIC] Composer dependencies
         if: matrix.setup == 'basic'
-        run: composer update --prefer-dist --no-interaction --no-suggest
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "symfony/var-dumper:${{ matrix.vardumper }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction --no-suggest
 
       - name: Show most important packages' versions
         run: composer info | grep -e efureev -e laravel/framework -e phpunit/phpunit
