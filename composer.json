@@ -10,15 +10,15 @@
   ],
   "require": {
     "php": "^8.0",
-    "illuminate/database": "^8.38|^9.2",
-    "illuminate/events": "^8.38|^9.2",
-    "efureev/support": "^4.5"
+    "illuminate/database": "^8.80",
+    "illuminate/events": "^8.80",
+    "efureev/support": "^4.8"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5",
-    "orchestra/testbench": "^6.17|^7.1",
-    "fakerphp/faker": "^1.14",
-    "symfony/var-dumper": "^5.2|^6.0",
+    "orchestra/testbench": "^6.17",
+    "fakerphp/faker": "^1.19",
+    "symfony/var-dumper": "^5.2",
     "squizlabs/php_codesniffer": "^3.6"
   },
   "autoload": {

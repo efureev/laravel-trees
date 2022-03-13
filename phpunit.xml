@@ -1,25 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         bootstrap="./tests/bootstrap_test.php"
-         backupStaticAttributes="false"
-         colors="true"
-         convertErrorsToExceptions="true"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="./tests/bootstrap_test.php"
+         backupGlobals="false"
+         backupStaticAttributes="false" colors="false" convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false">
+         convertWarningsToExceptions="true" processIsolation="false" stopOnFailure="false"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.5/phpunit.xsd">
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory>./vendor</directory>
+        </exclude>
+        <report>
+            <clover outputFile="./coverage/clover.xml"/>
+            <html outputDirectory="./coverage/html"/>
+            <text outputFile="php://stdout" showUncoveredFiles="false"/>
+            <xml outputDirectory="./coverage/xml"/>
+        </report>
+    </coverage>
     <testsuites>
-        <testsuite name="Package Tests">
-            <directory suffix="Test.php">./tests/</directory>
+        <testsuite name="Main">
+            <directory suffix="Test.php">./tests</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory>./src</directory>
-        </whitelist>
-    </filter>
     <logging>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
-        <log type="coverage-html" target="./storage/coverage/html"/>
+        <testdoxHtml outputFile="./coverage/index.html"/>
+        <testdoxXml outputFile="./coverage/testdoxXml.xml"/>
     </logging>
+    <php>
+        <server name="XDEBUG_MODE" value="coverage"/>
+    </php>
 </phpunit>
