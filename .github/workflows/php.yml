@@ -90,17 +90,17 @@ jobs:
       - name: Install [LOWEST] Composer dependencies
         if: matrix.setup == 'lowest'
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "symfony/var-dumper:${{ matrix.vardumper }}" --no-interaction --no-update
+#          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "symfony/var-dumper:${{ matrix.vardumper }}" --no-interaction --no-update
           composer update --prefer-dist --no-interaction --no-suggest --prefer-lowest
 
       - name: Install [BASIC] Composer dependencies
         if: matrix.setup == 'basic'
         run: |
-          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "symfony/var-dumper:${{ matrix.vardumper }}" --no-interaction --no-update
+#          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "symfony/var-dumper:${{ matrix.vardumper }}" --no-interaction --no-update
           composer update --prefer-dist --no-interaction --no-suggest
 
       - name: Show most important packages' versions
-        run: composer info | grep -e efureev -e laravel/framework -e phpunit/phpunit
+        run: composer info | grep -e efureev -e laravel/framework -e phpunit/phpunit -e orchestra/testbench
 
       # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
       # Docs: https://getcomposer.org/doc/articles/scripts.md
