@@ -264,4 +264,31 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(5, SoftDeleteStructure::withTrashed()->count());
     }
 
+    /**
+     * @test
+     */
+    public function restoreParentsNodes(): void
+    {
+        $root = $this->createSoftDeleteStructure();
+
+        $structure1  = $this->createSoftDeleteStructure($root);
+        $structure2  = $this->createSoftDeleteStructure($root);
+        $structure11 = $this->createSoftDeleteStructure($structure1);
+        $structure12 = $this->createSoftDeleteStructure($structure1);
+
+        self::refreshModels($root, $structure1, $structure2, $structure11, $structure12);
+        $structure1->deleteWithChildren(false);
+        self::refreshModels($root, $structure1, $structure2, $structure11, $structure12);
+
+        $structure11->restoreWithParents();
+
+        self::refreshModels($structure1, $structure11, $structure12);
+
+        static::assertTrue($structure12->trashed());
+        static::assertFalse($structure11->trashed());
+        static::assertFalse($structure1->trashed());
+        static::assertFalse(SoftDeleteStructure::isBroken());
+        static::assertEquals(4, SoftDeleteStructure::count());
+    }
+
 }

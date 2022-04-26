@@ -69,17 +69,17 @@ class QueryBuilder extends Builder
      *
      * @return QueryBuilder
      */
-    public function parents(int $level = null): self
+    public function parents(int $level = null, $andSelf = false): self
     {
         $condition = [
             [
                 $this->model->leftAttribute()->name(),
-                '<',
+                $andSelf ? '<=' : '<',
                 $this->model->leftOffset(),
             ],
             [
                 $this->model->rightAttribute()->name(),
-                '>',
+                $andSelf ? '>=' : '>',
                 $this->model->rightOffset(),
             ],
         ];

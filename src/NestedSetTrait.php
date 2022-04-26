@@ -886,6 +886,7 @@ trait NestedSetTrait
     }
 
     protected static ?Closure $customRestoreWithDescendantsFn = null;
+    protected static ?Closure $customRestoreWithParentsFn = null;
 
     /**
      * @param callable(Model, ?string): string|int|null $fn
@@ -902,6 +903,15 @@ trait NestedSetTrait
         }
 
         return static::restoreDescendants($model, $deletedAt);
+    }
+
+    protected static function getCustomRestoreWithParentsFn(Model $model, ?string $deletedAt = null): mixed
+    {
+        if ($fn = static::$customRestoreWithParentsFn) {
+            return $fn($model, $deletedAt);
+        }
+
+        return static::restoreParents($model, $deletedAt);
     }
 
     protected function onRestoredNodeWeShouldToRestoredChildrenBy(): mixed
@@ -945,6 +955,43 @@ trait NestedSetTrait
     public function newCollection(array $models = []): Collection
     {
         return new Collection($models);
+    }
+
+    public function restoreWithParents(): mixed
+    {
+        if ($this->fireModelEvent('restoring') === false) {
+            return false;
+        }
+
+        $result = static::getCustomRestoreWithParentsFn($this, self::$deletedAt);
+
+        $this->exists = true;
+
+        $this->fireModelEvent('restored', false);
+
+        return $result;
+    }
+
+    /**
+     * Restore the descendants.
+     *
+     * @param Model $model
+     * @param       $deletedAt
+     *
+     * @return string|int|null
+     */
+    protected static function restoreParents(Model $model, $deletedAt): string|int|null
+    {
+        $query = $model->newNestedSetQuery()
+            ->parents(null, true);
+
+        if ($deletedAt) {
+            $query->where($model->getDeletedAtColumn(), '>=', $deletedAt);
+        }
+
+        $result = $query->restore();
+
+        return $result ? $model->getKey() : null;
     }
 
     public function restoreWithDescendants(): mixed
