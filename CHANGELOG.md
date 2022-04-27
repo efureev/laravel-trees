@@ -5,7 +5,7 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
-## [3.5.4](https://github.com/efureev/laravel-trees/compare/v3.5.3...v3.5.4) (2022-04-27)
+## [3.6.0](https://github.com/efureev/laravel-trees/compare/v3.5.3...v3.6.0) (2022-04-27)
 
 ### Added
 
