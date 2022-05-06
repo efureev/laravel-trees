@@ -905,6 +905,15 @@ trait NestedSetTrait
         return static::restoreDescendants($model, $deletedAt);
     }
 
+    /**
+     * @param callable(Model, ?string): string|int|null $fn
+     */
+    public static function setCustomRestoreWithParentsFn(callable $fn): void
+    {
+        static::$customRestoreWithParentsFn = $fn;
+    }
+
+
     protected static function getCustomRestoreWithParentsFn(Model $model, ?string $deletedAt = null): mixed
     {
         if ($fn = static::$customRestoreWithParentsFn) {
