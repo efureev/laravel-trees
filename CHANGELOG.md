@@ -5,6 +5,25 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [3.6.0](https://github.com/efureev/laravel-trees/compare/v3.5.3...v3.6.0) (2022-04-27)
+
+### Added
+
+- Added restore with parents method
+
+## [3.5.3](https://github.com/efureev/laravel-trees/compare/v3.5.2...v3.5.3) (2022-03-13)
+
+### Added
+
+- Support Laravel 9
+
+## [3.5.2](https://github.com/efureev/laravel-trees/compare/v3.5.1...v3.5.2) (2022-02-03)
+
+### Fixed
+
+- You can append non-multi-tree-child to multi-tree-root
+- Restore method
+
 ## [3.5.0](https://github.com/efureev/laravel-trees/compare/v3.4.1...v3.5.0) (2021-11-23)
 
 ### Fixed
