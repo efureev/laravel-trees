@@ -33,12 +33,12 @@ trait BaseNestedSetTrait
      *
      * @var boolean
      */
-    protected $forceSave = false;
+    protected bool $forceSave = false;
 
     /**
-     * @var array|null For boost `getCast` function
+     * @var array<string,string>|null For boost `getCast` function
      */
-    private $castsFill;
+    private ?array $castsFill = null;
 
     /**
      * @inheritDoc
@@ -242,33 +242,37 @@ trait BaseNestedSetTrait
     }
 
     /**
-     * @return array
+     * @return array<string,string>
      */
     public function getCasts(): array
     {
-        if ($this->castsFill === null) {
-            $casts = array_merge(
-                parent::getCasts(),
-                [
-                    $this->levelAttribute()->name() => 'integer',
-                    $this->leftAttribute()->name()  => 'integer',
-                    $this->rightAttribute()->name() => 'integer',
-                ],
-                $this->casts
-            );
+        return $this->castsFill ??= array_merge(
+            parent::getCasts(),
+            $this->getCastsTree(),
+            $this->casts
+        );
+    }
 
-            if ($type = $this->getTreeConfig()->getCastForParentAttribute()) {
-                $casts[$this->parentAttribute()->name()] = $type;
-            }
+    /**
+     * @return array<string,string>
+     */
+    public function getCastsTree(): array
+    {
+        $casts = [
+            $this->levelAttribute()->name() => 'integer',
+            $this->leftAttribute()->name()  => 'integer',
+            $this->rightAttribute()->name() => 'integer',
+        ];
 
-            if ($this->treeAttribute() && ($type = $this->getTreeConfig()->getCastForTreeAttribute())) {
-                $casts[$this->treeAttribute()->name()] = $type;
-            }
-
-            $this->castsFill = $casts;
+        if ($type = $this->getTreeConfig()->getCastForParentAttribute()) {
+            $casts[$this->parentAttribute()->name()] = $type;
         }
 
-        return $this->castsFill;
+        if ($this->treeAttribute() && ($type = $this->getTreeConfig()->getCastForTreeAttribute())) {
+            $casts[$this->treeAttribute()->name()] = $type;
+        }
+
+        return $casts;
     }
 
 
