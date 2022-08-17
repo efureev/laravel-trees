@@ -16,7 +16,7 @@ class Table
     protected OutputInterface $output;
 
     protected ?Collection $collection = null;
-    protected bool $showLevel = true;
+    protected bool $showLevel         = true;
 
     protected string $driverClass = \Symfony\Component\Console\Helper\Table::class;
 
@@ -31,7 +31,7 @@ class Table
 
     public function setOutput(OutputInterface $output = null): static
     {
-        $this->output = $output ?? new BufferedConsoleOutput();
+        $this->output = ($output ?? new BufferedConsoleOutput());
 
         return $this;
     }
@@ -174,5 +174,4 @@ class Table
         return (new static())
             ->setCollection($collection);
     }
-
 }

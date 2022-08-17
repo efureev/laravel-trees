@@ -95,7 +95,7 @@ class Migrate
 
         $this->table->index(
             $cols,
-            $this->table->getTable()."_{$name}_idx"
+            $this->table->getTable() . "_{$name}_idx"
         );
     }
 

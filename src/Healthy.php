@@ -49,13 +49,18 @@ trait Healthy
         return $this->model
             ->newNestedSetQuery()
             ->toBase()
-            ->whereNested(function (Builder $inner) {
-                [$lft, $rgt] = $this->wrappedColumns();
+            ->whereNested(
+                function (Builder $inner) {
+                    [
+                        $lft,
+                        $rgt,
+                    ] = $this->wrappedColumns();
 
-                $inner
+                    $inner
                     ->whereRaw("$lft >= $rgt")
                     ->orWhereRaw("($rgt - $lft) % 2 = 0");
-            });
+                }
+            );
     }
 
 
@@ -76,18 +81,26 @@ trait Healthy
             ->toBase()
             ->from($this->query->raw("{$table} as {$waFirst}, {$table} {$waSecond}"))
             ->whereRaw("{$waFirst}.{$keyName} <> {$waSecond}.{$keyName}")
-            ->when($isMultiTree, function (Builder $q) use ($waFirst, $waSecond) {
-                $tid = $this->model->treeAttribute()->name();
-                $q->whereRaw("{$waFirst}.{$tid} = {$waSecond}.{$tid}");
-            })
-            ->whereNested(function (Builder $inner) use ($waFirst, $waSecond) {
-                [$lft, $rgt] = $this->wrappedColumns();
+            ->when(
+                $isMultiTree,
+                function (Builder $q) use ($waFirst, $waSecond) {
+                    $tid = $this->model->treeAttribute()->name();
+                    $q->whereRaw("{$waFirst}.{$tid} = {$waSecond}.{$tid}");
+                }
+            )
+            ->whereNested(
+                function (Builder $inner) use ($waFirst, $waSecond) {
+                    [
+                        $lft,
+                        $rgt,
+                    ] = $this->wrappedColumns();
 
-                $inner->orWhereRaw("{$waFirst}.{$lft}={$waSecond}.{$lft}")
+                    $inner->orWhereRaw("{$waFirst}.{$lft}={$waSecond}.{$lft}")
                     ->orWhereRaw("{$waFirst}.{$rgt}={$waSecond}.{$rgt}")
                     ->orWhereRaw("{$waFirst}.{$lft}={$waSecond}.{$rgt}")
                     ->orWhereRaw("{$waFirst}.{$rgt}={$waSecond}.{$lft}");
-            });
+                }
+            );
 
         return $this->model->applyNestedSetScope($query, $secondAlias);
     }
@@ -116,22 +129,30 @@ trait Healthy
             ->newNestedSetQuery('c')
             ->toBase()
             ->from($this->query->raw("{$table} as {$waChild}, {$table} as {$waParent}, $table as {$waInterm}"))
-            ->when($isMultiTree, function (Builder $q) use ($waChild, $waParent, $waInterm) {
-                $tid = $this->model->treeAttribute()->name();
-                $q
+            ->when(
+                $isMultiTree,
+                function (Builder $q) use ($waChild, $waParent, $waInterm) {
+                    $tid = $this->model->treeAttribute()->name();
+                    $q
                     ->whereRaw("{$waChild}.{$tid} = {$waParent}.{$tid}")
                     ->whereRaw("{$waInterm}.{$tid} = {$waParent}.{$tid}");
-            })
+                }
+            )
             ->whereRaw("{$waChild}.{$parentIdName}={$waParent}.{$keyName}")
             ->whereRaw("{$waInterm}.{$keyName} <> {$waParent}.{$keyName}")
             ->whereRaw("{$waInterm}.{$keyName} <> {$waChild}.{$keyName}")
-            ->whereNested(function (Builder $inner) use ($waInterm, $waChild, $waParent) {
-                [$lft, $rgt] = $this->wrappedColumns();
+            ->whereNested(
+                function (Builder $inner) use ($waInterm, $waChild, $waParent) {
+                    [
+                        $lft,
+                        $rgt,
+                    ] = $this->wrappedColumns();
 
-                $inner->whereRaw("{$waChild}.{$lft} not between {$waParent}.{$lft} and {$waParent}.{$rgt}")
+                    $inner->whereRaw("{$waChild}.{$lft} not between {$waParent}.{$lft} and {$waParent}.{$rgt}")
                     ->orWhereRaw("{$waChild}.{$lft} between {$waInterm}.{$lft} and {$waInterm}.{$rgt}")
                     ->whereRaw("{$waInterm}.{$lft} between {$waParent}.{$lft} and {$waParent}.{$rgt}");
-            });
+                }
+            );
 
         $this->model->applyNestedSetScope($query, $parentAlias);
         $this->model->applyNestedSetScope($query, $intermAlias);
@@ -145,16 +166,17 @@ trait Healthy
         return $this->model
             ->newNestedSetQuery()
             ->toBase()
-            ->whereNested(function (Builder $inner) {
-                $grammar = $this->query->getGrammar();
+            ->whereNested(
+                function (Builder $inner) {
+                    $grammar = $this->query->getGrammar();
 
-                $table        = $this->wrappedTable();
-                $keyName      = $this->wrappedKey();
-                $parentIdName = $grammar->wrap($this->model->parentAttribute()->name());
-                $alias        = 'p';
-                $wrappedAlias = $grammar->wrapTable($alias);
+                    $table        = $this->wrappedTable();
+                    $keyName      = $this->wrappedKey();
+                    $parentIdName = $grammar->wrap($this->model->parentAttribute()->name());
+                    $alias        = 'p';
+                    $wrappedAlias = $grammar->wrapTable($alias);
 
-                $existsCheck = $this->model
+                    $existsCheck = $this->model
                     ->newNestedSetQuery()
                     ->toBase()
                     ->selectRaw('1')
@@ -162,11 +184,12 @@ trait Healthy
                     ->whereRaw("{$table}.{$parentIdName} = {$wrappedAlias}.{$keyName}")
                     ->limit(1);
 
-                $this->model->applyNestedSetScope($existsCheck, $alias);
+                    $this->model->applyNestedSetScope($existsCheck, $alias);
 
-                $inner->whereRaw("{$parentIdName} is not null")
+                    $inner->whereRaw("{$parentIdName} is not null")
                     ->addWhereExistsQuery($existsCheck, 'and', true);
-            });
+                }
+            );
     }
 
     /**

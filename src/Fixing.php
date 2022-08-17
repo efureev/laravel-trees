@@ -13,7 +13,6 @@ use Illuminate\Database\Query\Expression;
  */
 trait Fixing
 {
-
     public function fixMultiTree(): array
     {
         if (!$this->model->isMultiTree()) {
@@ -48,9 +47,12 @@ trait Fixing
 
         $dictionary = $this->model
             ->newNestedSetQuery()
-            ->when($root, function (self $query) use ($root) {
-                return $query->whereDescendantOf($root);
-            })
+            ->when(
+                $root,
+                function (self $query) use ($root) {
+                    return $query->whereDescendantOf($root);
+                }
+            )
             ->defaultOrder()
             ->get($columns)
             ->groupBy($this->model->parentAttribute()->name())
@@ -70,7 +72,7 @@ trait Fixing
     {
         $parentId    = $parent ? $parent->getKey() : null;
         $parentLevel = $parent ? $parent->levelValue() : 0;
-        $cut         = $parent ? abs($parent->leftOffset()) + 1 : 1;
+        $cut         = $parent ? (abs($parent->leftOffset()) + 1) : 1;
 
         $updated = [];
         $moved   = 0;
@@ -87,7 +89,7 @@ trait Fixing
         }
 
         if ($parent && ($grown = $cut - abs($parent->rightOffset())) !== 0) {
-            $moved = $parent->newScopedQuery()->makeGap(abs($parent->rightOffset()) + 1, $grown);
+            $moved = $parent->newScopedQuery()->makeGap((abs($parent->rightOffset()) + 1), $grown);
 
             $updated[] = $parent->setAttribute($parent->rightAttribute()->name(), $cut);
         }
@@ -96,7 +98,7 @@ trait Fixing
             $model->saveQuietly();
         }
 
-        return count($updated) + $moved;
+        return (count($updated) + $moved);
     }
 
     protected static function reorderNodes(array &$dictionary, array &$updated, $parentId, $cut, $parentLevel = 0)
@@ -104,13 +106,13 @@ trait Fixing
         if (!isset($dictionary[$parentId])) {
             return $cut;
         }
-        $level = $parentId ? $parentLevel + 1 : 0;
+        $level = $parentId ? ($parentLevel + 1) : 0;
 
         /** @var Model|NestedSetTrait $model */
         foreach ($dictionary[$parentId] as $model) {
             $lft = $cut;
 
-            $cut = self::reorderNodes($dictionary, $updated, $model->getKey(), $cut + 1, $level);
+            $cut = self::reorderNodes($dictionary, $updated, $model->getKey(), ($cut + 1), $level);
 
             $model
                 ->setAttribute($model->leftAttribute()->name(), $lft)
@@ -141,13 +143,18 @@ trait Fixing
         }
 
         $query = $this->toBase()
-            ->whereNested(function (Query $inner) use ($cut) {
-                $inner->where($this->model->leftAttribute()->name(), '>=', $cut);
-                $inner->orWhere($this->model->rightAttribute()->name(), '>=', $cut);
-            })
-            ->when($where, function (Query $q) use ($where) {
-                $q->where($where);
-            });
+            ->whereNested(
+                function (Query $inner) use ($cut) {
+                    $inner->where($this->model->leftAttribute()->name(), '>=', $cut);
+                    $inner->orWhere($this->model->rightAttribute()->name(), '>=', $cut);
+                }
+            )
+            ->when(
+                $where,
+                function (Query $q) use ($where) {
+                    $q->where($where);
+                }
+            );
 
         return $query->update($this->patch($params));
     }

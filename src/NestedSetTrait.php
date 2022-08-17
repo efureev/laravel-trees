@@ -126,7 +126,7 @@ trait NestedSetTrait
         if (!$this->operation) {
             if ($this->parentWithTrashed) {
                 $this->saveWithParent();
-            } elseif ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
+            } else if ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
                 $this->saveWithOutTargets();
             }
         }
@@ -886,7 +886,7 @@ trait NestedSetTrait
     }
 
     protected static ?Closure $customRestoreWithDescendantsFn = null;
-    protected static ?Closure $customRestoreWithParentsFn = null;
+    protected static ?Closure $customRestoreWithParentsFn     = null;
 
     /**
      * @param callable(Model, ?string): string|int|null $fn

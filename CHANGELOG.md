@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [3.7.0](https://github.com/efureev/laravel-trees/compare/v3.6.0...v3.7.0) (2022-08-17)
+
+### Added
+
+- Added support PHP `8.1`
+
 ## [3.6.0](https://github.com/efureev/laravel-trees/compare/v3.5.3...v3.6.0) (2022-04-27)
 
 ### Added

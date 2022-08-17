@@ -138,7 +138,7 @@ class Collection extends BaseCollection
      */
     public function fillMissingIntermediateNodes(): void
     {
-        $nodeIds = $this->pluck('id', 'id')->all();
+        $nodeIds    = $this->pluck('id', 'id')->all();
         $collection = $this->sortByDesc(static fn($item) => $item->levelValue());
 
         foreach ($collection as $node) {
