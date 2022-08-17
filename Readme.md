@@ -1,6 +1,6 @@
 ![PHP Laravel Package](https://github.com/efureev/laravel-trees/workflows/PHP%20Laravel%20Package/badge.svg?branch=master)
-![](https://img.shields.io/badge/php-^8.0-blue.svg)
-![](https://img.shields.io/badge/Laravel-^8.80-red.svg)
+![](https://img.shields.io/badge/php-^8.0|^8.1-blue.svg)
+![](https://img.shields.io/badge/Laravel-^8.80|^9.25-red.svg)
 [![Total Downloads](https://poser.pugx.org/efureev/laravel-trees/downloads)](https://packagist.org/packages/efureev/laravel-trees)
 [![License](https://poser.pugx.org/efureev/laravel-trees/license)](https://packagist.org/packages/efureev/laravel-trees)
 [![composer.lock available](https://poser.pugx.org/efureev/laravel-trees/composerlock)](https://packagist.org/packages/efureev/laravel-trees)
