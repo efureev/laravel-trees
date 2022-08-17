@@ -35,8 +35,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        setup: [ 'basic', 'lowest' ]
-        php: [ '8.0' , '8.1' ]
+        setup: [ 'basic', 'lowest', 'stable' ]
+        php: [ '8.0', '8.1' ]
         laravel: [ 8.*, 9.*]
         include:
           - laravel: 9.*
@@ -96,6 +96,10 @@ jobs:
         if: matrix.setup == 'basic'
         run: |
           composer update --prefer-dist --no-interaction --no-suggest
+
+      - name: Install [STABLE] Composer dependencies
+        if: matrix.setup == 'stable'
+        run: composer update --prefer-dist --no-interaction --no-suggest --prefer-stable
 
       - name: Show most important packages' versions
         run: composer info | grep -e efureev -e laravel/framework -e phpunit/phpunit -e orchestra/testbench
