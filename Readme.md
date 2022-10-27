@@ -203,8 +203,6 @@ class AddTemplates extends Migration
             $table->string('title');
     
             Migrate::columns($table, (new Page)->getTreeConfig());
-            // or 
-            // Migrate::getColumnsFromModel($table, Page::class);
     
             $table->timestamps();
             $table->softDeletes();
@@ -380,13 +378,13 @@ $collection = $node->siblings()->get();
 $collection = $node->prevSiblings()->get();
 
 // Get siblings which are after the node
-$collection = $node->nexrSiblings()->get();
+$collection = $node->nextSiblings()->get();
 
 // Get a sibling that is immediately before the node
 $prevNode = $node->prevSibling()->first();
 
 // Get a sibling that is immediately after the node
-$nextNode = $node->nextibling()->first();
+$nextNode = $node->nextSibling()->first();
 ```
 
 ```php
