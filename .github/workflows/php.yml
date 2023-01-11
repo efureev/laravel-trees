@@ -37,16 +37,17 @@ jobs:
       matrix:
         setup: [ 'basic', 'lowest', 'stable' ]
         php: [ '8.0', '8.1' , '8.2' ]
-        laravel: [ 8.*, 9.*]
+        laravel: [ 8.*, 9.* ]
         include:
-          - php: 8.2
-            laravel: 9.*
           - laravel: 9.*
             testbench: 7.*
             vardumper: 6.*
           - laravel: 8.*
             testbench: 6.*
             vardumper: 5.*
+        exclude:
+          - php: '8.2'
+            setup: 'lowest'
 
     services:
       postgres:
