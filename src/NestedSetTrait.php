@@ -281,7 +281,7 @@ trait NestedSetTrait
 
                 $query->update(
                     [
-                        $attribute => new Expression($attribute . '+ ' . $delta),
+                        $attribute => new Expression(sprintf('"%s" + %d', $attribute, $delta)),
                     ]
                 );
             }
@@ -424,13 +424,13 @@ trait NestedSetTrait
             ->update(
                 [
                     $this->leftAttribute()->name()  => new Expression(
-                        $this->leftAttribute()->name() . ' + ' . (1 - $left)
+                        sprintf('"%s" + %d', $this->leftAttribute()->name(), (1 - $left))
                     ),
                     $this->rightAttribute()->name() => new Expression(
-                        $this->rightAttribute()->name() . ' + ' . (1 - $left)
+                        sprintf('"%s" + %d', $this->rightAttribute()->name(), (1 - $left))
                     ),
                     $this->levelAttribute()->name() => new Expression(
-                        $this->levelAttribute()->name() . ' + ' . -$depth
+                        sprintf('"%s" + %d', $this->levelAttribute()->name(), -$depth)
                     ),
                     $this->treeAttribute()->name()  => $tree,
                 ]
@@ -456,7 +456,7 @@ trait NestedSetTrait
                 ->update(
                     [
                         $this->levelAttribute()->name() => new Expression(
-                            "-{$this->levelAttribute()->name()} + " . $depth
+                            sprintf('-"%s" + %d', $this->levelAttribute()->name(), $depth)
                         ),
                     ]
                 );
@@ -477,12 +477,12 @@ trait NestedSetTrait
                 ->update(
                     [
                         $this->leftAttribute()->name()  => new Expression(
-                            $this->leftAttribute()->name() . ' + ' . $delta
+                            sprintf('"%s" + %d', $this->leftAttribute()->name(), $delta)
                         ),
                         $this->rightAttribute()->name() => new Expression(
-                            $this->rightAttribute()->name() . ' + ' . $delta
+                            sprintf('"%s" + %d', $this->rightAttribute()->name(), $delta)
                         ),
-                        $this->levelAttribute()->name() => new Expression("-{$this->levelAttribute()->name()}"),
+                        $this->levelAttribute()->name() => new Expression(sprintf('-"%s"', $this->levelAttribute()->name())),
                     ]
                 );
         } else {
@@ -496,13 +496,13 @@ trait NestedSetTrait
                 ->update(
                     [
                         $this->leftAttribute()->name()  => new Expression(
-                            $this->leftAttribute()->name() . ' + ' . $delta
+                            sprintf('"%s" + %d', $this->leftAttribute()->name(), $delta)
                         ),
                         $this->rightAttribute()->name() => new Expression(
-                            $this->rightAttribute()->name() . ' + ' . $delta
+                            sprintf('"%s" + %d', $this->rightAttribute()->name(), $delta)
                         ),
                         $this->levelAttribute()->name() => new Expression(
-                            $this->levelAttribute()->name() . ' + ' . -$depth
+                            sprintf('"%s" + %d', $this->levelAttribute()->name(), -$depth)
                         ),
                         $this->treeAttribute()->name()  => $tree,
                     ]
@@ -862,9 +862,9 @@ trait NestedSetTrait
 
         $query->update(
             [
-                $this->leftAttribute()->name()   => new Expression($this->leftAttribute()->name() . '- 1'),
-                $this->rightAttribute()->name()  => new Expression($this->rightAttribute()->name() . '- 1'),
-                $this->levelAttribute()->name()  => new Expression($this->levelAttribute()->name() . '- 1'),
+                $this->leftAttribute()->name()   => new Expression(sprintf('"%s" - 1', $this->leftAttribute()->name())),
+                $this->rightAttribute()->name()  => new Expression(sprintf('"%s" - 1', $this->rightAttribute()->name())),
+                $this->levelAttribute()->name()  => new Expression(sprintf('"%s" - 1', $this->levelAttribute()->name())),
                 $this->parentAttribute()->name() => $this->parentValue(),
             ]
         );
