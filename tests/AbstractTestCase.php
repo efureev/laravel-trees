@@ -66,8 +66,6 @@ abstract class AbstractTestCase extends TestCase
                 ]) : [],
             ]
         );
-
-//        dd($app['config']->get('database'));
     }
 
     /**

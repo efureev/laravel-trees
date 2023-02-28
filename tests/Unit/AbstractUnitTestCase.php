@@ -5,6 +5,7 @@ namespace Fureev\Trees\Tests\Unit;
 use Fureev\Trees\Migrate;
 use Fureev\Trees\Tests\AbstractTestCase;
 use Fureev\Trees\Tests\models\BaseModel;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
 
     private static function setUpDb()
     {
-        /** @var \Illuminate\Database\PostgresConnection $connection */
+        /** @var ConnectionInterface $connection */
         $connection = app('db.connection');
 
         $connectionDriver = $connection->getDriverName();
@@ -45,7 +46,7 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
                         $expression = new Expression('UUID()');
                         break;
                     default:
-                        throw new \Exception('Your DB driver ['.DB::getDriverName().'] does not supported');
+                        throw new \Exception('Your DB driver [' . DB::getDriverName() . '] does not supported');
                         break;
                 }
 
@@ -78,8 +79,8 @@ abstract class AbstractUnitTestCase extends AbstractTestCase
     /**
      * Helper for creating a tree
      *
-     * @param  BaseModel|null  $parentNode
-     * @param  mixed  ...$childrenNodesCount
+     * @param BaseModel|null $parentNode
+     * @param mixed ...$childrenNodesCount
      */
     protected static function makeTree($parentNode = null, ...$childrenNodesCount): void
     {

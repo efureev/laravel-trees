@@ -6,7 +6,6 @@ use Fureev\Trees\Migrate;
 use Fureev\Trees\NestedSetTrait;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\PostgresConnection;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -34,7 +33,7 @@ class InstallMigration
         }
     }
 
-    private static function connection(): PostgresConnection
+    private static function connection(): ConnectionInterface
     {
         return app('db.connection');
     }
