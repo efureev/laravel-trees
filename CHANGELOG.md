@@ -5,6 +5,12 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [3.8.0](https://github.com/efureev/laravel-trees/compare/v3.7.0...v3.8.0) (2023-03-20)
+
+### Added
+
+- Added support Laravel 10
+
 ## [3.7.0](https://github.com/efureev/laravel-trees/compare/v3.6.0...v3.7.0) (2022-08-17)
 
 ### Added
