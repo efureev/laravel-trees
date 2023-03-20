@@ -45,11 +45,9 @@ jobs:
           - laravel: 9.*
             testbench: 7.*
             vardumper: 6.*
-            efureev/support: 4.16.*
           - laravel: 8.*
             testbench: 6.*
             vardumper: 5.*
-            efureev/support: 4.16.*
         exclude:
           - php: '8.2'
             setup: 'lowest'

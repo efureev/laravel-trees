@@ -19,7 +19,7 @@
     "php": "^8.0|^8.1|^8.2",
     "illuminate/database": "^8.8|^9.25|^10.0",
     "illuminate/events": "^8.80|^9.25|^10.0",
-    "efureev/support": "^4.18"
+    "efureev/support": "^4.16"
   },
   "require-dev": {
     "phpunit/phpunit": "^9.5|^10.0",
