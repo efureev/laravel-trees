@@ -40,6 +40,7 @@ jobs:
         laravel: [ 8.*, 9.* , 10.* ]
         include:
           - laravel: 10.*
+            php: 8.2
             testbench: 8.*
             vardumper: 6.*
           - laravel: 9.*
