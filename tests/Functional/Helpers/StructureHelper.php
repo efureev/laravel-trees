@@ -17,9 +17,10 @@ trait StructureHelper
 
     public function createSoftDeleteStructure(
         SoftDeleteStructure $parent = null,
-        array $attributes = []
+        array $attributes = [],
+        string $method = 'appendTo'
     ): SoftDeleteStructure {
-        return $this->createCustomStructure(SoftDeleteStructureFactory::class, $parent, $attributes);
+        return $this->createCustomStructure(SoftDeleteStructureFactory::class, $parent, $attributes, $method);
     }
 
     /**
@@ -32,7 +33,8 @@ trait StructureHelper
     public function createCustomStructure(
         string $classFactory,
         Structure $parent = null,
-        array $attributes = []
+        array $attributes = [],
+        string $method = 'appendTo'
     ): Structure|SoftDeleteStructure {
         $treeId = $parent ? $parent->treeValue() : Uuid::uuid4()->toString();
 
@@ -40,7 +42,7 @@ trait StructureHelper
         $model = $classFactory::new()->make($attributes)->setTree($treeId);
 
         if ($parent) {
-            $model->appendTo($parent)->save();
+            $model->{$method}($parent)->save();
         }
 
         return tap($model, static fn($model) => $model->save());

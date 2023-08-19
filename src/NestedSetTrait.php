@@ -126,8 +126,10 @@ trait NestedSetTrait
         if (!$this->operation) {
             if ($this->parentWithTrashed) {
                 $this->saveWithParent();
-            } else if ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
-                $this->saveWithOutTargets();
+            } else {
+                if ($this->isMultiTree() || $this->getAttributeFromArray('_setRoot')) {
+                    $this->saveWithOutTargets();
+                }
             }
         }
 
