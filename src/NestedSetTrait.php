@@ -281,6 +281,10 @@ trait NestedSetTrait
                     $query->where($attribute, '>=', $from);
                 }
 
+                if (static::isSoftDelete()) {
+                    $query->withTrashed();
+                }
+
                 $query->update(
                     [
                         $attribute => new Expression($attribute . '+ ' . $delta),
