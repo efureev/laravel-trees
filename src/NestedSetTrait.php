@@ -116,6 +116,11 @@ trait NestedSetTrait
         }
     }
 
+    public function newQueryWithTrashed(): QueryBuilder
+    {
+        return $this->newQuery()->when(static::isSoftDelete(), fn($query) => $query->withTrashed());
+    }
+
     /**
      * @throws \Exception
      */
@@ -281,11 +286,9 @@ trait NestedSetTrait
                     $query->where($attribute, '>=', $from);
                 }
 
-                if (static::isSoftDelete()) {
-                    $query->withTrashed();
-                }
-
-                $query->update(
+                $query
+                    ->when(static::isSoftDelete(), fn($query) => $query->withTrashed())
+                    ->update(
                     [
                         $attribute => new Expression($attribute . '+ ' . $delta),
                     ]
@@ -425,7 +428,7 @@ trait NestedSetTrait
 
         $tree = $this->treeChange ?: $this->getTreeConfig()->generateTreeId($this);
 
-        $this->newQuery()
+        $this->newQueryWithTrashed()
             ->descendants(null, true)
             ->update(
                 [
@@ -457,7 +460,7 @@ trait NestedSetTrait
 
         if (!$this->isMultiTree() || $this->treeValue() === $this->node->treeValue()) {
             // same root
-            $this->newQuery()
+            $this->newQueryWithTrashed()
                 ->descendants(null, true)
                 ->update(
                     [
@@ -477,7 +480,7 @@ trait NestedSetTrait
                 $delta = ($to - $right - 1);
             }
 
-            $this->newQuery()
+            $this->newQueryWithTrashed()
                 ->descendants(null, true)
                 ->where($this->levelAttribute()->name(), '<', 0)
                 ->update(
@@ -497,7 +500,7 @@ trait NestedSetTrait
             $this->shift($to, null, ($right - $left + 1), $tree);
             $delta = ($to - $left);
 
-            $this->newQuery()
+            $this->newQueryWithTrashed()
                 ->descendants(null, true)
                 ->update(
                     [
@@ -866,7 +869,9 @@ trait NestedSetTrait
     {
         $query = $this->children();
 
-        $query->update(
+        $query
+            ->when(static::isSoftDelete(), fn($query) => $query->withTrashed())
+            ->update(
             [
                 $this->leftAttribute()->name()   => new Expression($this->leftAttribute()->name() . '- 1'),
                 $this->rightAttribute()->name()  => new Expression($this->rightAttribute()->name() . '- 1'),
