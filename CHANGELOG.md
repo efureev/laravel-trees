@@ -5,11 +5,17 @@
 All notable changes to this project will be documented in this file.
 <!--- END HEADER -->
 
+## [3.8.2](https://github.com/efureev/laravel-trees/compare/v3.8.1...v3.8.2) (2023-09-11)
+
+### Fixed
+
+- On `DeleteWithChildren` in SoftDelete-models don't shifted offsets
+
 ## [3.8.1](https://github.com/efureev/laravel-trees/compare/v3.8.0...v3.8.1) (2023-08-19)
 
 ### Fixed
 
-- Soft deleted models is now updating tree attributes (Before not).
+- Soft deleted models is now updating tree attributes (Before not)
 
 
 ## [3.8.0](https://github.com/efureev/laravel-trees/compare/v3.7.0...v3.8.0) (2023-03-20)

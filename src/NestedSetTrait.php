@@ -9,8 +9,7 @@ use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException,
     Exception,
     NotSupportedException,
     TreeNeedValueException,
-    UniqueRootException
-};
+    UniqueRootException};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -850,6 +849,10 @@ trait NestedSetTrait
 
         if ($this->fireModelEvent('deleting') === false) {
             return false;
+        }
+
+        if (static::isSoftDelete()) {
+            $this->forceDeleting = $forceDelete;
         }
 
         $result = static::getCustomDeleteWithChildrenFn($this, $forceDelete);
