@@ -28,10 +28,11 @@ class Collection extends BaseCollection
      * If `$fillMissingIntermediateNodes` is provided, the tree will get missing intermediate nodes from database.
      *
      * @param Model|string|int|null $fromNode
+     * @param bool $setParentRelations Set `parent` into child's relations
      *
      * @return $this
      */
-    public function toTree(Model|string|int|null $fromNode = null): self
+    public function toTree(Model|string|int|null $fromNode = null, bool $setParentRelations = false): self
     {
         if ($this->handledToTree) {
             return $this;
@@ -41,7 +42,7 @@ class Collection extends BaseCollection
             return new static();
         }
 
-        $this->linkNodes(false);
+        $this->linkNodes($setParentRelations);
         $items = [];
 
         if ($fromNode) {
@@ -75,11 +76,11 @@ class Collection extends BaseCollection
      *
      * Для того, что бы не делать лишние запросы в бд по этим релейшенам
      *
-     * @param bool $setParentRelations
+     * @param bool $setParentRelations Set `parent` into child's relations
      *
      * @return $this
      */
-    public function linkNodes($setParentRelations = true): self
+    public function linkNodes(bool $setParentRelations = true): self
     {
         if ($this->linked) {
             return $this;
@@ -145,7 +146,7 @@ class Collection extends BaseCollection
             if (!$node instanceof Model || $node->isRoot() || isset($nodeIds[$node->parentValue()])) {
                 continue;
             }
-
+            /** @var Collection $parents */
             $parents = $node->parentsBuilder()
                 ->whereNotIn($node->getKeyName(), $nodeIds)
                 ->get();
