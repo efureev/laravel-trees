@@ -5,6 +5,12 @@ namespace Fureev\Trees;
 use Illuminate\Database\Eloquent\Collection as BaseCollection;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @template TKey of array-key
+ * @template TModel of \Illuminate\Database\Eloquent\Model
+ *
+ * @extends \Illuminate\Support\Collection<TKey, TModel>
+ */
 class Collection extends BaseCollection
 {
     private bool $linked = false;
