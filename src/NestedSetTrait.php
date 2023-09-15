@@ -620,11 +620,16 @@ trait NestedSetTrait
      */
     public function isLeaf(): bool
     {
+        $delta = ($this->rightOffset() - $this->leftOffset());
+        if ($delta === 1) {
+            return true;
+        }
+
         if (self::isSoftDelete()) {
             return $this->children()->count() === 0;
         }
 
-        return ($this->rightOffset() - $this->leftOffset()) === 1;
+        return false;
     }
 
     /**

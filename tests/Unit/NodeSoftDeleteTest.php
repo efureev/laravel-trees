@@ -91,7 +91,6 @@ class NodeSoftDeleteTest extends AbstractUnitTestCase
 
         $root->refresh();
         $this->assertTrue($root->isLeaf());
-        $this->assertTrue($root->isLeaf());
         $this->assertEmpty($root->children()->count());
     }
 
