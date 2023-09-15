@@ -625,11 +625,16 @@ trait NestedSetTrait
             return true;
         }
 
-        if (self::isSoftDelete()) {
-            return $this->children()->count() === 0;
+        if (!self::isSoftDelete()) {
+            return false;
         }
 
-        return false;
+        if ($this->relationLoaded('children')) {
+            $children = $this->getRelation('children');
+            return $children->count() === 0;
+        }
+
+        return $this->children()->count() === 0;
     }
 
     /**
@@ -900,7 +905,7 @@ trait NestedSetTrait
     }
 
     protected static ?Closure $customRestoreWithDescendantsFn = null;
-    protected static ?Closure $customRestoreWithParentsFn     = null;
+    protected static ?Closure $customRestoreWithParentsFn = null;
 
     /**
      * @param callable(Model, ?string): string|int|null $fn
