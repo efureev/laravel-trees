@@ -36,26 +36,23 @@ jobs:
       fail-fast: false
       matrix:
         setup: [ 'basic', 'lowest', 'stable' ]
-        php: [ '8.0', '8.1' , '8.2' ]
-        laravel: [ 8.*, 9.* , 10.* ]
+        php: [ '8.2', '8.3' ]
+        laravel: [ 11.* ]
         include:
-          - laravel: 10.*
+          - laravel: 11.*
             php: 8.2
-            testbench: 8.*
-            vardumper: 6.*
-          - laravel: 9.*
-            testbench: 7.*
-            vardumper: 6.*
-          - laravel: 8.*
-            testbench: 6.*
-            vardumper: 5.*
-        exclude:
-          - php: '8.2'
-            setup: 'lowest'
+            testbench: 9.*
+            vardumper: 7.*
+#          - laravel: 9.*
+#            testbench: 7.*
+#            vardumper: 6.*
+#        exclude:
+#          - php: '8.2'
+#            setup: 'lowest'
 
     services:
       postgres:
-        image: postgres:14
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -69,7 +66,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@v2 # Action page: <https://github.com/shivammathur/setup-php>
@@ -84,7 +81,7 @@ jobs:
           echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.json') }}

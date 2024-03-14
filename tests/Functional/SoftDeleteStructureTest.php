@@ -7,6 +7,7 @@ namespace Fureev\Trees\Tests\Functional;
 use Fureev\Trees\Tests\Functional\Helpers\InstallMigration;
 use Fureev\Trees\Tests\Functional\Helpers\StructureHelper;
 use Fureev\Trees\Tests\models\SoftDeleteStructure;
+use PHPUnit\Framework\Attributes\Test;
 
 class SoftDeleteStructureTest extends AbstractFunctionalTestCase
 {
@@ -19,9 +20,7 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         (new InstallMigration(SoftDeleteStructure::class))->install();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function createOnlyRootAndThenDeleteIt(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -49,9 +48,7 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
     }
 
 
-    /**
-     * @test
-     */
+    #[Test]
     public function createSoftDeleteStructures(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -116,9 +113,7 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(0, $structure2->children()->count());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function moveInstance(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -150,9 +145,7 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(5, SoftDeleteStructure::count());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function deleteNodes(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -189,9 +182,7 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
     }
 
 
-    /**
-     * @test
-     */
+    #[Test]
     public function deleteAndRestoreNodes(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -264,9 +255,7 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(5, SoftDeleteStructure::withTrashed()->count());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function restoreParentsNodes(): void
     {
         $root = $this->createSoftDeleteStructure();

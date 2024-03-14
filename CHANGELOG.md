@@ -1,9 +1,16 @@
-<!--- BEGIN HEADER -->
-
 # Changelog
 
-All notable changes to this project will be documented in this file.
-<!--- END HEADER -->
+## [4.0.0](https://github.com/efureev/laravel-trees/compare/v3.8.2...v4.0.0) (2024-03-14)
+
+### Added
+
+- Added support `Laravel 11`
+- Added support `PHP 8.3`
+
+### Removed
+
+- Removed support `Laravel 10.*`, `9.*`, `8.*`
+- Removed support PHP `8.0`, `8.1`
 
 ## [3.8.2](https://github.com/efureev/laravel-trees/compare/v3.8.1...v3.8.2) (2023-09-11)
 
@@ -16,7 +23,6 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Soft deleted models is now updating tree attributes (Before not)
-
 
 ## [3.8.0](https://github.com/efureev/laravel-trees/compare/v3.7.0...v3.8.0) (2023-03-20)
 
