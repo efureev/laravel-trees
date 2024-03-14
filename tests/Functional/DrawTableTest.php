@@ -9,6 +9,7 @@ use Fureev\Trees\Tests\Functional\Helpers\InstallMigration;
 use Fureev\Trees\Tests\Functional\Helpers\StructureHelper;
 use Fureev\Trees\Tests\models\Structure;
 use Illuminate\Console\BufferedConsoleOutput;
+use PHPUnit\Framework\Attributes\Test;
 
 class DrawTableTest extends AbstractFunctionalTestCase
 {
@@ -21,10 +22,7 @@ class DrawTableTest extends AbstractFunctionalTestCase
         (new InstallMigration(Structure::class))->install();
     }
 
-
-    /**
-     * @test
-     */
+    #[Test]
     public function drawFromModel(): void
     {
         $root        = $this->createStructure();
@@ -47,9 +45,7 @@ class DrawTableTest extends AbstractFunctionalTestCase
         self::assertNotEmpty($str);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function drawFromTree(): void
     {
         $root        = $this->createStructure();
@@ -80,9 +76,7 @@ class DrawTableTest extends AbstractFunctionalTestCase
     }
 
 
-    /**
-     * @test
-     */
+    #[Test]
     public function drawFromCollection(): void
     {
         $root        = $this->createStructure();

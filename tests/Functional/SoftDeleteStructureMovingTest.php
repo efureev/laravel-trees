@@ -7,6 +7,7 @@ namespace Fureev\Trees\Tests\Functional;
 use Fureev\Trees\Tests\Functional\Helpers\InstallMigration;
 use Fureev\Trees\Tests\Functional\Helpers\StructureHelper;
 use Fureev\Trees\Tests\models\SoftDeleteStructure;
+use PHPUnit\Framework\Attributes\Test;
 
 class SoftDeleteStructureMovingTest extends AbstractFunctionalTestCase
 {
@@ -19,9 +20,7 @@ class SoftDeleteStructureMovingTest extends AbstractFunctionalTestCase
         (new InstallMigration(SoftDeleteStructure::class))->install();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function moveNodeBeforeDeletedNode(): void
     {
         $root = $this->createSoftDeleteStructure(null, ['title'=> 'Root']);

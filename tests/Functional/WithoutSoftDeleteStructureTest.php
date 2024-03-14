@@ -7,6 +7,7 @@ namespace Fureev\Trees\Tests\Functional;
 use Fureev\Trees\Tests\Functional\Helpers\InstallMigration;
 use Fureev\Trees\Tests\Functional\Helpers\StructureHelper;
 use Fureev\Trees\Tests\models\Structure;
+use PHPUnit\Framework\Attributes\Test;
 
 class WithoutSoftDeleteStructureTest extends AbstractFunctionalTestCase
 {
@@ -19,9 +20,7 @@ class WithoutSoftDeleteStructureTest extends AbstractFunctionalTestCase
         (new InstallMigration(Structure::class))->install();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function createOnlyRootAndThenDeleteIt(): void
     {
         $root = $this->createStructure();
@@ -45,9 +44,7 @@ class WithoutSoftDeleteStructureTest extends AbstractFunctionalTestCase
     }
 
 
-    /**
-     * @test
-     */
+    #[Test]
     public function createStructures(): void
     {
         $root = $this->createStructure();
@@ -112,9 +109,7 @@ class WithoutSoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(0, $structure2->children()->count());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function moveInstance(): void
     {
         $root = $this->createStructure();
@@ -146,9 +141,7 @@ class WithoutSoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(5, Structure::count());
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function deleteNodes(): void
     {
         $root = $this->createStructure();

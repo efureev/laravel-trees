@@ -905,7 +905,7 @@ trait NestedSetTrait
     }
 
     protected static ?Closure $customRestoreWithDescendantsFn = null;
-    protected static ?Closure $customRestoreWithParentsFn = null;
+    protected static ?Closure $customRestoreWithParentsFn     = null;
 
     /**
      * @param callable(Model, ?string): string|int|null $fn
