@@ -8,9 +8,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
 use Orchestra\Testbench\TestCase;
 
-/**
- * @deprecated
- */
 abstract class AbstractFunctionalTestCase extends TestCase
 {
     use InteractsWithDatabase;
