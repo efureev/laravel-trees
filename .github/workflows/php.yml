@@ -43,12 +43,12 @@ jobs:
             php: 8.2
             testbench: 9.*
             vardumper: 7.*
-#          - laravel: 9.*
-#            testbench: 7.*
-#            vardumper: 6.*
-#        exclude:
-#          - php: '8.2'
-#            setup: 'lowest'
+    #          - laravel: 9.*
+    #            testbench: 7.*
+    #            vardumper: 6.*
+    #        exclude:
+    #          - php: '8.2'
+    #            setup: 'lowest'
 
     services:
       postgres:
@@ -112,12 +112,6 @@ jobs:
       # Docs: https://getcomposer.org/doc/articles/scripts.md
 
       - name: Run test suite
-        run: composer test
-        env:
-          DB_HOST: localhost
-          DB_PORT: ${{ job.services.postgres.ports[5432] }}
-
-      - name: Run test suite with coverage
         run: composer test-cover
         env:
           DB_HOST: localhost
