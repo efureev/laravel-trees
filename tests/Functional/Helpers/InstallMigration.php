@@ -2,8 +2,9 @@
 
 namespace Fureev\Trees\Tests\Functional\Helpers;
 
-use Fureev\Trees\Migrate;
-use Fureev\Trees\NestedSetTrait;
+use Fureev\Trees\Config\Builder;
+use Fureev\Trees\Database\Migrate;
+use Fureev\Trees\UseTree;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Expression;
@@ -11,7 +12,7 @@ use Illuminate\Database\Schema\Blueprint;
 
 class InstallMigration
 {
-    /** @var Model|NestedSetTrait */
+    /** @var Model|UseTree */
     private Model $model;
 
     private ConnectionInterface $connection;
@@ -41,11 +42,12 @@ class InstallMigration
 
     public function install(): void
     {
-        $config = $this->model->getTreeConfig();
+        /** @var Builder $builder */
+        $builder = $this->model->getTreeBuilder();
 
         $this->connection->getSchemaBuilder()->create(
             $this->model->getTable(),
-            function (Blueprint $table) use ($config) {
+            function (Blueprint $table) use ($builder) {
                 $driverName = $this->connection->getDriverName();
                 $expression = match ($this->connection->getDriverName()) {
                     'pgsql' => new Expression('uuid_generate_v4()'),
@@ -59,8 +61,9 @@ class InstallMigration
                     $table->integerIncrements($this->model->getKeyName());
                 }
 
-                Migrate::columns($table, $config);
-                $cols = array_diff_key($this->model->getCasts(), array_flip($config->columns()));
+                (new Migrate($builder, $table))->buildColumns();
+
+                $cols = array_diff_key($this->model->getCasts(), array_flip($builder->columnsNames()));
                 unset($cols['id']);
 
                 foreach ($cols as $col => $type) {

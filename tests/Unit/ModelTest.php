@@ -2,50 +2,31 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
-use Fureev\Trees\Collection;
-use Fureev\Trees\Tests\models\Page;
+use Fureev\Trees\Tests\models\v5\Category;
+use PHPUnit\Framework\Attributes\Test;
 
 class ModelTest extends AbstractUnitTestCase
 {
-    /** @var string */
-    protected static $modelClass = Page::class;
-
-    public function testModel(): void
+    #[Test]
+    public function makeModel(): void
     {
-        /** @var Page $model */
-        $model = new static::$modelClass([
-            '_setRoot' => true,
-            'title' => 'Root node',
-        ]);
+        $model = new Category(['title' => 'Root node']);
 
-        static::assertEquals($model->toArray(), ['title' => 'Root node']);
-        $model->save();
-        $arr = $model->toArray();
-        static::assertArrayHasKey($model->getKeyName(), $arr);
-        static::assertNotNull($model->getKey());
-
-        /** @var Page $child */
-        $child = new static::$modelClass([
-            'title' => 'node',
-        ]);
-        $child->appendTo($model)->save();
-
-        $arr = $child->toArray();
-        static::assertArrayHasKey($child->getKeyName(), $arr);
-        static::assertArrayHasKey('title', $arr);
-        static::assertNotNull($child->getKey());
-
-        /** @var Collection $list */
-        $list = static::$modelClass::all();
-
-        $tree = $list->toTree();
-        $treeArray = $tree->toArray();
-        static::assertIsArray($treeArray);
-
-        foreach ($treeArray as $treeNode) {
-            static::assertArrayHasKey('children', $treeNode);
-            static::assertCount(1, $treeNode['children']);
-        }
+        static::assertFalse($model->isMulti());
+        static::assertFalse($model->getTreeConfig()->isMulti());
+        static::assertFalse($model->getTreeConfig()->isSoftDelete);
     }
 
+    #[Test]
+    public function checkCasts(): void
+    {
+        $model = new Category(['title' => 'Root node']);
+        $casts = $model->getCasts();
+
+        static::assertEquals('integer', $casts[(string)$model->leftAttribute()]);
+        static::assertEquals('integer', $casts[(string)$model->rightAttribute()]);
+        static::assertEquals('integer', $casts[(string)$model->levelAttribute()]);
+        static::assertEquals($model->getKeyType(), $casts[(string)$model->parentAttribute()]);
+    }
+    
 }

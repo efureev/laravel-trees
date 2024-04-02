@@ -1,22 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fureev\Trees\Exceptions;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Class DeletedNodeHasChildrenException
- */
 class DeletedNodeHasChildrenException extends Exception
 {
-    /**
-     * @var Model
-     */
-    protected $model;
-
-    public function __construct(Model $model)
+    public function __construct(protected Model $model)
     {
-        $this->model = $model;
         parent::__construct('Deleted Node has children. #' . $this->model->getKey());
     }
 }

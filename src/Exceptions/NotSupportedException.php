@@ -1,19 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fureev\Trees\Exceptions;
 
-/**
- * Class NotSupportedException
- */
 class NotSupportedException extends Exception
 {
-    /**
-     * MissingClassException constructor.
-     *
-     * @param string|null $className
-     * @param string $message
-     */
-    public function __construct($className = null, $message = 'Not Supported')
+    public function __construct(string $className = null, string $message = 'Not Supported')
     {
         $message .= $className ? (': ' . $className) : '';
         parent::__construct($message);

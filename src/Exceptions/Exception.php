@@ -1,13 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fureev\Trees\Exceptions;
 
-use Php\Support\Traits\Maker;
-
-/**
- * Class Exception
- */
 class Exception extends \Exception
 {
-    use Maker;
 }

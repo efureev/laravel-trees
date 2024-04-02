@@ -1,13 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fureev\Trees;
 
+use Fureev\Trees\Config\Helper;
+use Fureev\Trees\Exceptions\Exception;
 use Illuminate\Database\Eloquent\Collection as BaseCollection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * @template TKey of array-key
- * @template TModel of \Illuminate\Database\Eloquent\Model
+ * @template TModel of (Model|UseTree)
  *
  * @extends \Illuminate\Support\Collection<TKey, TModel>
  */
@@ -19,7 +23,7 @@ class Collection extends BaseCollection
 
     private int $totalCount = 0;
 
-    public function setToTree(int $count): static
+    protected function setToTree(int $count): static
     {
         $this->handledToTree = true;
         $this->totalCount    = $count;
@@ -35,8 +39,6 @@ class Collection extends BaseCollection
      *
      * @param Model|string|int|null $fromNode
      * @param bool $setParentRelations Set `parent` into child's relations
-     *
-     * @return $this
      */
     public function toTree(Model|string|int|null $fromNode = null, bool $setParentRelations = false): self
     {
@@ -45,16 +47,15 @@ class Collection extends BaseCollection
         }
 
         if ($this->isEmpty()) {
-            return new static();
+            return $this;
         }
 
         $this->linkNodes($setParentRelations);
+
         $items = [];
 
-        if ($fromNode) {
-            if ($fromNode instanceof Model) {
-                $fromNode = $fromNode->getKey();
-            }
+        if ($fromNode instanceof Model) {
+            $fromNode = $fromNode->getKey();
         }
 
         /** @var Model|NestedSetTrait $node */
@@ -63,16 +64,20 @@ class Collection extends BaseCollection
                 $items[] = $node;
             }
         }
+
         return (new static($items))->setToTree($this->count());
     }
 
-    public function toOutput(array $extraColumns = [], $output = null, $offset = "   "): void
-    {
-        Table::fromTree($this->toTree())
-            ->setOffset($offset)
-            ->setExtraColumns($extraColumns)
-            ->draw($output);
-    }
+    /**
+     * Remove from here
+     */
+    //    public function toOutput(array $extraColumns = [], $output = null, $offset = "   "): void
+    //    {
+    //        Table::fromTree($this->toTree())
+    //            ->setOffset($offset)
+    //            ->setExtraColumns($extraColumns)
+    //            ->draw($output);
+    //    }
 
 
     /**
@@ -80,13 +85,11 @@ class Collection extends BaseCollection
      *
      * This will overwrite any previously set relations.
      *
-     * Для того, что бы не делать лишние запросы в бд по этим релейшенам
+     * To avoid unnecessary requests to db
      *
      * @param bool $setParentRelations Set `parent` into child's relations
-     *
-     * @return $this
      */
-    public function linkNodes(bool $setParentRelations = true): self
+    public function linkNodes(bool $setParentRelations = true): static
     {
         if ($this->linked) {
             return $this;
@@ -96,9 +99,15 @@ class Collection extends BaseCollection
             return $this;
         }
 
-        $groupedNodes = $this->groupBy($this->first()->parentAttribute()->name());
+        $model = $this->first();
+        if (!Helper::isTreeNode($model)) {
+            throw new Exception('Model should be a Tree Node');
+        }
 
-        /** @var NestedSetTrait|Model $node */
+        /** @var UseTree $model */
+        $groupedNodes = $this->groupBy($model->parentAttribute());
+
+        /** @var UseTree|Model $node */
         foreach ($this->items as $node) {
             if (!$node->parentValue()) {
                 $node->setRelation('parent', null);
@@ -106,7 +115,7 @@ class Collection extends BaseCollection
 
             $children = $groupedNodes->get($node->getKey(), []);
             if ($setParentRelations) {
-                /** @var Model|NestedSetTrait $child */
+                /** @var UseTree|Model $child */
                 foreach ($children as $child) {
                     $child->setRelation('parent', $node);
                 }
@@ -122,16 +131,10 @@ class Collection extends BaseCollection
 
     /**
      * Returns all root-nodes
-     *
-     * @return $this
      */
-    public function getRoots(): self
+    public function getRoots(): static
     {
-        return $this->filter(
-            static function ($item) {
-                return $item->parentValue() === null;
-            }
-        );
+        return $this->filter(static fn(Model $item) => $item->parentValue() === null);
     }
 
     public function totalCount(): int
@@ -148,10 +151,12 @@ class Collection extends BaseCollection
         $nodeIds    = $this->pluck('id', 'id')->all();
         $collection = $this->sortByDesc(static fn($item) => $item->levelValue());
 
+        /** @var Model|UseTree $node */
         foreach ($collection as $node) {
             if (!$node instanceof Model || $node->isRoot() || isset($nodeIds[$node->parentValue()])) {
                 continue;
             }
+
             /** @var Collection $parents */
             $parents = $node->parentsBuilder()
                 ->whereNotIn($node->getKeyName(), $nodeIds)

@@ -16,7 +16,8 @@ class Table
     protected OutputInterface $output;
 
     protected ?Collection $collection = null;
-    protected bool $showLevel         = true;
+
+    protected bool $showLevel = true;
 
     protected string $driverClass = \Symfony\Component\Console\Helper\Table::class;
 
@@ -25,7 +26,6 @@ class Table
     public function draw(OutputInterface $output = null): void
     {
         $this->setOutput($output);
-
         $this->render();
     }
 
@@ -59,7 +59,7 @@ class Table
         return $this;
     }
 
-    public function fromQuery(QueryBuilder $query): static
+    public function fromQuery(QueryBuilderV2 $query): static
     {
         return $this->setCollection($query->get()->toTree());
     }
@@ -137,10 +137,9 @@ class Table
 
     private function addRow(Collection $tree): void
     {
-        /** @var Model|NestedSetTrait $node */
+        /** @var Model|UseTree $node */
         foreach ($tree as $node) {
-            $id = $node->getKey();
-
+            $id     = $node->getKey();
             $values = $this->getColumnValues($node);
 
             $div = str_repeat($this->offset, $level = $node->levelValue());
@@ -159,14 +158,12 @@ class Table
     }
 
     /**
-     * @param Model|NestedSetTrait $model
-     *
-     * @return static
+     * @param Model|UseTree $model
      */
     public static function fromModel(Model $model): static
     {
         return (new static())
-            ->fromQuery($model->newNestedSetQuery()->descendants(null, true));
+            ->fromQuery($model->newNestedSetQuery()->descendantsQuery(null, true));
     }
 
     public static function fromTree(Collection $collection): static

@@ -7,8 +7,10 @@ namespace Fureev\Trees\Tests\Functional;
 use Fureev\Trees\Tests\Functional\Helpers\InstallMigration;
 use Fureev\Trees\Tests\Functional\Helpers\StructureHelper;
 use Fureev\Trees\Tests\models\SoftDeleteStructure;
-use PHPUnit\Framework\Attributes\Test;
 
+/**
+ * @deprecated
+ */
 class SoftDeleteStructureTest extends AbstractFunctionalTestCase
 {
     use StructureHelper;
@@ -20,7 +22,6 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         (new InstallMigration(SoftDeleteStructure::class))->install();
     }
 
-    #[Test]
     public function createOnlyRootAndThenDeleteIt(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -48,7 +49,6 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
     }
 
 
-    #[Test]
     public function createSoftDeleteStructures(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -113,7 +113,6 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(0, $structure2->children()->count());
     }
 
-    #[Test]
     public function moveInstance(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -145,7 +144,6 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(5, SoftDeleteStructure::count());
     }
 
-    #[Test]
     public function deleteNodes(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -182,7 +180,6 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
     }
 
 
-    #[Test]
     public function deleteAndRestoreNodes(): void
     {
         $root = $this->createSoftDeleteStructure();
@@ -255,7 +252,6 @@ class SoftDeleteStructureTest extends AbstractFunctionalTestCase
         static::assertEquals(5, SoftDeleteStructure::withTrashed()->count());
     }
 
-    #[Test]
     public function restoreParentsNodes(): void
     {
         $root = $this->createSoftDeleteStructure();

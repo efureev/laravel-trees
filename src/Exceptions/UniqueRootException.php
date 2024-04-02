@@ -1,25 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Fureev\Trees\Exceptions;
 
 use Illuminate\Database\Eloquent\Model;
 
-/**
- * Class UniqueRootException
- */
 class UniqueRootException extends Exception
 {
-    /**
-     * @var Model
-     */
-    protected $existRootModel;
-
-    public function __construct(Model $existRootModel, $message = null)
+    public function __construct(protected Model $existRootModel, string $message = null)
     {
-        $this->existRootModel = $existRootModel;
         if (!$message) {
             $message = 'Can not create more than one root. Exist: #' . $this->existRootModel->getKey();
         }
+
         parent::__construct($message);
     }
 }

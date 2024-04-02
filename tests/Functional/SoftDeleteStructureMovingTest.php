@@ -7,8 +7,10 @@ namespace Fureev\Trees\Tests\Functional;
 use Fureev\Trees\Tests\Functional\Helpers\InstallMigration;
 use Fureev\Trees\Tests\Functional\Helpers\StructureHelper;
 use Fureev\Trees\Tests\models\SoftDeleteStructure;
-use PHPUnit\Framework\Attributes\Test;
 
+/**
+ * @deprecated
+ */
 class SoftDeleteStructureMovingTest extends AbstractFunctionalTestCase
 {
     use StructureHelper;
@@ -20,12 +22,11 @@ class SoftDeleteStructureMovingTest extends AbstractFunctionalTestCase
         (new InstallMigration(SoftDeleteStructure::class))->install();
     }
 
-    #[Test]
     public function moveNodeBeforeDeletedNode(): void
     {
-        $root = $this->createSoftDeleteStructure(null, ['title'=> 'Root']);
-        $childFirst = $this->createSoftDeleteStructure($root, ['title'=> 'First']);
-        $childSecond = $this->createSoftDeleteStructure($root, ['title'=> 'Second']);
+        $root        = $this->createSoftDeleteStructure(null, ['title' => 'Root']);
+        $childFirst  = $this->createSoftDeleteStructure($root, ['title' => 'First']);
+        $childSecond = $this->createSoftDeleteStructure($root, ['title' => 'Second']);
         $childFirst->delete();
         $root->refresh();
 
@@ -33,7 +34,7 @@ class SoftDeleteStructureMovingTest extends AbstractFunctionalTestCase
         static::assertEquals([2, 3, 1, $root->id, $childFirst->treeValue()], $childFirst->getBounds());
         static::assertEquals([4, 5, 1, $root->id, $childSecond->treeValue()], $childSecond->getBounds());
 
-        $childNewFirst = $this->createSoftDeleteStructure($root, ['title'=> 'new First'], 'prependTo');
+        $childNewFirst = $this->createSoftDeleteStructure($root, ['title' => 'new First'], 'prependTo');
         $childSecond->refresh();
         $childFirst->refresh();
         $root->refresh();

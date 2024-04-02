@@ -9,7 +9,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
 use Orchestra\Testbench\TestCase;
 
 /**
- * Class AbstractTestCase
+ * @deprecated
  */
 abstract class AbstractFunctionalTestCase extends TestCase
 {

@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.0.0-rc1](https://github.com/efureev/laravel-trees/compare/v4.0.0...v5.0.0-rc1) (2024-04-01)
+
+### Added
+
+- Full Code Refactoring
+- Codebase has Break Changes
+- Added `ULID` type for PK and TreeId
+
+### Fixed
+
+- Fixed hidden use cases
+- [Delete Node] When deleting nodes with children (with the strategy of transferring children to the parent), all
+  children-nodes were incorrectly updated, except for the first one
+- Some fixed on softDelete
+
 ## [4.0.0](https://github.com/efureev/laravel-trees/compare/v3.8.2...v4.0.0) (2024-03-14)
 
 ### Added
