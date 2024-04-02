@@ -116,3 +116,9 @@ jobs:
         env:
           DB_HOST: localhost
           DB_PORT: ${{ job.services.postgres.ports[5432] }}
+
+      - name: Run test suite with coverage
+        run: composer test-cover
+        env:
+          DB_HOST: localhost
+          DB_PORT: ${{ job.services.postgres.ports[5432] }}
