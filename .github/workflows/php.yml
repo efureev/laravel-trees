@@ -116,3 +116,8 @@ jobs:
         env:
           DB_HOST: localhost
           DB_PORT: ${{ job.services.postgres.ports[5432] }}
+
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
