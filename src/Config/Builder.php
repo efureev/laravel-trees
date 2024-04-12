@@ -26,9 +26,9 @@ class Builder
 
     protected ?Attribute $tree = null;
 
-    protected string $deleterWithChildren = DeleteWithChildren::class;
+    protected string $deleterWithChildren;
 
-    protected string $childrenHandlerOnDelete = MoveChildrenToParent::class;
+    protected string $childrenHandlerOnDelete;
 
     public function left(): Attribute
     {
@@ -74,12 +74,12 @@ class Builder
 
     public static function default(): self
     {
-        return Builder::make()->setAttributes(...self::attributesForUnoTree());
+        return static::make()->setAttributes(...self::attributesForUnoTree());
     }
 
     public static function defaultMulti(): self
     {
-        return Builder::make()->setAttributes(...self::attributesForMultiTree());
+        return static::make()->setAttributes(...self::attributesForMultiTree());
     }
 
     /**
@@ -145,6 +145,16 @@ class Builder
         return $this;
     }
 
+    protected function getDeleterWithChildren(): string
+    {
+        return ($this->deleterWithChildren ?? DeleteWithChildren::class);
+    }
+
+    protected function getChildrenHandlerOnDelete(): string
+    {
+        return ($this->childrenHandlerOnDelete ?? MoveChildrenToParent::class);
+    }
+
     public function setChildrenHandlerOnDelete(string $value): static
     {
         $this->childrenHandlerOnDelete = $value;
@@ -168,8 +178,8 @@ class Builder
     {
         return new Config(
             Helper::isModelSoftDeletable($model),
-            $this->childrenHandlerOnDelete,
-            $this->deleterWithChildren,
+            $this->getChildrenHandlerOnDelete(),
+            $this->getDeleterWithChildren(),
             ...$this->columnsList()
         );
     }

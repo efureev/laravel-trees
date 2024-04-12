@@ -17,7 +17,7 @@ trait UseTree
     use UseNestedSet;
     use UseConfigShorter;
 
-    protected Config $tree_config__;
+    private Config $tree_config__;
 
     public function initializeUseTree(): void
     {
@@ -33,7 +33,6 @@ trait UseTree
             (string)$this->rightAttribute() => 'integer',
         ];
 
-        // $casts[(string)$this->parentAttribute()] = $this->parentAttribute()->type()->toModelCast();
         $casts[(string)$this->parentAttribute()] = $this->getKeyType();
 
         if (($treeAttr = $this->treeAttribute())) {

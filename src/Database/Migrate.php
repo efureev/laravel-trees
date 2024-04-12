@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fureev\Trees\Database;
 
 use Fureev\Trees\Config\Builder;
+use Fureev\Trees\Exceptions\Exception;
 use Fureev\Trees\UseTree;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
@@ -41,9 +42,14 @@ class Migrate
     public function buildColumns(): void
     {
         foreach ($this->builder->columnsList() as $attribute) {
-            $this->table->{$attribute->type()->value}($attribute->columnName())
-                ->default($attribute->default())
-                ->nullable($attribute->nullable());
+            $type = $attribute->type()->value;
+            if (method_exists($this->table, $type)) {
+                $this->table->$type($attribute->columnName())
+                    ->default($attribute->default())
+                    ->nullable($attribute->nullable());
+            } else {
+                throw new Exception('Blueprint type "' . $type . '" does not exist.');
+            }
         }
 
         $this->buildIndexes();
@@ -59,9 +65,9 @@ class Migrate
     private function buildIndex(string $name, array $columns): void
     {
         $cols = [];
-        //        if ($this->config->tree()) {
-        //            $cols[] = $this->config->tree()->name();
-        //        }
+        if ($this->builder->tree() !== null) {
+            $cols[] = (string)$this->builder->tree();
+        }
 
         $cols = array_merge($cols, $columns);
 
