@@ -8,10 +8,10 @@ use Fureev\Trees\Exceptions\Exception;
 
 enum FieldType: string
 {
-    case UnsignedSmallInteger  = 'unsignedSmallInteger';
+    case UnsignedSmallInteger = 'unsignedSmallInteger';
     case UnsignedMediumInteger = 'unsignedMediumInteger';
-    case UnsignedBigInteger    = 'unsignedBigInteger';
-    case UnsignedInteger       = 'unsignedInteger';
+    case UnsignedBigInteger = 'unsignedBigInteger';
+    case UnsignedInteger = 'unsignedInteger';
 
     case UUID = 'uuid';
     case ULID = 'ulid';
@@ -31,7 +31,7 @@ enum FieldType: string
             $value === 'uuid' => self::UUID,
             $value === 'ulid' => self::ULID,
             $value === 'string' => self::UUID,
-            default => throw new Exception('Invalid type: ' . $value),
+            default => throw new Exception("Invalid type: $value"),
         };
     }
 
