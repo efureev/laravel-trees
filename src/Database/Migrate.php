@@ -43,13 +43,13 @@ class Migrate
     {
         foreach ($this->builder->columnsList() as $attribute) {
             $type = $attribute->type()->value;
-            if (method_exists($this->table, $type)) {
-                $this->table->$type($attribute->columnName())
-                    ->default($attribute->default())
-                    ->nullable($attribute->nullable());
-            } else {
-                throw new Exception('Blueprint type "' . $type . '" does not exist.');
+            if (!method_exists($this->table, $type)) {
+                throw new Exception("Blueprint type [$type] does not exist.");
             }
+
+            $this->table->$type($attribute->columnName())
+                ->default($attribute->default())
+                ->nullable($attribute->nullable());
         }
 
         $this->buildIndexes();

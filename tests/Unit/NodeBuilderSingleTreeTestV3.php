@@ -4,6 +4,9 @@ namespace Fureev\Trees\Tests\Unit;
 
 use Fureev\Trees\Tests\models\Category;
 
+/**
+ * @deprecated
+ */
 class NodeBuilderSingleTreeTestV3 extends AbstractV3UnitTestCase
 {
     protected static $modelClass = Category::class;

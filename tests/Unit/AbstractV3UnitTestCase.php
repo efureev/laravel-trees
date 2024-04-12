@@ -2,7 +2,6 @@
 
 namespace Fureev\Trees\Tests\Unit;
 
-use Fureev\Trees\Migrate;
 use Fureev\Trees\Tests\AbstractTestCase;
 use Fureev\Trees\Tests\models\BaseModel;
 use Illuminate\Database\ConnectionInterface;
@@ -10,6 +9,9 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @deprecated
+ */
 abstract class AbstractV3UnitTestCase extends AbstractTestCase
 {
     /** @var string */

@@ -8,6 +8,9 @@ use Faker\Provider\Uuid;
 use Fureev\Trees\Collection;
 use Fureev\Trees\Tests\models\Structure;
 
+/**
+ * @deprecated
+ */
 class NodeMultiTreeStructureTestV3 extends AbstractV3UnitTestCase
 {
     protected static $modelClass = Structure::class;

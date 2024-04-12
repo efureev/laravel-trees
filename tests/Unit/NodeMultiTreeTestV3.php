@@ -7,6 +7,9 @@ use Fureev\Trees\Exceptions\{DeletedNodeHasChildrenException, Exception, TreeNee
 use Fureev\Trees\Tests\models\Page;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @deprecated
+ */
 class NodeMultiTreeTestV3 extends AbstractV3UnitTestCase
 {
     protected static $modelClass = Page::class;

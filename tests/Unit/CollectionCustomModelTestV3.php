@@ -5,6 +5,9 @@ namespace Fureev\Trees\Tests\Unit;
 use Fureev\Trees\Collection;
 use Fureev\Trees\Tests\models\CustomModel;
 
+/**
+ * @deprecated
+ */
 class CollectionCustomModelTestV3 extends AbstractV3UnitTestCase
 {
 

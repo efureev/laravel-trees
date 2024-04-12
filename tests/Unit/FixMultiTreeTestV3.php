@@ -7,6 +7,9 @@ namespace Fureev\Trees\Tests\Unit;
 use Faker\Provider\Uuid;
 use Fureev\Trees\Tests\models\Structure;
 
+/**
+ * @deprecated
+ */
 class FixMultiTreeTestV3 extends AbstractV3UnitTestCase
 {
     protected static $modelClass = Structure::class;
