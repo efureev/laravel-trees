@@ -8,10 +8,10 @@ use Fureev\Trees\Exceptions\Exception;
 
 enum FieldType: string
 {
-    case UnsignedSmallInteger = 'unsignedSmallInteger';
+    case UnsignedSmallInteger  = 'unsignedSmallInteger';
     case UnsignedMediumInteger = 'unsignedMediumInteger';
-    case UnsignedBigInteger = 'unsignedBigInteger';
-    case UnsignedInteger = 'unsignedInteger';
+    case UnsignedBigInteger    = 'unsignedBigInteger';
+    case UnsignedInteger       = 'unsignedInteger';
 
     case UUID = 'uuid';
     case ULID = 'ulid';

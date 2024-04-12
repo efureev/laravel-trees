@@ -117,8 +117,10 @@ trait UseNestedSet
         if (!$this->operation) {
             if ($parent = $this->parentWithTrashed) {
                 $this->markWithParent($parent);
-            } else if ($this->isMulti() || $this->getAttributeFromArray('_setRoot')) {
-                $this->markAsRoot();
+            } else {
+                if ($this->isMulti() || $this->getAttributeFromArray('_setRoot')) {
+                    $this->markAsRoot();
+                }
             }
         }
 
@@ -155,9 +157,7 @@ trait UseNestedSet
             default:
                 throw new NotSupportedException(
                     null,
-                    'Method "' . get_class(
-                        $this
-                    ) . '::insert" is not supported for inserting new nodes.'
+                    sprintf('Method "%s::insert" is not supported for inserting new nodes.', $this::class)
                 );
         }
     }
