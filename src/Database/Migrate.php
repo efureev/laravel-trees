@@ -44,7 +44,7 @@ class Migrate
         foreach ($this->builder->columnsList() as $attribute) {
             $type = $attribute->type()->value;
             if (!method_exists($this->table, $type)) {
-                throw new Exception(sprintf('Blueprint type [%s] does not exist.', $type));
+                throw new Exception('Blueprint type [$type] does not exist.');
             }
 
             $this->table->$type($attribute->columnName())

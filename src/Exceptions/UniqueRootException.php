@@ -11,7 +11,7 @@ class UniqueRootException extends Exception
     public function __construct(protected Model $existRootModel, string $message = null)
     {
         if (!$message) {
-            $message = sprintf('Can not create more than one root. Exist: # %s', $this->existRootModel->getKey());
+            $message = 'Can not create more than one root. Exist: # ' . $this->existRootModel->getKey();
         }
 
         parent::__construct($message);
