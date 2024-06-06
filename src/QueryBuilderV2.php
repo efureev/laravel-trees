@@ -354,7 +354,7 @@ class QueryBuilderV2 extends Builder
     public function byTree(int|string $treeId): static
     {
         if ($this->model->isMulti()) {
-            $this->query->where($this->model->treeAttribute()->name(), $treeId);
+            $this->query->where($this->model->treeAttribute()->columnName(), $treeId);
         }
 
         return $this;
