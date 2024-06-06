@@ -7,16 +7,17 @@ namespace Fureev\Trees\Generators;
 use Fureev\Trees\Config\Attribute;
 use Fureev\Trees\Config\FieldType;
 use Fureev\Trees\Exceptions\Exception;
+use Fureev\Trees\UseTree;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Uid\Uuid;
 
-final readonly class GeneratorId implements GeneratorContract
+final readonly class GeneratorTreeIdTreeId implements GeneratorTreeIdContract
 {
     public function __construct(private Attribute $attribute)
     {
     }
 
-    public function generate(Model $model): string|int
+    public function generateId(Model $model): string|int
     {
         return match (true) {
             $this->attribute->type()->isInteger() => $this->generateMaxId($model),
@@ -25,13 +26,16 @@ final readonly class GeneratorId implements GeneratorContract
         };
     }
 
-    protected function generateMaxId(Model $model): mixed
+    /**
+     * @param Model|UseTree $model
+     */
+    protected function generateMaxId(Model $model): int
     {
         return (((int)$model->max((string)$model->treeAttribute())) + 1);
     }
 
-    protected function generateUuid(Model $model): mixed
+    protected function generateUuid(Model $model): string
     {
-        return Uuid::v7();
+        return (string)Uuid::v7();
     }
 }

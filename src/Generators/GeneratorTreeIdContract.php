@@ -6,7 +6,7 @@ namespace Fureev\Trees\Generators;
 
 use Illuminate\Database\Eloquent\Model;
 
-interface GeneratorContract
+interface GeneratorTreeIdContract
 {
-    public function generate(Model $model): string|int;
+    public function generateId(Model $model): string|int;
 }

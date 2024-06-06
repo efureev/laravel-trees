@@ -13,8 +13,8 @@ use Fureev\Trees\Exceptions\Exception;
 use Fureev\Trees\Exceptions\NotSupportedException;
 use Fureev\Trees\Exceptions\TreeNeedValueException;
 use Fureev\Trees\Exceptions\UniqueRootException;
-use Fureev\Trees\Generators\GeneratorContract;
-use Fureev\Trees\Generators\GeneratorId;
+use Fureev\Trees\Generators\GeneratorTreeIdContract;
+use Fureev\Trees\Generators\GeneratorTreeIdTreeId;
 use Fureev\Trees\Strategy\ChildrenHandler;
 use Fureev\Trees\Strategy\DeleteStrategy;
 use Illuminate\Database\Eloquent\Model;
@@ -450,14 +450,14 @@ trait UseNestedSet
 
     protected function treeIdGenerator(): ?string
     {
-        return GeneratorId::class;
+        return GeneratorTreeIdTreeId::class;
     }
 
     protected function generateTreeId(): string|int
     {
         $generator = instance($this->treeIdGenerator(), $this->treeAttribute());
-        if ($generator instanceof GeneratorContract) {
-            return $generator->generate($this);
+        if ($generator instanceof GeneratorTreeIdContract) {
+            return $generator->generateId($this);
         }
 
         throw new Exception('Invalid Generator');
