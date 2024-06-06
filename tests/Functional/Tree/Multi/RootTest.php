@@ -81,4 +81,17 @@ class RootTest extends AbstractFunctionalTreeTestCase
         static::assertNotEquals($model->tree_id, $model2->tree_id);
         static::assertTrue($model2->isLeaf());
     }
+
+    #[Test]
+    public function receiveRoots(): void
+    {
+        /** @var MultiCategory $root */
+        $root = static::model(['title' => 'root 1']);
+        $root->saveAsRoot();
+        static::model(['title' => 'child 2.1'])->prependTo($root)->save();
+
+        static::model(['title' => 'root 2'])->saveAsRoot();
+
+        static::assertEquals(2, MultiCategory::root()->count());
+    }
 }
