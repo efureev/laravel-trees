@@ -56,7 +56,9 @@ trait UseConfigShorter
 
     public function treeValue(): int|string|null
     {
-        return $this->treeAttribute() !== null ? $this->getAttributeValue((string)$this->treeAttribute()) : null;
+        return $this->treeAttribute() !== null
+            ? $this->attributes[(string)$this->treeAttribute()] ?? null
+            : null;
     }
 
     protected function isSoftDelete(): bool

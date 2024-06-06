@@ -130,7 +130,7 @@ trait UseNestedSet
                     throw new UniqueRootException($exist);
                 }
 
-                $this->validateAndSetTreeID();
+                $this->validateAndSetTreeId();
 
                 $this->setAttribute((string)$this->leftAttribute(), 1);
                 $this->setAttribute((string)$this->rightAttribute(), 2);
@@ -432,10 +432,9 @@ trait UseNestedSet
         return $dirty;
     }
 
-    protected function validateAndSetTreeID(): void
+    protected function validateAndSetTreeId(): void
     {
-        //        if (!$this->isMulti() || $this->treeValue() !== null) {
-        if (!$this->isMulti()) {
+        if (!$this->isMulti() || $this->treeValue() !== null) {
             return;
         }
 
