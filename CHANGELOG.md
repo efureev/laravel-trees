@@ -1,5 +1,12 @@
 # Changelog
 
+## v6.0.0
+
+### Added
+
+- Add `PHP 8.4` support
+
+
 ## [5.0.0-rc1](https://github.com/efureev/laravel-trees/compare/v4.0.0...v5.0.0-rc1) (2024-04-01)
 
 ### Added
