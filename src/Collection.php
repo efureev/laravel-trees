@@ -40,7 +40,7 @@ class Collection extends BaseCollection
      * @param Model|string|int|null $fromNode
      * @param bool $setParentRelations Set `parent` into child's relations
      */
-    public function toTree(Model|string|int|null $fromNode = null, bool $setParentRelations = false): self
+    public function toTree(Model|string|int|null $fromNode = null, bool $setParentRelations = false): static
     {
         if ($this->handledToTree) {
             return $this;
@@ -58,7 +58,7 @@ class Collection extends BaseCollection
             $fromNode = $fromNode->getKey();
         }
 
-        /** @var Model|NestedSetTrait $node */
+        /** @var Model|UseConfigShorter $node */
         foreach ($this->items as $node) {
             if ($node->parentValue() === $fromNode) {
                 $items[] = $node;
@@ -134,7 +134,7 @@ class Collection extends BaseCollection
      */
     public function getRoots(): static
     {
-        return $this->filter(static fn(Model $item) => $item->parentValue() === null);
+        return $this->filter(static fn(Model $item) => /** @var UseTree $item */ $item->parentValue() === null);
     }
 
     public function totalCount(): int

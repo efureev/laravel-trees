@@ -1,0 +1,8 @@
+parameters:
+  level: '5'
+  paths:
+    - src
+#    - tests
+#  ignoreErrors:
+#    -
+#      identifier: trait.unused

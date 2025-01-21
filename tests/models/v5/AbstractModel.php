@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 abstract class AbstractModel extends Model
 {
+    /** @use UseTree<AbstractModel> */
     use UseTree;
 
     protected $casts = [

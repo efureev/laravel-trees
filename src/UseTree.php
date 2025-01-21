@@ -7,13 +7,21 @@ namespace Fureev\Trees;
 use Fureev\Trees\Config\Builder;
 use Fureev\Trees\Config\Config;
 use Fureev\Trees\Config\FieldType;
+use Fureev\Trees\Exceptions\Exception;
 use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @template TModel of Model
+ *
+ * @method static static byTree(int|string $treeId)
+ * @method static static root()
+ *
+ * @mixin QueryBuilderV2<static>
  * @mixin Model
  */
 trait UseTree
 {
+    /** @use UseNestedSet<TModel> */
     use UseNestedSet;
     use UseConfigShorter;
 
@@ -42,6 +50,9 @@ trait UseTree
         $this->mergeCasts($casts);
     }
 
+    /**
+     * @throws Exception
+     */
     public function getTreeBuilder(): Builder
     {
         $builder = static::buildTree();
@@ -50,11 +61,17 @@ trait UseTree
         return $builder;
     }
 
+    /**
+     * @throws Exception
+     */
     public function getTreeConfig(): Config
     {
         return $this->tree_config__ ??= $this->getTreeBuilder()->build($this);
     }
 
+    /**
+     * @throws Exception
+     */
     protected function rebuildTreeConfig(): void
     {
         $this->tree_config__ = $this->getTreeBuilder()->build($this);

@@ -10,13 +10,15 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Query\Expression;
 
 /**
- * Class QueryBuilder
+ * @template TModel of Model
  *
  * @package Fureev\Trees
  * @method Collection get($columns = ['*'])
  * @method Collection all($columns = ['*'])
  *
- * @property Model|UseTree $model
+ * @property TModel|UseTree $model
+ *
+ * @extends Builder<TModel>
  */
 class QueryBuilderV2 extends Builder
 {
@@ -54,7 +56,7 @@ class QueryBuilderV2 extends Builder
         return $this;
     }
 
-    public function parents(int $level = null, bool $andSelf = false): static
+    public function parents(?int $level = null, bool $andSelf = false): static
     {
         $condition = [
             [
@@ -256,7 +258,7 @@ class QueryBuilderV2 extends Builder
             ->where((string)$this->model->parentAttribute(), '=', $this->model->parentValue());
     }
 
-    public function leaves(int $level = null): static
+    public function leaves(?int $level = null): static
     {
         return $this
             ->descendantsQuery($level)

@@ -71,6 +71,9 @@ trait UseConfigShorter
         return $this->parentValue() === null;
     }
 
+    /**
+     * @phpstan-param Model|static $model
+     */
     public function isEqualTo(Model $model): bool
     {
         return

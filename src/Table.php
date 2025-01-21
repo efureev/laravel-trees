@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class Table
+final class Table
 {
     protected string $offset = "    ";
 
@@ -23,13 +23,13 @@ class Table
 
     protected ?\Symfony\Component\Console\Helper\Table $driver = null;
 
-    public function draw(OutputInterface $output = null): void
+    public function draw(?OutputInterface $output = null): void
     {
         $this->setOutput($output);
         $this->render();
     }
 
-    public function setOutput(OutputInterface $output = null): static
+    public function setOutput(?OutputInterface $output = null): static
     {
         $this->output = ($output ?? new BufferedConsoleOutput());
 
@@ -160,15 +160,15 @@ class Table
     /**
      * @param Model|UseTree $model
      */
-    public static function fromModel(Model $model): static
+    public static function fromModel(Model $model): self
     {
-        return (new static())
+        return (new self())
             ->fromQuery($model->newNestedSetQuery()->descendantsQuery(null, true));
     }
 
-    public static function fromTree(Collection $collection): static
+    public static function fromTree(Collection $collection): self
     {
-        return (new static())
+        return (new self())
             ->setCollection($collection);
     }
 }

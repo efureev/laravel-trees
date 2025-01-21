@@ -22,14 +22,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Expression;
 
 /**
- * @mixin QueryBuilderV2
+ * @template TModel of Model
+ * @mixin QueryBuilderV2<static>
  */
 trait UseNestedSet
 {
     use WithQueryBuilder;
     use WithRelations;
 
-    /** @var Model|static|null */
     protected ?Model $node = null;
 
     protected int|string|null $treeChange = null;
@@ -41,6 +41,10 @@ trait UseNestedSet
     public static function bootUseNestedSet(): void
     {
         static::creating(
+        /**
+         * @throws NotSupportedException
+         * @throws UniqueRootException
+         */
             static function ($model) {
                 /** @var static $model */
                 $model->beforeInsert();

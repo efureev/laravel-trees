@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
+    /** @use UseTree<static> */
     use UseTree;
     
     protected static function buildTree(): Builder

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Php\Support\Exceptions\InvalidConfigException;
 
-class Migrate
+final class Migrate
 {
     public function __construct(protected Builder $builder, protected Blueprint $table)
     {
@@ -25,7 +25,7 @@ class Migrate
         $instance = instance($model);
 
         if (method_exists($instance, 'getTreeBuilder')) {
-            (new static($builder = $instance->getTreeBuilder(), $table))->buildColumns();
+            (new self($builder = $instance->getTreeBuilder(), $table))->buildColumns();
 
             return $builder;
         }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UniqueRootException extends Exception
 {
-    public function __construct(protected Model $existRootModel, string $message = null)
+    public function __construct(protected Model $existRootModel, ?string $message = null)
     {
         if (!$message) {
             $message = 'Can not create more than one root. Exist: # ' . $this->existRootModel->getKey();
