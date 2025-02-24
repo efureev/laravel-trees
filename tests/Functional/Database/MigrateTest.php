@@ -10,16 +10,29 @@ use Fureev\Trees\Database\Migrate;
 use Fureev\Trees\Tests\AbstractTestCase;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ColumnDefinition;
+use Illuminate\Foundation\Application;
 use PHPUnit\Framework\Attributes\Test;
 
 class MigrateTest extends AbstractTestCase
 {
     private static string $tableName = 'test_config';
 
+    protected static function isLaravel12(): bool
+    {
+        return str_starts_with(Application::VERSION, '12');
+    }
+
+    protected function getBlueprint(string $table): Blueprint
+    {
+        return self::isLaravel12()
+            ? new Blueprint($this->getConnection(), $table)
+            : new Blueprint($table);
+    }
+
     #[Test]
     public function columnsForUnoTree(): void
     {
-        $table   = new Blueprint($this->getConnection(), self::$tableName);
+        $table = $this->getBlueprint(self::$tableName);
         $builder = Builder::default();
 
         (new Migrate($builder, $table))->buildColumns();
@@ -37,7 +50,7 @@ class MigrateTest extends AbstractTestCase
     #[Test]
     public function columnsForMultiTree(): void
     {
-        $table   = new Blueprint($this->getConnection(), self::$tableName);
+        $table = $this->getBlueprint(self::$tableName);
         $builder = Builder::defaultMulti();
 
         (new Migrate($builder, $table))->buildColumns();
@@ -69,7 +82,7 @@ class MigrateTest extends AbstractTestCase
     #[Test]
     public function columnsForUuidMultiTree(): void
     {
-        $table   = new Blueprint($this->getConnection(), self::$tableName);
+        $table = $this->getBlueprint(self::$tableName);
         $builder = Builder::defaultMulti();
         $builder->tree()->setType(FieldType::UUID)->setColumnName('tid');
 
