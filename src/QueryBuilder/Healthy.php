@@ -21,7 +21,7 @@ trait Healthy
      *
      * @return array|int
      */
-    public function countErrors(string $errorKey = null): array|int
+    public function countErrors(?string $errorKey = null): array|int
     {
         $checks = [];
 

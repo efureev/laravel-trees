@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fureev\Trees\Database;
 
 use Fureev\Trees\Config\Builder;
-use Fureev\Trees\UseTree;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Php\Support\Exceptions\InvalidConfigException;
@@ -21,7 +20,7 @@ final class Migrate
      */
     public static function columnsFromModel(Blueprint $table, Model|string $model): Builder
     {
-        /** @var Model|UseTree $instance */
+        /** @var Model $instance */
         $instance = instance($model);
 
         if (method_exists($instance, 'getTreeBuilder')) {

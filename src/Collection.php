@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @template TKey of array-key
- * @template TModel of (Model|UseTree)
+ * @template TModel of Model
  *
  * @extends \Illuminate\Support\Collection<TKey, TModel>
  */

@@ -137,7 +137,7 @@ final class Table
 
     private function addRow(Collection $tree): void
     {
-        /** @var Model|UseTree $node */
+        /** @var Model $node */
         foreach ($tree as $node) {
             $id     = $node->getKey();
             $values = $this->getColumnValues($node);
@@ -157,9 +157,6 @@ final class Table
         }
     }
 
-    /**
-     * @param Model|UseTree $model
-     */
     public static function fromModel(Model $model): self
     {
         return (new self())

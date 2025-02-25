@@ -7,7 +7,6 @@ namespace Fureev\Trees\Generators;
 use Fureev\Trees\Config\Attribute;
 use Fureev\Trees\Config\FieldType;
 use Fureev\Trees\Exceptions\Exception;
-use Fureev\Trees\UseTree;
 use Illuminate\Database\Eloquent\Model;
 use Symfony\Component\Uid\Uuid;
 
@@ -27,7 +26,7 @@ final readonly class GeneratorTreeIdTreeId implements GeneratorTreeIdContract
     }
 
     /**
-     * @param Model|UseTree $model
+     * @param Model $model
      */
     protected function generateMaxId(Model $model): int
     {

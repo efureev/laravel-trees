@@ -65,7 +65,7 @@ trait WithQueryBuilder
         return $this->children()->count() === 0;
     }
 
-    public function newNestedSetQuery(string $table = null): QueryBuilderV2
+    public function newNestedSetQuery(?string $table = null): QueryBuilderV2
     {
         $builder = $this->isSoftDelete()
             ? $this->withTrashed()

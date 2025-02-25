@@ -689,7 +689,7 @@ trait UseNestedSet
     ///
     /// *********************
 
-    protected function shift(int $from, ?int $to, int $delta, int|string $tree = null): void
+    protected function shift(int $from, ?int $to, int $delta, int|string|null $tree = null): void
     {
         // todo: reformat: and test it
         // if ($delta === 0 || !($to === null || $to >= $from)) { return }
