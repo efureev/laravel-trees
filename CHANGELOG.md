@@ -32,7 +32,7 @@
 - Added support `Laravel 11`
 - Added support `PHP 8.3`
 
-``### Removed
+### Removed
 
 - Removed support `Laravel 10.*`, `9.*`, `8.*```
 - Removed support PHP `8.0`, `8.1`
