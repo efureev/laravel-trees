@@ -1,6 +1,6 @@
 # Changelog
 
-## [5.1.0](https://github.com/efureev/laravel-trees/compare/v5.0.0...v5.1.0) (2025-03-08)
+## [5.3.0](https://github.com/efureev/laravel-trees/compare/v5.2.1...v5.3.0) (2025-03-08)
 
 ### Added
 
