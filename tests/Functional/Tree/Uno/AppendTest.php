@@ -22,9 +22,8 @@ class AppendTest extends AbstractFunctionalTreeTestCase
     #[Test]
     public function append(): void
     {
-        /** @var Category $modelRoot */
-        $modelRoot = static::model(['title' => 'root node']);
-        $modelRoot->makeRoot()->save();
+        /** @var Category $root */
+        $modelRoot = self::createRoot();
 
         // Level 2
         /** @var Category $node21 */

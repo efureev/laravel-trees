@@ -21,7 +21,7 @@ class RootTest extends AbstractFunctionalTreeTestCase
     }
 
     #[Test]
-    public function createRoot(): void
+    public function createRootModel(): void
     {
         /** @var Category $model */
         $model = static::model(['title' => 'root node']);

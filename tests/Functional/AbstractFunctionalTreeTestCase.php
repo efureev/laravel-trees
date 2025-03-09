@@ -7,21 +7,35 @@ namespace Fureev\Trees\Tests\Functional;
 use Fureev\Trees\Database\Migrate;
 use Fureev\Trees\Tests\models\v5\AbstractModel;
 use Illuminate\Database\ConnectionInterface;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @template T of AbstractModel
+ */
 abstract class AbstractFunctionalTreeTestCase extends AbstractFunctionalTestCase
 {
     /**
-     * @return class-string<AbstractModel>
+     * @return class-string<T>
      */
     abstract protected static function modelClass(): string;
 
-    protected static function model(array $attributes = []): Model
+    /**
+     * @param array $attributes
+     * @return T
+     */
+    protected static function model(array $attributes = []): AbstractModel
     {
         return instance(static::modelClass(), $attributes);
+    }
+
+    protected static function createRoot(string $title = 'root node'): AbstractModel
+    {
+        $model = static::model(['title' => $title]);
+        $model->makeRoot()->save();
+
+        return $model;
     }
 
     private static function dbMigrate(): void
