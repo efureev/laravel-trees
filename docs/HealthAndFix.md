@@ -11,7 +11,7 @@ $checker = new HealthyChecker(Category::class);
 $broken = $checker->isBroken();
 ```
 
-Or use specify checker:
+Or use a specific checker:
 
 ```php
 $checker = new DuplicatesCheck(Category::class);
