@@ -400,7 +400,7 @@ class QueryBuilderV2 extends Builder
     /**
      * Get wrapped column names
      */
-    protected function wrappedColumns(): array
+    public function wrappedColumns(): array
     {
         $grammar = $this->query->getGrammar();
 
@@ -415,12 +415,15 @@ class QueryBuilderV2 extends Builder
     /**
      * Get a wrapped table name
      */
-    protected function wrappedTable(): string
+    public function wrappedTable(): string
     {
         return $this->query->getGrammar()->wrapTable($this->getQuery()->from);
     }
 
-    protected function wrappedKey(): string
+    /**
+     * Get a wrapped KeyName
+     */
+    public function wrappedKey(): string
     {
         return $this->query->getGrammar()->wrap($this->model->getKeyName());
     }

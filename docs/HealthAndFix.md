@@ -4,25 +4,35 @@
 
 You can check whether a tree is broken (i.e. has some structural errors):
 
-> Use trait `Healthy` with `QueryBuilderV2`
+> Use helper class `HealthyChecker`
 
 ```php
-$bool = Category::isBroken();
+$checker = new HealthyChecker(Category::class);
+$broken = $checker->isBroken();
+```
+
+Or use specify checker:
+
+```php
+$checker = new DuplicatesCheck(Category::class);
+$errorsCount = $checker->check();
 ```
 
 It is possible to get error statistics:
 
 ```php
-$data = Category::countErrors();
+$checker = new HealthyChecker(Category::class);
+$checker->check();
 ```
 
-It returns an array with following keys:
+List of checkers:
 
-- `oddness` - the number of nodes that have wrong set of `lft` and `rgt` values
-- `duplicates` - the number of nodes that have same `lft` or `rgt` values
-- `wrong_parent` - the number of nodes that have invalid `parent_id` value that doesn't correspond to `lft` and `rgt`
+- `OddnessCheck` - the number of nodes that have wrong set of `lft` and `rgt` values
+- `DuplicatesCheck` - the number of nodes that have same `lft` or `rgt` values
+- `WrongParentCheck` - the number of nodes that have invalid `parent_id` value that doesn't correspond to `lft` and `rgt`
   values
-- `missing_parent` - the number of nodes that have `parent_id` pointing to node that doesn't exists
+- `MissingParentCheck` - the number of nodes that have `parent_id` pointing to node that doesn't exists
+
 
 ## Fixing tree
 

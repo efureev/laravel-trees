@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.1.0](https://github.com/efureev/laravel-trees/compare/v5.0.0...v5.1.0) (2025-03-08)
+
+### Added
+
+- Healthy Checkers
+
+### Removed
+
+- Remove `Healthy` trait
+
 ## [5.0.0-rc1](https://github.com/efureev/laravel-trees/compare/v4.0.0...v5.0.0-rc1) (2024-04-01)
 
 ### Added
@@ -22,9 +32,9 @@
 - Added support `Laravel 11`
 - Added support `PHP 8.3`
 
-### Removed
+``### Removed
 
-- Removed support `Laravel 10.*`, `9.*`, `8.*`
+- Removed support `Laravel 10.*`, `9.*`, `8.*```
 - Removed support PHP `8.0`, `8.1`
 
 ## [3.8.2](https://github.com/efureev/laravel-trees/compare/v3.8.1...v3.8.2) (2023-09-11)
