@@ -19,8 +19,10 @@ class Attribute
 
     protected mixed $default = null;
 
-    public function __construct(protected AttributeType $name, protected FieldType $type = FieldType::UnsignedInteger)
-    {
+    public function __construct(
+        protected AttributeType $name,
+        protected FieldType $type = FieldType::UnsignedInteger
+    ) {
     }
 
     public function name(): AttributeType
@@ -51,13 +53,6 @@ class Attribute
 
         return $this;
     }
-
-    //    public function setUuidType(): self
-    //    {
-    //        $this->type = FieldType::UUID;
-    //
-    //        return $this;
-    //    }
 
     public function setName(AttributeType $name): static
     {

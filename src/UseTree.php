@@ -33,18 +33,31 @@ trait UseTree
         $this->mergeTreeCasts();
     }
 
+    /**
+     * Get the unique identifiers for this model.
+     *
+     * @return array<string>
+     */
+    public function uniqueIds()
+    {
+        return [$this->getKeyName()];
+    }
+
+    /**
+     * Merge tree-specific attribute casts with the model's casts.
+     */
     protected function mergeTreeCasts(): void
     {
         $casts = [
-            (string)$this->levelAttribute() => 'integer',
-            (string)$this->leftAttribute()  => 'integer',
-            (string)$this->rightAttribute() => 'integer',
+            (string)$this->levelAttribute()  => 'integer',
+            (string)$this->leftAttribute()   => 'integer',
+            (string)$this->rightAttribute()  => 'integer',
+            (string)$this->parentAttribute() => $this->getKeyType(),
         ];
 
-        $casts[(string)$this->parentAttribute()] = $this->getKeyType();
-
-        if (($treeAttr = $this->treeAttribute())) {
-            $casts[(string)$treeAttr] = $treeAttr->type()->toModelCast();
+        $treeAttribute = $this->treeAttribute();
+        if ($treeAttribute) {
+            $casts[(string)$treeAttribute] = $treeAttribute->type()->toModelCast();
         }
 
         $this->mergeCasts($casts);

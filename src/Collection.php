@@ -23,6 +23,21 @@ class Collection extends BaseCollection
 
     private int $totalCount = 0;
 
+    /**
+     * Returns all root nodes (nodes without a parent).
+     *
+     * @return static<TKey, TModel>
+     */
+    public function getRoots(): static
+    {
+        return $this->filter(static fn(Model $item) => /** @var UseTree $item */ $item->parentValue() === null);
+    }
+
+    public function totalCount(): int
+    {
+        return $this->totalCount;
+    }
+
     protected function setToTree(int $count): static
     {
         $this->handledToTree = true;
@@ -32,21 +47,48 @@ class Collection extends BaseCollection
     }
 
     /**
-     * Build a tree from a list of nodes. Each item will have set children relation.
+     * Checks if the collection is empty or has already been processed.
      *
-     * If `$fromNode` is provided, the tree will contain only descendants of that node.
-     * If `$fillMissingIntermediateNodes` is provided, the tree will get missing intermediate nodes from database.
+     * @return bool True if the collection can skip further processing
+     */
+    private function shouldSkipProcessing(bool $checkTreeHandled = false): bool
+    {
+        if ($this->isEmpty()) {
+            return true;
+        }
+
+        if ($checkTreeHandled && $this->handledToTree) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Validates that the first model in the collection is a tree node.
      *
-     * @param Model|string|int|null $fromNode
-     * @param bool $setParentRelations Set `parent` into child's relations
+     * @throws Exception When the model is not a tree node
+     */
+    private function validateTreeNode(): void
+    {
+        $model = $this->first();
+        if (!Helper::isTreeNode($model)) {
+            throw new Exception('Model should be a Tree Node');
+        }
+    }
+
+
+    /**
+     * Build a tree from a list of nodes. Each node will have its children relation set.
+     *
+     * @param Model|string|int|null $fromNode Starting node key or instance (null for all roots)
+     * @param bool $setParentRelations Whether to set parent relations on children
+     *
+     * @return static<TKey, TModel> Collection with tree structure
      */
     public function toTree(Model|string|int|null $fromNode = null, bool $setParentRelations = false): static
     {
-        if ($this->handledToTree) {
-            return $this;
-        }
-
-        if ($this->isEmpty()) {
+        if ($this->shouldSkipProcessing(true)) {
             return $this;
         }
 
@@ -68,60 +110,45 @@ class Collection extends BaseCollection
         return (new static($items))->setToTree($this->count());
     }
 
-    /**
-     * Remove from here
-     */
-    //    public function toOutput(array $extraColumns = [], $output = null, $offset = "   "): void
-    //    {
-    //        Table::fromTree($this->toTree())
-    //            ->setOffset($offset)
-    //            ->setExtraColumns($extraColumns)
-    //            ->draw($output);
-    //    }
-
 
     /**
-     * Fill `parent` and `children` relationships for every node in the collection.
+     * Fill parent and children relationships for every node in the collection.
      *
-     * This will overwrite any previously set relations.
+     * @param bool $setParentRelations Whether to set parent relations on children
      *
-     * To avoid unnecessary requests to db
-     *
-     * @param bool $setParentRelations Set `parent` into child's relations
+     * @return static<TKey, TModel>
+     * @throws Exception When a model is not a tree node
      */
     public function linkNodes(bool $setParentRelations = true): static
     {
-        if ($this->linked) {
+        if ($this->linked || $this->isEmpty()) {
             return $this;
         }
 
-        if ($this->isEmpty()) {
-            return $this;
-        }
+        $this->validateTreeNode();
 
-        $model = $this->first();
-        if (!Helper::isTreeNode($model)) {
-            throw new Exception('Model should be a Tree Node');
-        }
+        /** @var UseTree&Model $firstModel */
+        $firstModel      = $this->first();
+        $groupedByParent = $this->groupBy($firstModel->parentAttribute());
 
-        /** @var UseTree $model */
-        $groupedNodes = $this->groupBy($model->parentAttribute());
-
-        /** @var UseTree|Model $node */
+        /** @var UseTree&Model $node */
         foreach ($this->items as $node) {
+            // Set parent relation
             if (!$node->parentValue()) {
                 $node->setRelation('parent', null);
             }
 
-            $children = $groupedNodes->get($node->getKey(), []);
+            // Set children relation
+            $childNodes = $groupedByParent->get($node->getKey(), []);
+            $node->setRelation('children', static::make($childNodes));
+
+            // Set parent relation on children if requested
             if ($setParentRelations) {
-                /** @var UseTree|Model $child */
-                foreach ($children as $child) {
+                /** @var UseTree&Model $child */
+                foreach ($childNodes as $child) {
                     $child->setRelation('parent', $node);
                 }
             }
-
-            $node->setRelation('children', static::make($children));
         }
 
         $this->linked = true;
@@ -129,48 +156,37 @@ class Collection extends BaseCollection
         return $this;
     }
 
-    /**
-     * Returns all root-nodes
-     */
-    public function getRoots(): static
-    {
-        return $this->filter(static fn(Model $item) => /** @var UseTree $item */ $item->parentValue() === null);
-    }
-
-    public function totalCount(): int
-    {
-        return $this->totalCount;
-    }
-
 
     /**
-     * Add items that are not in the collection but are intermediate nodes
+     * Add missing intermediate nodes to the collection.
      */
     public function fillMissingIntermediateNodes(): void
     {
-        $nodeIds    = $this->pluck('id', 'id')->all();
-        $collection = $this->sortByDesc(static fn($item) => $item->levelValue());
+        $existingNodeIds = $this->pluck('id', 'id')->all();
+        $sortedNodes     = $this->sortByDesc(static fn($item) => $item->levelValue());
 
-        /** @var Model|UseTree $node */
-        foreach ($collection as $node) {
-            if (!$node instanceof Model || $node->isRoot() || isset($nodeIds[$node->parentValue()])) {
+        /** @var Model&UseTree $node */
+        foreach ($sortedNodes as $node) {
+            if (!$node instanceof Model || $node->isRoot() || isset($existingNodeIds[$node->parentValue()])) {
                 continue;
             }
 
-            /** @var Collection $parents */
-            $parents = $node->parentsBuilder()
-                ->whereNotIn($node->getKeyName(), $nodeIds)
+            /** @var Collection $missingParents */
+            $missingParents = $node->parentsBuilder()
+                ->whereNotIn($node->getKeyName(), $existingNodeIds)
                 ->get();
 
-            $this->items = array_merge($this->items, $parents->all());
-            $nodeIds     = array_merge($parents->pluck('id', 'id')->all(), $nodeIds);
+            $this->items     = array_merge($this->items, $missingParents->all());
+            $existingNodeIds = array_merge($missingParents->pluck('id', 'id')->all(), $existingNodeIds);
         }
     }
 
     /**
-     * @param Model|string|int|null $fromNode
+     * Builds a breadcrumb path to a specific node.
      *
-     * @return $this
+     * @param Model|string|int|null $fromNode The target node
+     *
+     * @return static<TKey, TModel>
      */
     public function toBreadcrumbs(Model|string|int|null $fromNode = null): static
     {

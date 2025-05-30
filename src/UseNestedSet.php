@@ -14,7 +14,7 @@ use Fureev\Trees\Exceptions\NotSupportedException;
 use Fureev\Trees\Exceptions\TreeNeedValueException;
 use Fureev\Trees\Exceptions\UniqueRootException;
 use Fureev\Trees\Generators\GeneratorTreeIdContract;
-use Fureev\Trees\Generators\GeneratorTreeIdTreeId;
+use Fureev\Trees\Generators\TreeIdGenerator;
 use Fureev\Trees\Strategy\ChildrenHandler;
 use Fureev\Trees\Strategy\DeleteStrategy;
 use Illuminate\Database\Eloquent\Model;
@@ -453,7 +453,7 @@ trait UseNestedSet
 
     protected function treeIdGenerator(): ?string
     {
-        return GeneratorTreeIdTreeId::class;
+        return TreeIdGenerator::class;
     }
 
     protected function generateTreeId(): string|int
