@@ -1,7 +1,7 @@
 # Laravel Tree Structure
 
 ![PHP Laravel Package](https://github.com/efureev/laravel-trees/workflows/PHP%20Laravel%20Package/badge.svg?branch=master)
-![PHP Version](https://img.shields.io/badge/php-8.2|8.3-blue.svg)
+![PHP Version](https://img.shields.io/badge/php-8.2|8.3|8.4-blue.svg)
 ![Laravel Version](https://img.shields.io/badge/Laravel-^11.*-red.svg)
 [![Total Downloads](https://poser.pugx.org/efureev/laravel-trees/downloads)](https://packagist.org/packages/efureev/laravel-trees)
 [![License](https://poser.pugx.org/efureev/laravel-trees/license)](https://packagist.org/packages/efureev/laravel-trees)
