@@ -1,8 +1,16 @@
-# Migration
+# Tree-structured Models Migration Guide
 
-To use Tree-structured Models you should change DB.
+## Overview
+When implementing Tree-structured Models in your application, you'll need to modify your database schema. This guide explains how to perform this migration safely.
 
-You can use Migrate Helper:
+## Migration Steps
+
+1. Back up your existing database
+2. Use the Migration Helper utility to generate the necessary schema changes
+3. Review the generated migration
+4. Apply the migration to your database
+
+## Using Migration Helper
 
 ```php
 <?php
