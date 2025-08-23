@@ -23,6 +23,7 @@ namespace App\Models;
 
 use Fureev\Trees\UseTree;
 use Illuminate\Database\Eloquent\Model;
+use Fureev\Trees\Config\Builder;
 
 class Category extends Model
 {
