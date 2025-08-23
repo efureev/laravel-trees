@@ -11,4 +11,9 @@ enum AttributeType: string
     case Level  = 'lvl';
     case Parent = 'parent_id';
     case Tree   = 'tree_id';
+
+    public function isTreeType(): bool
+    {
+        return $this === self::Tree;
+    }
 }

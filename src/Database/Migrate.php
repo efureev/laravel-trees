@@ -20,7 +20,7 @@ final readonly class Migrate
     /**
      * @throws InvalidConfigException
      */
-    public static function columnsFromModel(Blueprint $table, Model|string $model): Builder
+    public static function columnsFromModel(Blueprint $table, Model|string $model, bool $excludeTreeCol = false): Builder
     {
         $instance = is_string($model) ? new $model() : $model;
 
@@ -29,7 +29,7 @@ final readonly class Migrate
         }
 
         $builder = $instance->getTreeBuilder();
-        (new self($builder, $table))->buildColumns();
+        (new self($builder, $table))->buildColumns($excludeTreeCol);
 
         return $builder;
     }
@@ -37,18 +37,22 @@ final readonly class Migrate
     /**
      * Add default nested set columns to the table. Also create an index.
      */
-    public function buildColumns(): void
+    public function buildColumns(bool $excludeTreeCol = false): void
     {
-        $this->addTreeColumns();
+        $this->addTreeColumns($excludeTreeCol);
         $this->buildIndexes();
     }
 
     /**
      * Adds tree structure columns to the table.
      */
-    private function addTreeColumns(): void
+    private function addTreeColumns(bool $excludeTreeCol): void
     {
         foreach ($this->builder->columnsList() as $attribute) {
+            if ($excludeTreeCol && $attribute->name()->isTreeType()) {
+                continue;
+            }
+
             $this->table->{$attribute->type()->value}($attribute->columnName())
                 ->default($attribute->default())
                 ->nullable($attribute->nullable());

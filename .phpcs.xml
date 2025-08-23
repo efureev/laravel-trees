@@ -3,6 +3,7 @@
     <description>The PSR2 coding standard.</description>
     <rule ref="PSR12"/>
     <file>src/</file>
+    <file>tests/</file>
     <exclude-pattern>vendor</exclude-pattern>
     <exclude-pattern>coverage</exclude-pattern>
 
