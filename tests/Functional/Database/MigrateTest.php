@@ -48,6 +48,19 @@ class MigrateTest extends AbstractTestCase
     }
 
     #[Test]
+    public function buildColumnsExcludesTreeColumn(): void
+    {
+        $table = $this->getBlueprint(self::$tableName);
+        $builder = Builder::defaultMulti();
+
+        (new Migrate($builder, $table))->buildColumns(true);
+
+        foreach ($table->getColumns() as $column) {
+            static::assertNotEquals($builder->tree()->columnName(), $column->getAttributes()['name']);
+        }
+    }
+
+    #[Test]
     public function columnsForMultiTree(): void
     {
         $table = $this->getBlueprint(self::$tableName);
