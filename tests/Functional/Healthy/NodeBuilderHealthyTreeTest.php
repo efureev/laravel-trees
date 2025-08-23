@@ -25,14 +25,14 @@ class NodeBuilderHealthyTreeTest extends AbstractFunctionalTreeTestCase
         $root = TreeBuilder::from(self::modelClass())->build(1, 3, 2, 1, 1);
 
         $checker = new HealthyChecker($root);
-        $result = $checker->check();
+        $result  = $checker->check();
 
         static::assertEquals(
             [
-                "OddnessCheck" => 0,
-                "DuplicatesCheck" => 0,
+                "OddnessCheck"     => 0,
+                "DuplicatesCheck"  => 0,
                 "WrongParentCheck" => 0,
-//                "missing_parent" => 0,
+            //                "missing_parent" => 0,
             ],
             $result
         );
@@ -43,7 +43,7 @@ class NodeBuilderHealthyTreeTest extends AbstractFunctionalTreeTestCase
         $root = TreeBuilder::from(self::modelClass())->build(1, 3, 2, 1, 1);
 
         $checker = new OddnessCheck($root);
-        $result = $checker->check();
+        $result  = $checker->check();
 
         static::assertEquals(0, $result);
     }

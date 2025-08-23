@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Fureev\Trees\Tests\Functional;
 
 use Fureev\Trees\Table;
-use Fureev\Trees\Tests\Functional\Helpers\InstallMigration;
-use Fureev\Trees\Tests\Functional\Helpers\StructureHelper;
 use Fureev\Trees\Tests\models\Structure;
 use Fureev\Trees\Tests\models\v5\Category;
 use Illuminate\Console\BufferedConsoleOutput;
@@ -50,9 +48,7 @@ class TableTest extends AbstractFunctionalTreeTestCase
         $output = new BufferedConsoleOutput();
         Table::fromModel($root->refresh())
             ->setExtraColumns(
-                [
-                    'title' => 'Label',
-                ]
+                ['title' => 'Label']
             )
             ->draw($output);
 

@@ -63,7 +63,7 @@ class DownTest extends AbstractFunctionalTreeTestCase
         static::assertFalse($node21->isForceSaving());
 
         $children = $modelRoot->children()->defaultOrder()->get()->map->title;
-        static::assertEquals(['child 3.1', 'child 4.1', 'child 2.1',], $children->toArray());
+        static::assertEquals(['child 3.1', 'child 4.1', 'child 2.1'], $children->toArray());
 
         //
 
@@ -73,6 +73,6 @@ class DownTest extends AbstractFunctionalTreeTestCase
         static::assertFalse($node21->isForceSaving());
 
         $children = $modelRoot->children()->defaultOrder()->get()->map->title;
-        static::assertEquals(['child 3.1', 'child 4.1', 'child 2.1',], $children->toArray());
+        static::assertEquals(['child 3.1', 'child 4.1', 'child 2.1'], $children->toArray());
     }
 }

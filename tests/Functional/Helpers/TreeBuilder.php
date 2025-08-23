@@ -45,11 +45,11 @@ final class TreeBuilder
 
     private function makeNode(int $lvl): AbstractModel
     {
-        $path = $this->parentNode->path;
-        $path[] = $lvl;
+        $path    = $this->parentNode->path;
+        $path[]  = $lvl;
         $pathStr = implode('.', $path);
 
-        $node = instance($this->parentNode::class, ['title' => "child $pathStr"]);
+        $node       = instance($this->parentNode::class, ['title' => "child $pathStr"]);
         $node->path = $path;
 
         $node->prependTo($this->parentNode);

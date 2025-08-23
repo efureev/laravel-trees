@@ -38,7 +38,7 @@ class CollectionTest extends AbstractFunctionalTreeTestCase
         $node31->appendTo($node21)->save();
 
         $preQueryCount      = count(static::model()->getConnection()->getQueryLog());
-        $expectedQueryCount = $preQueryCount + 1;
+        $expectedQueryCount = ($preQueryCount + 1);
 
         /** @var Collection $collection */
         $collection = static::model()::all();
@@ -95,7 +95,7 @@ class CollectionTest extends AbstractFunctionalTreeTestCase
         $node31->appendTo($node21)->save();
 
         $preQueryCount      = count(static::model()->getConnection()->getQueryLog());
-        $expectedQueryCount = $preQueryCount + 1;
+        $expectedQueryCount = ($preQueryCount + 1);
 
         /** @var Collection $collection */
         $collection = static::model()::all();

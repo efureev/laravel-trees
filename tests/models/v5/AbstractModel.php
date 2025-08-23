@@ -24,7 +24,7 @@ abstract class AbstractModel extends Model
     use UseTree;
 
     protected $casts = [
-        'path' => 'array',
+        'path'   => 'array',
         'params' => 'array',
     ];
 

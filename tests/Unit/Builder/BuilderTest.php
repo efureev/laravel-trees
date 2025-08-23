@@ -28,12 +28,15 @@ class BuilderTest extends AbstractTestCase
         static::assertEquals(AttributeType::Parent->value, (string)$builder->parent());
         static::assertEquals(AttributeType::Level->value, (string)$builder->level());
 
-        static::assertEquals([
-            AttributeType::Left->value,
-            AttributeType::Right->value,
-            AttributeType::Level->value,
-            AttributeType::Parent->value,
-        ], $builder->columnsNames());
+        static::assertEquals(
+            [
+                AttributeType::Left->value,
+                AttributeType::Right->value,
+                AttributeType::Level->value,
+                AttributeType::Parent->value,
+            ],
+            $builder->columnsNames()
+        );
     }
 
     public function testCreateBuilderForMultiTree(): void
@@ -46,13 +49,16 @@ class BuilderTest extends AbstractTestCase
         static::assertEquals(AttributeType::Parent->value, (string)$builder->parent());
         static::assertEquals(AttributeType::Level->value, (string)$builder->level());
 
-        static::assertEquals([
-            AttributeType::Left->value,
-            AttributeType::Right->value,
-            AttributeType::Level->value,
-            AttributeType::Parent->value,
-            AttributeType::Tree->value,
-        ], $builder->columnsNames());
+        static::assertEquals(
+            [
+                AttributeType::Left->value,
+                AttributeType::Right->value,
+                AttributeType::Level->value,
+                AttributeType::Parent->value,
+                AttributeType::Tree->value,
+            ],
+            $builder->columnsNames()
+        );
     }
 
     public function testBuildUnoConfig(): void
