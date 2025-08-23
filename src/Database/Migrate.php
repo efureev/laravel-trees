@@ -76,7 +76,7 @@ final readonly class Migrate
     private function createIndex(string $indexName, array $columns): void
     {
         if ($this->builder->isMulti()) {
-            $columns[] = $this->builder->tree()->columnName();
+            array_unshift($columns, $this->builder->tree()->columnName());
         }
 
         $indexFullName = $this->table->getTable() . "_{$indexName}_idx";
