@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @method static static byTree(int|string $treeId)
  * @method static static root()
+ * @method static static parentsByModelId($modelId, ?int $level = null, bool $andSelf = false)
  *
  * @mixin QueryBuilderV2<static>
  * @mixin Model
