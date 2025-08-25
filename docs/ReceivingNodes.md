@@ -34,7 +34,7 @@ $parent = $node->parent;
 $parent = $node->parent()->first();
 ```
 
-### To get a Parents chains
+### To get Parents chains
 
 > @return Collection
 
@@ -125,4 +125,59 @@ $nextNode = $node->nextSibling()->first();
 ```php
 $prevNode = $node->prev()->first();
 $nextNode = $node->next()->first();
+```
+
+## Receiving through Queries without Models
+
+### root
+
+Returns a query for root nodes.
+
+```php
+MultiCategory::root();
+```
+
+### notRoot
+
+Returns a query for non-root nodes.
+
+```php
+MultiCategory::notRoot();
+```
+
+### parentsByModelId
+
+Returns a collection of parents of the node with the specified id.
+
+NB: In progress. Works only for multi-tree nodes.
+
+```php
+MultiCategory::parentsByModelId($node31->id)->get();
+MultiCategory::parentsByModelId($node31->id, level: 1)->get();
+MultiCategory::parentsByModelId($node31->id, andSelf: true)->get();
+```
+
+### byTree
+
+Returns a query for nodes of the specified tree.
+
+```php
+MultiCategory::byTree($id);
+MultiCategory::byTree($id)->get();
+```
+
+### toLevel
+
+Returns a query for nodes of the specified level.
+
+```php
+Category::toLevel(1);
+```
+
+### byParent
+
+Returns a query for nodes of the specified parent.
+
+```php
+Category::byParent($pid);
 ```
