@@ -124,6 +124,7 @@ class QueryBuilderV2 extends Builder
         }
 
         return $query
+            ->select($this->columnWithTbl('*'))
             ->whereColumn($condition)
             ->defaultOrder();
     }
