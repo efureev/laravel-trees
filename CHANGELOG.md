@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.4.0](https://github.com/efureev/laravel-trees/compare/v5.3.0...v5.4.0) (2025-08-26)
+
+### Added
+
+- Method `parentsByModelId` for Query Builder. It allows you to get all parents of a model by its id (Without a main
+  model). If you know `id` - you can select a list of parents. (Only 1 Query instead of 2)
+- Method `columnWithTbl` for Query Builder. It allows you to get a column with a table name
+
 ## [5.3.0](https://github.com/efureev/laravel-trees/compare/v5.2.1...v5.3.0) (2025-03-08)
 
 ### Added

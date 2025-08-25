@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fureev\Trees;
 
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -85,6 +86,48 @@ class QueryBuilderV2 extends Builder
             ->defaultOrder();
     }
 
+    public function parentsByModelId($modelId, ?int $level = null, bool $andSelf = false): static
+    {
+        if (!$this->model->isMulti()) {
+            throw new Exception('Does not support single tree yet');
+        }
+
+        $query     = $this
+            ->joinSub(
+                $this->model->newNestedSetQuery()->where('id', $modelId)->limit(1),
+                't',
+                function ($join) {
+                    $treeAttrName = (string)$this->model->treeAttribute();
+                    $join->on("t.$treeAttrName", '=', $this->columnWithTbl($treeAttrName));
+                }
+            );
+        $condition = [
+
+            [
+                $this->columnWithTbl((string)$this->model->leftAttribute()),
+                $andSelf ? '<=' : '<',
+                't.' . $this->model->leftAttribute(),
+            ],
+            [
+                $this->columnWithTbl((string)$this->model->rightAttribute()),
+                $andSelf ? '>=' : '>',
+                't.' . $this->model->rightAttribute(),
+            ],
+        ];
+
+        if ($level !== null) {
+            $query->where(
+                $this->columnWithTbl((string)$this->model->levelAttribute()),
+                '>=',
+                $level,
+            );
+        }
+
+        return $query
+            ->whereColumn($condition)
+            ->defaultOrder();
+    }
+
     /**
      * Get all descendants
      *
@@ -128,7 +171,7 @@ class QueryBuilderV2 extends Builder
     /**
      * Get all descendants (query version)
      *
-     * @param string|int|Model|NestedSetTrait $id
+     * @param string|int|Model|UseNestedSet $id
      * @param string $boolean
      * @param bool $not
      * @param bool $andSelf
@@ -282,7 +325,10 @@ class QueryBuilderV2 extends Builder
     public function defaultOrder(int $dir = SORT_ASC): static
     {
         $this->query->orders = null;
-        $this->query->orderBy((string)$this->model->leftAttribute(), $dir === SORT_ASC ? 'asc' : 'desc');
+        $this->query->orderBy(
+            $this->columnWithTbl((string)$this->model->leftAttribute()),
+            $dir === SORT_ASC ? 'asc' : 'desc'
+        );
 
         return $this;
     }
@@ -331,7 +377,7 @@ class QueryBuilderV2 extends Builder
 
         $this->query
             ->whereBetween(
-                "{$this->model->getTable()}.{$this->model->leftAttribute()}",
+                $this->columnWithTbl((string)$this->model->leftAttribute()),
                 [
                     $left,
                     $right,
@@ -342,7 +388,7 @@ class QueryBuilderV2 extends Builder
 
         if ($this->model->isMulti()) {
             $treeId = end($values);
-            $this->query->where("{$this->model->getTable()}.{$this->model->treeAttribute()}", $treeId);
+            $this->query->where($this->columnWithTbl((string)$this->model->treeAttribute()), $treeId);
         }
 
         return $this;
@@ -426,5 +472,10 @@ class QueryBuilderV2 extends Builder
     public function wrappedKey(): string
     {
         return $this->query->getGrammar()->wrap($this->model->getKeyName());
+    }
+
+    protected function columnWithTbl(string $column): string
+    {
+        return $this->model->getTable() . '.' . $column;
     }
 }
