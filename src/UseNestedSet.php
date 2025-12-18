@@ -193,7 +193,7 @@ trait UseNestedSet
                         'Can not move a node before/after root. Model must be "MultiTree"'
                     );
                 }
-            // todo: break; ??
+                break;
 
             case Operation::PrependTo:
             case Operation::AppendTo:
@@ -204,7 +204,7 @@ trait UseNestedSet
                 if ($this->node->isChildOf($this)) {
                     throw new Exception('Can not move a node when the target node is child.');
                 }
-            // todo: break; ??
+                break;
         }
     }
 

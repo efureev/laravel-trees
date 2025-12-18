@@ -39,8 +39,8 @@ enum FieldType: string
     {
         return match (true) {
             $this->isInteger() => 'integer',
-            $this === self::UUID => 'string', // todo: need cast to UUID
-            $this === self::ULID => 'string', // todo: need cast to ULID
+            $this === self::UUID => 'string',
+            $this === self::ULID => 'string',
             default => 'string',
         };
     }
