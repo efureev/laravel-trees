@@ -4,6 +4,7 @@
 /.idea
 /storage
 /vendor
+/.phpunit.cache
 composer.lock
 .phpunit.result.cache
 phpunit.xml.dist

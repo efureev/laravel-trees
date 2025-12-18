@@ -8,7 +8,7 @@ use Fureev\Trees\Config\Attribute;
 use Fureev\Trees\Config\FieldType;
 use Fureev\Trees\Exceptions\Exception;
 use Illuminate\Database\Eloquent\Model;
-use Str;
+use Illuminate\Support\Str;
 use Symfony\Component\Uid\Uuid;
 
 final readonly class TreeIdGenerator implements GeneratorTreeIdContract
