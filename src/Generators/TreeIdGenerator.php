@@ -8,6 +8,7 @@ use Fureev\Trees\Config\Attribute;
 use Fureev\Trees\Config\FieldType;
 use Fureev\Trees\Exceptions\Exception;
 use Illuminate\Database\Eloquent\Model;
+use Str;
 use Symfony\Component\Uid\Uuid;
 
 final readonly class TreeIdGenerator implements GeneratorTreeIdContract
@@ -30,6 +31,7 @@ final readonly class TreeIdGenerator implements GeneratorTreeIdContract
         return match (true) {
             $fieldType->isInteger() => $this->generateMaxId($model),
             $fieldType === FieldType::UUID => $this->generateUuid(),
+            $fieldType === FieldType::ULID => $this->generateUlid(),
             default => throw new Exception('Unsupported field type for tree ID generation'),
         };
     }
@@ -56,5 +58,15 @@ final readonly class TreeIdGenerator implements GeneratorTreeIdContract
     private function generateUuid(): string
     {
         return (string)Uuid::v7();
+    }
+
+    /**
+     * Generates a new ULID for use as a tree identifier.
+     *
+     * @return string The generated ULID as a string
+     */
+    private function generateUlid(): string
+    {
+        return strtolower((string)Str::ulid());
     }
 }
