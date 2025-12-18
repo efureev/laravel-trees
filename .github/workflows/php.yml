@@ -36,7 +36,7 @@ jobs:
       fail-fast: false
       matrix:
         setup: [ 'basic', 'lowest', 'stable' ]
-        php: [ '8.2', '8.3' , '8.4' ]
+        php: [ '8.2', '8.3' , '8.4' , '8.5' ]
         laravel: [ 11.*, 12.* ]
         include:
           - laravel: 11.*
@@ -45,16 +45,13 @@ jobs:
           - laravel: 12.*
             php: 8.4
             testbench: 10.*
-    #          - laravel: 9.*
-    #            testbench: 7.*
-    #            vardumper: 6.*
-    #        exclude:
-    #          - php: '8.2'
-    #            setup: 'lowest'
+          - laravel: 12.*
+            php: 8.5
+            testbench: 10.*
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:17
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -68,7 +65,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Use PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@v2 # Action page: <https://github.com/shivammathur/setup-php>
@@ -83,7 +80,7 @@ jobs:
           echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ matrix.setup }}-${{ matrix.laravel }}-${{ hashFiles('**/composer.json') }}
@@ -124,7 +121,7 @@ jobs:
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
-      - uses: qltysh/qlty-action/coverage@v1
+      - uses: qltysh/qlty-action/coverage@v2
         with:
           token: ${{ secrets.QLTY_COVERAGE_TOKEN }}
           files: coverage/clover.xml

@@ -1,30 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="./tests/bootstrap_test.php" backupGlobals="false" colors="false" processIsolation="false" stopOnFailure="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd" cacheDirectory=".phpunit.cache" backupStaticProperties="false">
-  <coverage>
-    <report>
-      <clover outputFile="./coverage/clover.xml"/>
-      <html outputDirectory="./coverage/html"/>
-      <text outputFile="php://stdout" showUncoveredFiles="false"/>
-      <xml outputDirectory="./coverage/xml"/>
-    </report>
-  </coverage>
-  <testsuites>
-    <testsuite name="Main">
-      <directory suffix="Test.php">./tests</directory>
-    </testsuite>
-  </testsuites>
-  <logging>
-    <testdoxHtml outputFile="./coverage/index.html"/>
-  </logging>
-  <php>
-    <server name="XDEBUG_MODE" value="coverage"/>
-  </php>
-  <source>
-    <include>
-      <directory suffix=".php">./src</directory>
-    </include>
-    <exclude>
-      <directory>./vendor</directory>
-    </exclude>
-  </source>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="./tests/bootstrap_test.php"
+         backupGlobals="false" colors="false" processIsolation="false" stopOnFailure="false"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd" cacheDirectory=".phpunit.cache"
+         backupStaticProperties="false">
+    <coverage>
+        <report>
+            <clover outputFile="./coverage/clover.xml"/>
+            <html outputDirectory="./coverage/html"/>
+            <text outputFile="php://stdout" showUncoveredFiles="false"/>
+            <xml outputDirectory="./coverage/xml"/>
+        </report>
+    </coverage>
+    <testsuites>
+        <testsuite name="Main">
+            <directory suffix="Test.php">./tests</directory>
+        </testsuite>
+    </testsuites>
+    <logging>
+        <testdoxHtml outputFile="./coverage/index.html"/>
+    </logging>
+    <php>
+        <server name="XDEBUG_MODE" value="coverage"/>
+    </php>
+    <source>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory>./vendor</directory>
+        </exclude>
+    </source>
 </phpunit>
