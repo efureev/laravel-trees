@@ -731,7 +731,7 @@ trait UseNestedSet
 
         if (!$this->isMulti() || $this->treeValue() === $this->node->treeValue()) {
             // same root
-            $this->newQuery()
+            $this->newNestedSetQuery()
                 ->descendantsQuery(null, true)
                 ->update(
                     [
@@ -751,7 +751,7 @@ trait UseNestedSet
                 $delta = ($to - $right - 1);
             }
 
-            $this->newQuery()
+            $this->newNestedSetQuery()
                 ->descendantsQuery(null, true)
                 ->where((string)$this->levelAttribute(), '<', 0)
                 ->update(
@@ -767,19 +767,22 @@ trait UseNestedSet
                 );
         } else {
             // move from other root
-            $tree = $this->node->treeValue();
-            $this->shift($to, null, ($right - $left + 1), $tree);
-            $delta = ($to - $left);
+            $tree  = $this->node->treeValue();
+            $delta = $right - $left + 1;
 
-            $this->newQuery()
+            $this->shift($to, null, $delta, $tree);
+
+            $deltaMove = $to - $left;
+
+            $this->newNestedSetQuery()
                 ->descendantsQuery(null, true)
                 ->update(
                     [
                         (string)$this->leftAttribute()  => new Expression(
-                            $this->leftAttribute() . ' + ' . $delta
+                            $this->leftAttribute() . ' + ' . $deltaMove
                         ),
                         (string)$this->rightAttribute() => new Expression(
-                            $this->rightAttribute() . ' + ' . $delta
+                            $this->rightAttribute() . ' + ' . $deltaMove
                         ),
                         (string)$this->levelAttribute() => new Expression(
                             $this->levelAttribute() . ' + ' . -$depth
@@ -788,7 +791,7 @@ trait UseNestedSet
                     ]
                 );
 
-            $this->shift(($right + 1), null, ($left - $right - 1));
+            $this->shift(($right + 1), null, -$delta);
         }
     }
 
@@ -804,7 +807,7 @@ trait UseNestedSet
 
         $tree = $this->treeChange ?: $this->generateTreeId();
 
-        $this->newQuery()
+        $this->newNestedSetQuery()
             ->descendantsQuery(null, true)
             ->update(
                 [

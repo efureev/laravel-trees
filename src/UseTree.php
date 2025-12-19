@@ -8,6 +8,8 @@ use Fureev\Trees\Config\Builder;
 use Fureev\Trees\Config\Config;
 use Fureev\Trees\Config\FieldType;
 use Fureev\Trees\Exceptions\Exception;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -70,7 +72,17 @@ trait UseTree
     public function getTreeBuilder(): Builder
     {
         $builder = static::buildTree();
-        $builder->parent()->setType(FieldType::fromString($this->getKeyType()));
+
+        $type = match (true) {
+            method_exists($this, 'usesUniqueIds') && $this->usesUniqueIds() => match (true) {
+                (class_uses_recursive($this)[HasUlids::class] ?? null) !== null => FieldType::ULID,
+                (class_uses_recursive($this)[HasUuids::class] ?? null) !== null => FieldType::UUID,
+                default => FieldType::fromString($this->getKeyType()),
+            },
+            default => FieldType::fromString($this->getKeyType()),
+        };
+
+        $builder->parent()->setType($type);
 
         return $builder;
     }
