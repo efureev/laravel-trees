@@ -768,11 +768,11 @@ trait UseNestedSet
         } else {
             // move from other root
             $tree  = $this->node->treeValue();
-            $delta = $right - $left + 1;
+            $delta = ($right - $left + 1);
 
             $this->shift($to, null, $delta, $tree);
 
-            $deltaMove = $to - $left;
+            $deltaMove = ($to - $left);
 
             $this->newNestedSetQuery()
                 ->descendantsQuery(null, true)
