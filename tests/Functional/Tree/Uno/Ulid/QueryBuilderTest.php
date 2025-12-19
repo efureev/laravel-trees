@@ -2,35 +2,34 @@
 
 declare(strict_types=1);
 
-namespace Fureev\Trees\Tests\Functional\Tree\Uno;
+namespace Fureev\Trees\Tests\Functional\Tree\Uno\Ulid;
 
-use Exception;
 use Fureev\Trees\Tests\Functional\AbstractFunctionalTreeTestCase;
-use Fureev\Trees\Tests\models\v5\Category;
+use Fureev\Trees\Tests\models\v5\CategoryWithUlid;
 use PHPUnit\Framework\Attributes\Test;
 
 class QueryBuilderTest extends AbstractFunctionalTreeTestCase
 {
     /**
-     * @return class-string<Category>
+     * @return class-string<CategoryWithUlid>
      */
     protected static function modelClass(): string
     {
-        return Category::class;
+        return CategoryWithUlid::class;
     }
 
     #[Test]
     public function root(): void
     {
-        /** @var Category $modelRoot */
+        /** @var CategoryWithUlid $modelRoot */
         $modelRoot = static::model(['title' => 'root node']);
         $modelRoot->makeRoot()->save();
 
-        /** @var Category $node21 */
+        /** @var CategoryWithUlid $node21 */
         $node21 = static::model(['title' => 'child 2.1']);
         $node21->appendTo($modelRoot)->save();
 
-        /** @var Category $node31 */
+        /** @var CategoryWithUlid $node31 */
         $node31 = static::model(['title' => 'child 3.1']);
         $node31->appendTo($node21)->save();
 
@@ -41,41 +40,32 @@ class QueryBuilderTest extends AbstractFunctionalTreeTestCase
         static::assertTrue($modelRoot->isEqualTo($node31->root()->get()->first()));
         static::assertTrue($modelRoot->isEqualTo($node31->getRoot()));
 
-        static::assertTrue($modelRoot->isEqualTo(Category::root()->first()));
-        static::assertCount(1, Category::root()->get());
-        static::assertTrue($modelRoot->isEqualTo(Category::root()->get()->first()));
+        static::assertTrue($modelRoot->isEqualTo(CategoryWithUlid::root()->first()));
+        static::assertCount(1, CategoryWithUlid::root()->get());
+        static::assertTrue($modelRoot->isEqualTo(CategoryWithUlid::root()->get()->first()));
+
+        static::assertEquals(26, strlen($modelRoot->id));
+        static::assertEquals(26, strlen($node21->id));
+        static::assertEquals(26, strlen($node31->id));
     }
 
     #[Test]
     public function notRoot(): void
     {
-        /** @var Category $modelRoot */
+        /** @var CategoryWithUlid $modelRoot */
         $modelRoot = static::model(['title' => 'root node']);
         $modelRoot->makeRoot()->save();
 
-        /** @var Category $node21 */
+        /** @var CategoryWithUlid $node21 */
         $node21 = static::model(['title' => 'child 2.1']);
         $node21->appendTo($modelRoot)->save();
 
-        /** @var Category $node31 */
+        /** @var CategoryWithUlid $node31 */
         $node31 = static::model(['title' => 'child 3.1']);
         $node31->appendTo($node21)->save();
 
-        $list = Category::notRoot()->get();
+        $list = CategoryWithUlid::notRoot()->get();
 
         static::assertCount(2, $list);
-    }
-
-    #[Test]
-    public function parentsByModelIdException(): void
-    {
-        /** @var Category $modelRoot */
-        $modelRoot = static::model(['title' => 'root node']);
-        $modelRoot->makeRoot()->save();
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Does not support single tree yet');
-
-        Category::parentsByModelId($modelRoot->id)->get();
     }
 }

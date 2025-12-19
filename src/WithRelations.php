@@ -75,7 +75,8 @@ trait WithRelations
     {
         return $this
             ->hasMany($this::class, (string)$this->parentAttribute())
-            ->setModel($this);
+            ->setModel($this)
+            ->defaultOrder();
     }
 
     public function childrenWithTrashed(): HasMany
