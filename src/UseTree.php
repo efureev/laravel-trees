@@ -72,19 +72,24 @@ trait UseTree
     public function getTreeBuilder(): Builder
     {
         $builder = static::buildTree();
-
-        $type = match (true) {
-            method_exists($this, 'usesUniqueIds') && $this->usesUniqueIds() => match (true) {
-                (class_uses_recursive($this)[HasUlids::class] ?? null) !== null => FieldType::ULID,
-                (class_uses_recursive($this)[HasUuids::class] ?? null) !== null => FieldType::UUID,
-                default => FieldType::fromString($this->getKeyType()),
-            },
-            default => FieldType::fromString($this->getKeyType()),
-        };
-
-        $builder->parent()->setType($type);
+        $builder->parent()->setType($this->resolveFieldType());
 
         return $builder;
+    }
+
+    private function resolveFieldType(): FieldType
+    {
+        $traits = class_uses_recursive($this);
+
+        if (method_exists($this, 'usesUniqueIds') && $this->usesUniqueIds()) {
+            return match (true) {
+                isset($traits[HasUlids::class]) => FieldType::ULID,
+                isset($traits[HasUuids::class]) => FieldType::UUID,
+                default                         => FieldType::fromString($this->getKeyType()),
+            };
+        }
+
+        return FieldType::fromString($this->getKeyType());
     }
 
     /**
