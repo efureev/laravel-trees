@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Tests\Functional;
 
+use Exception;
 use Fureev\Trees\Database\Migrate;
 use Fureev\Trees\Tests\models\v5\AbstractModel;
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @template T of AbstractModel
@@ -59,14 +60,17 @@ abstract class AbstractFunctionalTreeTestCase extends AbstractFunctionalTestCase
                 $expression = match ($connectionDriver) {
                     'pgsql' => new Expression('uuid_generate_v4()'),
                     'mysql' => new Expression('UUID()'),
-                    default => throw new \Exception('Your DB driver [' . DB::getDriverName() . '] does not supported'),
+                    default => throw new Exception('Your DB driver [' . $connectionDriver . '] does not supported'),
                 };
 
 
-                if (in_array($model->getKeyType(), ['uuid', 'string'])) {
-                    $table->uuid($model->getKeyName())->default($expression)->primary();
-                } elseif ($model->getKeyType() === 'ulid') {
+                $keyType = $model->getKeyType();
+                $isUlid  = (class_uses_recursive($model)[HasUlids::class] ?? null) !== null;
+
+                if ($isUlid) {
                     $table->ulid($model->getKeyName())->primary();
+                } elseif (in_array($keyType, ['uuid', 'string'])) {
+                    $table->uuid($model->getKeyName())->default($expression)->primary();
                 } else {
                     $table->integerIncrements($model->getKeyName());
                 }
