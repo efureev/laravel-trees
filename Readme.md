@@ -9,6 +9,7 @@
 [![Latest Stable Version](https://poser.pugx.org/efureev/laravel-trees/version)](https://packagist.org/packages/efureev/laravel-trees)
 [![Maintainability](https://api.codeclimate.com/v1/badges/69eff0098adbf728341d/maintainability)](https://codeclimate.com/github/efureev/laravel-trees/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/69eff0098adbf728341d/test_coverage)](https://codeclimate.com/github/efureev/laravel-trees/test_coverage)
+![PHPStan Level](https://img.shields.io/badge/PHPStan-Level%205-brightgreen?style=flat)
 
 A Laravel package for implementing multi-tree hierarchical structures using the Nested Set Model.
 
