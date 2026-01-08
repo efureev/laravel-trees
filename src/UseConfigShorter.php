@@ -72,7 +72,7 @@ trait UseConfigShorter
     }
 
     /**
-     * @phpstan-param Model|static $model
+     * @phpstan-param static $model
      */
     public function isEqualTo(Model $model): bool
     {
@@ -89,6 +89,9 @@ trait UseConfigShorter
         return $this->levelValue() === $level;
     }
 
+    /**
+     * @return array<int, int|string|null>
+     */
     public function getBounds(): array
     {
         return array_map(

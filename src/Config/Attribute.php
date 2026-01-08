@@ -13,7 +13,7 @@ class Attribute
 {
     use Maker;
 
-    protected string $column;
+    protected ?string $column = null;
 
     protected bool $nullable = false;
 

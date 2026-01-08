@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace Fureev\Trees;
 
 use Fureev\Trees\Config\Helper;
+use Fureev\Trees\Contracts\TreeModel;
 use Fureev\Trees\Exceptions\Exception;
 use Illuminate\Database\Eloquent\Collection as BaseCollection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
+ * @phpstan-consistent-constructor
+ *
  * @template TKey of array-key
- * @template TModel of \Illuminate\Database\Eloquent\Model
+ * @template TModel of Model
  *
  * @extends BaseCollection<TKey, TModel>
  */
@@ -68,13 +71,17 @@ class Collection extends BaseCollection
      * Validates that the first model in the collection is a tree node.
      *
      * @throws Exception When the model is not a tree node
+     * @return Model&TreeModel
      */
-    private function validateTreeNode(): void
+    private function validateTreeNode(): Model
     {
+        /** @var Model $model */
         $model = $this->first();
         if (!Helper::isTreeNode($model)) {
             throw new Exception('Model should be a Tree Node');
         }
+
+        return $model;
     }
 
 
@@ -92,6 +99,7 @@ class Collection extends BaseCollection
             return $this;
         }
 
+        $this->validateTreeNode();
         $this->linkNodes($setParentRelations);
 
         $items = [];
@@ -100,7 +108,7 @@ class Collection extends BaseCollection
             $fromNode = $fromNode->getKey();
         }
 
-        /** @var Model|UseConfigShorter $node */
+        /** @var Model&TreeModel $node */
         foreach ($this->items as $node) {
             if ($node->parentValue() === $fromNode) {
                 $items[] = $node;
@@ -125,16 +133,14 @@ class Collection extends BaseCollection
             return $this;
         }
 
-        $this->validateTreeNode();
+        $firstModel = $this->validateTreeNode();
 
-        /** @var UseTree&Model $firstModel */
-        $firstModel      = $this->first();
         $groupedByParent = $this->groupBy($firstModel->parentAttribute());
 
-        /** @var UseTree&Model $node */
+        /** @var Model&TreeModel $node */
         foreach ($this->items as $node) {
             // Set parent relation
-            if (!$node->parentValue()) {
+            if ($node->parentValue() === null) {
                 $node->setRelation('parent', null);
             }
 
@@ -144,7 +150,7 @@ class Collection extends BaseCollection
 
             // Set parent relation on children if requested
             if ($setParentRelations) {
-                /** @var UseTree&Model $child */
+                /** @var Model&TreeModel $child */
                 foreach ($childNodes as $child) {
                     $child->setRelation('parent', $node);
                 }
@@ -162,10 +168,17 @@ class Collection extends BaseCollection
      */
     public function fillMissingIntermediateNodes(): void
     {
-        $existingNodeIds = $this->pluck('id', 'id')->all();
-        $sortedNodes     = $this->sortByDesc(static fn($item) => $item->levelValue());
+        if ($this->isEmpty()) {
+            return;
+        }
 
-        /** @var Model&UseTree $node */
+        $firstModel = $this->validateTreeNode();
+        $keyName    = $firstModel->getKeyName();
+
+        $existingNodeIds = $this->pluck($keyName, $keyName)->all();
+        $sortedNodes     = $this->sortByDesc(static fn(Model $item) => $item->levelValue());
+
+        /** @var Model&TreeModel $node */
         foreach ($sortedNodes as $node) {
             if (!$node instanceof Model || $node->isRoot() || isset($existingNodeIds[$node->parentValue()])) {
                 continue;
@@ -177,7 +190,7 @@ class Collection extends BaseCollection
                 ->get();
 
             $this->items     = array_merge($this->items, $missingParents->all());
-            $existingNodeIds = array_merge($missingParents->pluck('id', 'id')->all(), $existingNodeIds);
+            $existingNodeIds = array_merge($missingParents->pluck($keyName, $keyName)->all(), $existingNodeIds);
         }
     }
 

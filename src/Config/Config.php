@@ -25,6 +25,8 @@ final readonly class Config
 
     public function columnsList(): array
     {
+        $tree = $this->tree;
+
         return array_merge(
             [
                 $this->left,
@@ -32,7 +34,7 @@ final readonly class Config
                 $this->level,
                 $this->parent,
             ],
-            $this->isMulti() ? [$this->tree] : []
+            $tree !== null ? [$tree] : []
         );
     }
 

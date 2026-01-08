@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @method QueryBuilderV2<static> newQuery()
- * @mixin \Illuminate\Database\Eloquent\Model
+ * @mixin Model
  */
 trait WithQueryBuilder
 {
@@ -26,7 +26,7 @@ trait WithQueryBuilder
     /**
      * @return static|null
      */
-    public function getRoot(): ?Model
+    public function getRoot(): ?static
     {
         return $this->newQuery()
             ->root()
@@ -34,7 +34,7 @@ trait WithQueryBuilder
     }
 
     /**
-     * @param Model|static $node
+     * @phpstan-param Model&UseTree $node
      */
     public function isChildOf(Model $node): bool
     {
@@ -102,7 +102,8 @@ trait WithQueryBuilder
     }
 
     /**
-     * @return (string|int)[]
+     * @phpstan-param (Model&UseTree)|string|int $node
+     * @return array<int, int|string|null>
      */
     public function getNodeBounds(Model|string|int $node): array
     {

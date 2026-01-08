@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $rgt
  * @property int $lvl
  * @property ?static $parent
- * @property ?int $parent_id
+ * @property int|string|null $parent_id
  * @property static[] $children
  * @property int|string $id
  * @property array $path
@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 abstract class AbstractModel extends Model
 {
-    /** @use UseTree<AbstractModel> */
+    /** @use UseTree<static> */
     use UseTree;
 
     protected $casts = [

@@ -24,6 +24,7 @@ abstract class AbstractFunctionalTestCase extends TestCase
     {
         // Setup default database to use sqlite :memory:
         $app['config']->set('database.default', env('DATABASE_DEFAULT', 'pgsql'));
+
         $app['config']->set(
             'database.connections.pgsql',
             [
