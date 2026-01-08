@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Relations;
 
+use Fureev\Trees\Config\Helper;
 use Fureev\Trees\QueryBuilderV2;
-use Fureev\Trees\UseNestedSet;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @template TModel of \Illuminate\Database\Eloquent\Model
+ * @template TModel of Model
  *
  * @extends BaseRelation<TModel>
  */
@@ -32,14 +32,12 @@ class AncestorsRelation extends BaseRelation
         $query->whereAncestorOf($model);
     }
 
-    /**
-     * @param Model $model
-     * @param UseNestedSet $related
-     *
-     * @return mixed
-     */
     protected function matches(Model $model, Model $related): bool
     {
+        if (!Helper::isTreeNode($model) || !Helper::isTreeNode($related)) {
+            return false;
+        }
+
         return $related->isChildOf($model);
     }
 

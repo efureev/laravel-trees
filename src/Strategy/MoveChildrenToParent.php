@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Strategy;
 
-use Fureev\Trees\UseTree;
+use Fureev\Trees\Config\Helper;
+use Fureev\Trees\Contracts\TreeModel;
 use Illuminate\Database\Eloquent\Model;
 
 class MoveChildrenToParent implements ChildrenHandler
 {
     /**
-     * @param Model|UseTree $model
+     * @param Model&TreeModel $model
      */
     public function handle(Model $model): void
     {
+        if (!Helper::isTreeNode($model)) {
+            return;
+        }
+
         $model->moveChildrenToParent();
     }
 }

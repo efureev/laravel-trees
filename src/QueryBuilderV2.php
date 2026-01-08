@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Fureev\Trees;
 
 use Exception;
+use Fureev\Trees\Contracts\TreeModel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Query\Expression;
 
 /**
- * @template TModel of \Illuminate\Database\Eloquent\Model
+ * @template TModel of Model
  *
  * @extends Builder<TModel>
  *
- * @property TModel&UseTree $model
+ * @property TModel&TreeModel $model
  *
  * @method Collection<int, TModel> get($columns = ['*'])
  * @method Collection<int, TModel> all($columns = ['*'])
@@ -85,21 +86,21 @@ class QueryBuilderV2 extends Builder
             ->defaultOrder();
     }
 
-    public function parentsByModelId($modelId, ?int $level = null, bool $andSelf = false): static
+    public function parentsByModelId(string|int $modelId, ?int $level = null, bool $andSelf = false): static
     {
         if (!$this->model->isMulti()) {
             throw new Exception('Does not support single tree yet');
         }
 
-        $query     = $this
-            ->joinSub(
-                $this->model->newNestedSetQuery()->where('id', $modelId)->limit(1),
-                't',
-                function ($join) {
-                    $treeAttrName = (string)$this->model->treeAttribute();
-                    $join->on("t.$treeAttrName", '=', $this->columnWithTbl($treeAttrName));
-                }
-            );
+        /** @var static $query */
+        $query     = $this->joinSub(
+            $this->model->newNestedSetQuery()->where($this->model->getKeyName(), $modelId)->limit(1),
+            't',
+            function ($join) {
+                $treeAttrName = (string)$this->model->treeAttribute();
+                $join->on("t.$treeAttrName", '=', $this->columnWithTbl($treeAttrName));
+            }
+        );
         $condition = [
 
             [
@@ -122,10 +123,10 @@ class QueryBuilderV2 extends Builder
             );
         }
 
-        return $query
-            ->select($this->columnWithTbl('*'))
-            ->whereColumn($condition)
-            ->defaultOrder();
+        $query->select($this->columnWithTbl('*'));
+        $query->whereColumn($condition);
+
+        return $query->defaultOrder();
     }
 
     /**
@@ -171,10 +172,12 @@ class QueryBuilderV2 extends Builder
     /**
      * Get all descendants (query version)
      *
-     * @param string|int|Model|UseNestedSet $id
+     * @param string|int|Model $id
      * @param string $boolean
      * @param bool $not
      * @param bool $andSelf
+     *
+     * @phpstan-param (Model&TreeModel)|string|int $id
      */
     public function whereDescendantOf(
         Model|string|int $id,
@@ -192,9 +195,7 @@ class QueryBuilderV2 extends Builder
         return $this->whereNodeBetween($data, $boolean, $not);
     }
 
-    /**
-     * @param Model|UseTree $model
-     */
+    /** @phpstan-param Model&TreeModel $model */
     public function whereAncestorOf(Model $model): static
     {
         $condition = [
@@ -335,7 +336,7 @@ class QueryBuilderV2 extends Builder
 
 
     /**
-     * @return (string|int)[]
+     * @return array<int, int|string|null>
      */
     public function getPlainNodeData(string|int $id, bool $required = false): array
     {
@@ -346,7 +347,7 @@ class QueryBuilderV2 extends Builder
     /**
      * Get node's `left offset` and `right offset`, `level`, `parent_id`, `tree` tree values.
      *
-     * @return (string|int)[]
+     * @return array<string, int|string|null>
      */
     public function getNodeData(string|int $id, bool $required = false): array
     {

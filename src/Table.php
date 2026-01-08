@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Fureev\Trees;
 
+use Fureev\Trees\Config\Helper;
+use Fureev\Trees\Contracts\TreeModel;
 use Illuminate\Console\BufferedConsoleOutput;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use InvalidArgumentException;
 use Symfony\Component\Console\Helper\Table as SymfonyTable;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -135,12 +138,21 @@ final class Table
         return array_map(static fn($col) => $node->$col, $cols);
     }
 
+    /**
+     * @param Model&TreeModel $node
+     */
     protected function buildRowData(Model $node, int $level): array
     {
         $id          = $node->getKey();
         $values      = $this->getColumnValues($node);
         $indentation = str_repeat($this->offset, $level);
-        $hasChildren = !$node->children->isEmpty();
+
+        $children = $node->getRelation('children');
+        if (!$children instanceof Collection) {
+            $children = new Collection();
+        }
+
+        $hasChildren = !$children->isEmpty();
         $sign        = $hasChildren ? '+' : '-';
 
         return array_merge(
@@ -156,19 +168,28 @@ final class Table
     {
         /** @var Model $node */
         foreach ($tree as $node) {
+            if (!Helper::isTreeNode($node)) {
+                continue;
+            }
+
             $level = $node->levelValue();
             $row   = $this->buildRowData($node, $level);
 
             $this->driver->addRow($row);
 
-            if (!$node->children->isEmpty()) {
-                $this->addRow($node->children);
+            $children = $node->getRelation('children');
+            if ($children instanceof Collection && !$children->isEmpty()) {
+                $this->addRow($children);
             }
         }
     }
 
     public static function fromModel(Model $model): self
     {
+        if (!Helper::isTreeNode($model)) {
+            throw new InvalidArgumentException('Model must be a node.');
+        }
+
         return (new self())
             ->fromQuery($model->newNestedSetQuery()->descendantsQuery(null, true));
     }

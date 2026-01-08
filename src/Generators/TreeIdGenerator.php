@@ -44,8 +44,8 @@ final readonly class TreeIdGenerator implements GeneratorTreeIdContract
      */
     private function generateMaxId(Model $model): int
     {
-        $treeAttribute = (string)$model->treeAttribute();
-        $maxId         = (int)$model->max($treeAttribute);
+        $treeAttribute = (string)$this->attribute;
+        $maxId         = (int)$model->newQuery()->max($treeAttribute);
 
         return ($maxId + 1);
     }

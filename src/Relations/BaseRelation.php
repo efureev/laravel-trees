@@ -7,7 +7,6 @@ namespace Fureev\Trees\Relations;
 use Fureev\Trees\Collection;
 use Fureev\Trees\Config\Helper;
 use Fureev\Trees\QueryBuilderV2;
-use Fureev\Trees\UseNestedSet;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -15,9 +14,9 @@ use Illuminate\Database\Query\Builder;
 use InvalidArgumentException;
 
 /**
- * @template TModel of \Illuminate\Database\Eloquent\Model
+ * @template TModel of Model
  *
- * @extends Relation<TModel>
+ * @extends Relation<TModel, TModel, Collection<int, TModel>>
  *
  * @property QueryBuilderV2<TModel> $query
  */
@@ -65,7 +64,10 @@ abstract class BaseRelation extends Relation
         // The first model in the array is always the parent, so add the scope constraints based on that model.
         // @link https://github.com/laravel/framework/pull/25240
         // @link https://github.com/lazychaser/laravel-nestedset/issues/351
-        optional($models[0])->applyNestedSetScope($this->query);
+        $firstModel = $models[0] ?? null;
+        if (Helper::isTreeNode($firstModel)) {
+            $firstModel->applyNestedSetScope($this->query);
+        }
         $this->query->whereNested(
             function (Builder $inner) use ($models) {
                 // We will use this query in order to apply constraints to the

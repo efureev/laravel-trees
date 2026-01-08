@@ -9,6 +9,7 @@ use Fureev\Trees\Config\AttributeType;
 use Fureev\Trees\Config\FieldType;
 use Fureev\Trees\Generators\TreeIdGenerator;
 use Fureev\Trees\Tests\Unit\AbstractUnitTestCase;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Mockery;
 
@@ -26,10 +27,11 @@ class TreeIdGeneratorTest extends AbstractUnitTestCase
         $generator = new TreeIdGenerator($attribute);
 
         $model = Mockery::mock(Model::class);
-        // We need to mock 'treeAttribute' method which is probably from a trait,
-        // but since we are mocking the Model, we can just define it.
-        $model->shouldReceive('treeAttribute')->andReturn('tree_id');
-        $model->shouldReceive('max')->with('tree_id')->andReturn(5);
+
+        $query = Mockery::mock(Builder::class);
+        $query->shouldReceive('max')->with('tree_id')->andReturn(5);
+
+        $model->shouldReceive('newQuery')->andReturn($query);
 
         $result = $generator->generateId($model);
 
