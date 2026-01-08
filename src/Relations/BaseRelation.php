@@ -6,6 +6,7 @@ namespace Fureev\Trees\Relations;
 
 use Fureev\Trees\Collection;
 use Fureev\Trees\Config\Helper;
+use Fureev\Trees\Contracts\TreeModel;
 use Fureev\Trees\QueryBuilderV2;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use Illuminate\Database\Query\Builder;
 use InvalidArgumentException;
 
 /**
- * @template TModel of Model
+ * @template TModel of Model&TreeModel
  *
  * @extends Relation<TModel, TModel, Collection<int, TModel>>
  *

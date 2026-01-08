@@ -12,11 +12,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Query\Expression;
 
 /**
- * @template TModel of Model
+ * @template TModel of Model&TreeModel
  *
  * @extends Builder<TModel>
  *
- * @property TModel&TreeModel $model
+ * @property TModel $model
  *
  * @method Collection<int, TModel> get($columns = ['*'])
  * @method Collection<int, TModel> all($columns = ['*'])

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Fureev\Trees\Relations;
 
 use Fureev\Trees\Config\Helper;
+use Fureev\Trees\Contracts\TreeModel;
 use Fureev\Trees\QueryBuilderV2;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @template TModel of Model
+ * @template TModel of Model&TreeModel
  *
  * @extends BaseRelation<TModel>
  */

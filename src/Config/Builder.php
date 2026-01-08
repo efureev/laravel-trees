@@ -162,6 +162,9 @@ class Builder
         return $this;
     }
 
+    /**
+     * @return array<string, string|array<string>>
+     */
     public function columnIndexes(): array
     {
         return [
