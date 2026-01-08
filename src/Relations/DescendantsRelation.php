@@ -8,6 +8,11 @@ use Fureev\Trees\QueryBuilderV2;
 use Fureev\Trees\UseNestedSet;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @template TModel of \Illuminate\Database\Eloquent\Model
+ *
+ * @extends BaseRelation<TModel>
+ */
 class DescendantsRelation extends BaseRelation
 {
     /**

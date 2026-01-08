@@ -11,15 +11,14 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Query\Expression;
 
 /**
- * @template TModel of Model
- *
- * @package Fureev\Trees
- * @method Collection get($columns = ['*'])
- * @method Collection all($columns = ['*'])
- *
- * @property TModel|UseTree $model
+ * @template TModel of \Illuminate\Database\Eloquent\Model
  *
  * @extends Builder<TModel>
+ *
+ * @property TModel&UseTree $model
+ *
+ * @method Collection<int, TModel> get($columns = ['*'])
+ * @method Collection<int, TModel> all($columns = ['*'])
  */
 class QueryBuilderV2 extends Builder
 {

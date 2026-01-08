@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property Collection $ancestors
- * @property Collection $descendants
- * @property Collection $children
- * @property Collection $childrenWithTrashed
- * @property ?Model $parentWithTrashed
+ * @property Collection<int, static> $ancestors
+ * @property Collection<int, static> $descendants
+ * @property Collection<int, static> $children
+ * @property Collection<int, static> $childrenWithTrashed
+ * @property static|null $parentWithTrashed
  */
 trait WithRelations
 {
@@ -30,7 +30,7 @@ trait WithRelations
     /**
      * @param int|null $level
      *
-     * @return Model[]|Collection<Model>
+     * @return Collection<int, static>
      */
     public function parents(?int $level = null): Collection
     {
@@ -40,7 +40,7 @@ trait WithRelations
     /**
      * @param ?int $level
      *
-     * @return QueryBuilderV2
+     * @return QueryBuilderV2<static>
      */
     public function parentsBuilder(?int $level = null): QueryBuilderV2
     {

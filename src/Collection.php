@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @template TKey of array-key
- * @template TModel of Model
+ * @template TModel of \Illuminate\Database\Eloquent\Model
  *
- * @extends \Illuminate\Support\Collection<TKey, TModel>
+ * @extends BaseCollection<TKey, TModel>
  */
 class Collection extends BaseCollection
 {

@@ -22,7 +22,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Query\Expression;
 
 /**
- * @template TModel of Model
+ * @template TModel of \Illuminate\Database\Eloquent\Model
+ *
  * @mixin QueryBuilderV2<static>
  */
 trait UseNestedSet

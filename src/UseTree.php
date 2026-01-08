@@ -13,14 +13,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @template TModel of Model
+ * @template TModel of \Illuminate\Database\Eloquent\Model
  *
- * @method static static byTree(int|string $treeId)
- * @method static static root()
- * @method static static parentsByModelId($modelId, ?int $level = null, bool $andSelf = false)
+ * @method static QueryBuilderV2<static> byTree(int|string $treeId)
+ * @method static QueryBuilderV2<static> root()
+ * @method static QueryBuilderV2<static> parentsByModelId($modelId, ?int $level = null, bool $andSelf = false)
  *
  * @mixin QueryBuilderV2<static>
- * @mixin Model
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 trait UseTree
 {

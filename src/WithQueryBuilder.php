@@ -8,8 +8,8 @@ use Fureev\Trees\Config\Helper;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @method QueryBuilderV2 newQuery()
- * @mixed QueryBuilderV2
+ * @method QueryBuilderV2<static> newQuery()
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 trait WithQueryBuilder
 {
