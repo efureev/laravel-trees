@@ -11,7 +11,7 @@ use Illuminate\Database\Query\Builder as Query;
 use Illuminate\Database\Query\Expression;
 
 /**
- * @mixin QueryBuilderV2
+ * @mixin QueryBuilderV2<\Illuminate\Database\Eloquent\Model>
  *
  * !! Be careful !! It's not verified and tested on new Version 5!
  */

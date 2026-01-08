@@ -9,7 +9,9 @@ use Fureev\Trees\UseNestedSet;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Class AncestorsRelation
+ * @template TModel of \Illuminate\Database\Eloquent\Model
+ *
+ * @extends BaseRelation<TModel>
  */
 class AncestorsRelation extends BaseRelation
 {

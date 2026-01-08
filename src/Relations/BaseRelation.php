@@ -15,11 +15,11 @@ use Illuminate\Database\Query\Builder;
 use InvalidArgumentException;
 
 /**
- * Class BaseRelation
- * @package Fureev\Trees
+ * @template TModel of \Illuminate\Database\Eloquent\Model
  *
- * @property QueryBuilderV2 $query
- * @property UseNestedSet|Model
+ * @extends Relation<TModel>
+ *
+ * @property QueryBuilderV2<TModel> $query
  */
 abstract class BaseRelation extends Relation
 {
@@ -47,6 +47,8 @@ abstract class BaseRelation extends Relation
 
     /**
      * Get the results of the relationship.
+     *
+     * @return Collection<int, TModel>
      */
     public function getResults(): Collection
     {
