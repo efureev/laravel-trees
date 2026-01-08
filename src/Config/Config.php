@@ -23,6 +23,9 @@ final readonly class Config
         return $this->tree !== null;
     }
 
+    /**
+     * @return Attribute[]
+     */
     public function columnsList(): array
     {
         $tree = $this->tree;

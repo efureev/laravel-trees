@@ -1,8 +1,11 @@
 parameters:
-  level: '2'
+  level: '5'
   paths:
     - src
-#    - tests
+    - tests
+  treatPhpDocTypesAsCertain: false  # убрать ложные срабатывания
+  ignoreErrors:
+    - identifier: trait.unused
 #  ignoreErrors:
 #    -
 #      identifier: trait.unused

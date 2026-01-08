@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @phpstan-consistent-constructor
  *
  * @template TKey of array-key
- * @template TModel of Model
+ * @template TModel of Model&TreeModel
  *
  * @extends BaseCollection<TKey, TModel>
  */
