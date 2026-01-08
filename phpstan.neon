@@ -3,9 +3,52 @@ parameters:
   paths:
     - src
     - tests
-  treatPhpDocTypesAsCertain: false  # убрать ложные срабатывания
+  treatPhpDocTypesAsCertain: false
   ignoreErrors:
     - identifier: trait.unused
-#  ignoreErrors:
-#    -
-#      identifier: trait.unused
+    # Collection: static vs $this — ложные срабатывания PHPStan для fluent методов
+    -
+      message: '#Method Fureev\\Trees\\Collection::\w+\(\) should return static\(.+\) but returns (static\(.+\)|\$this\(.+\))\.#'
+      identifier: return.type
+      path: src/Collection.php
+    # Collection: generic array assignment
+    -
+      message: '#Property Illuminate\\Support\\Collection.+does not accept array.+#'
+      identifier: assign.propertyType
+      path: src/Collection.php
+    # QueryBuilderV2: orderBy() возвращает Query\Builder вместо static — особенность Laravel
+    -
+      message: '#Method Fureev\\Trees\\QueryBuilderV2::descendantsQuery\(\) should return static.+ but returns Illuminate\\Database\\Query\\Builder\.#'
+      identifier: return.type
+      path: src/QueryBuilderV2.php
+    # QueryBuilderV2: applyNestedSetScope возвращает QueryBuilderV2 вместо static
+    -
+      message: '#Method Fureev\\Trees\\QueryBuilderV2::applyNestedSetScope\(\) should return static.+ but returns Fureev\\Trees\\QueryBuilderV2.+#'
+      identifier: return.type
+      path: src/QueryBuilderV2.php
+    # BaseRelation: особенности generic типов в Laravel Relations
+    -
+      message: '#Parameter \#\d+ \$\w+ of method Illuminate\\Database\\Eloquent\\Relations\\Relation.+::__construct\(\) expects .+#'
+      identifier: argument.type
+      path: src/Relations/BaseRelation.php
+    -
+      message: '#Parameter \#1 \$query of method Fureev\\Trees\\Relations\\BaseRelation.+::addEagerConstraint\(\) expects .+#'
+      identifier: argument.type
+      path: src/Relations/BaseRelation.php
+    -
+      message: '#Method Fureev\\Trees\\Relations\\BaseRelation::match\(\) should return array.+ but returns array.+#'
+      identifier: return.type
+      path: src/Relations/BaseRelation.php
+    -
+      message: '#Parameter \#1 \.\.\.\$values of method Illuminate\\Support\\Collection.+::push\(\) expects .+#'
+      identifier: argument.type
+      path: src/Relations/BaseRelation.php
+    # Relations: Model vs Model&TreeModel в параметрах
+    -
+      message: '#Parameter \#1 \$model of method Fureev\\Trees\\QueryBuilderV2.+::whereAncestorOf\(\) expects .+#'
+      identifier: argument.type
+      path: src/Relations/AncestorsRelation.php
+    -
+      message: '#Parameter \#1 \$id of method Fureev\\Trees\\QueryBuilderV2.+::whereDescendantOf\(\) expects .+#'
+      identifier: argument.type
+      path: src/Relations/DescendantsRelation.php

@@ -166,7 +166,7 @@ final class Table
 
     private function addRow(Collection $tree): void
     {
-        /** @var Model $node */
+        /** @var Model&TreeModel $node */
         foreach ($tree as $node) {
             if (!Helper::isTreeNode($node)) {
                 continue;
