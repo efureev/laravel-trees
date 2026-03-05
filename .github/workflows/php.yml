@@ -1,43 +1,23 @@
 name: PHP Laravel Package
 
-on: [ push, pull_request ]
+on:
+  - push
+  - pull_request
 
 jobs:
-  #  phpcs:
-  #    name: PHPCS
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - uses: actions/checkout@v2
-  #      - name: PHPCS check
-  #        uses: chekalsky/phpcs-action@v1
-  #        with:
-  #          enable_warnings: true
-
-  #  lint-changelog:
-  #    name: Lint changelog file
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - name: Check out code
-  #        uses: actions/checkout@v2
-  #      - name: Lint changelog file
-  #        uses: avto-dev/markdown-lint@v1
-  #        with:
-  #          rules: './.github/workflows/lint/rules/changelog.js'
-  #          config: '/lint/config/changelog.yml'
-  #          args: './CHANGELOG.md'
-
   testing:
     name: Test on PHP ${{ matrix.php }} on laravel ${{ matrix.laravel }} with ${{ matrix.setup }} dependencies
 
     runs-on: ubuntu-latest
+
     timeout-minutes: 10
 
     strategy:
       fail-fast: false
       matrix:
-        setup: [ 'basic', 'lowest', 'stable' ]
-        php: [ '8.2', '8.3' , '8.4' , '8.5' ]
-        laravel: [ 11.*, 12.* ]
+        setup: [basic, lowest, stable]
+        php: ['8.2', '8.3', '8.4', '8.5']
+        laravel: ['11.*', '12.*', '13.*']
         include:
           - laravel: 11.*
             php: 8.3
@@ -48,6 +28,12 @@ jobs:
           - laravel: 12.*
             php: 8.5
             testbench: 10.*
+          - laravel: 13.*
+            php: '8.3'
+            testbench: 11.*
+        exclude:
+          - laravel: 13.*
+            php: '8.2'
 
     services:
       postgres:
@@ -58,23 +44,19 @@ jobs:
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
       - uses: actions/checkout@v6
 
       - name: Use PHP ${{ matrix.php }}
-        uses: shivammathur/setup-php@v2 # Action page: <https://github.com/shivammathur/setup-php>
+        uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring
           coverage: xdebug
 
-      - name: Get Composer Cache Directory # Docs: <https://github.com/actions/cache/blob/master/examples.md#php---composer>
+      - name: Get Composer Cache Directory
         id: composer-cache
         run: |
           echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -106,9 +88,6 @@ jobs:
 
       - name: Show most important packages' versions
         run: composer info | grep -e efureev -e laravel/framework -e phpunit/phpunit -e orchestra/testbench
-
-      # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-      # Docs: https://getcomposer.org/doc/articles/scripts.md
 
       - name: Run test suite
         run: composer test-cover
