@@ -1,56 +1,57 @@
 {
-  "name": "efureev/laravel-trees",
-  "description": "Multi-Tree structures for Laravel",
-  "license": "MIT",
-  "keywords": [
-    "php",
-    "tree",
-    "multi-tree",
-    "laravel",
-    "package"
-  ],
-  "authors": [
-    {
-      "name": "Eugene Fureev",
-      "email": "fureev@gmail.com"
+    "name": "efureev/laravel-trees",
+    "description": "Multi-Tree structures for Laravel",
+    "license": "MIT",
+    "keywords": [
+        "php",
+        "tree",
+        "multi-tree",
+        "laravel",
+        "package"
+    ],
+    "authors": [
+        {
+            "name": "Eugene Fureev",
+            "email": "fureev@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "efureev/support": "^4.27 || ^5.0",
+        "illuminate/database": "^11.0 || ^12.0 || ^13.0",
+        "illuminate/events": "^11.0 || ^12.0 || ^13.0"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.45",
+        "fakerphp/faker": "^1.23",
+        "orchestra/testbench": "^9.11 || ^10.0 || ^11.0",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^11.5 || ^12.5.12",
+        "squizlabs/php_codesniffer": "^3.11 || ^4.0",
+        "symfony/var-dumper": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Fureev\\Trees\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Fureev\\Trees\\Tests\\": "tests/",
+            "Fureev\\Trees\\Tests\\Database\\Factories\\": "tests/database/factories"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        }
+    },
+    "scripts": {
+        "cs-fix": "@php ./vendor/bin/phpcbf",
+        "phpcs": "@php ./vendor/bin/phpcs",
+        "phpstan": "@php ./vendor/bin/phpstan analyze -c phpstan.neon --no-progress --ansi",
+        "test": "@php ./vendor/bin/phpunit --no-coverage --testdox",
+        "test-local": "@php ./vendor/bin/phpunit -c phpunit.xml.dist  --no-coverage --testdox",
+        "test-cover": "@php ./vendor/bin/phpunit --coverage-text"
     }
-  ],
-  "require": {
-    "php": "^8.2",
-    "efureev/support": "^4.27 || ^5.0",
-    "illuminate/database": "^11.0 || ^12.0",
-    "illuminate/events": "^11.0 || ^12.0"
-  },
-  "require-dev": {
-    "ergebnis/composer-normalize": "^2.45",
-    "fakerphp/faker": "^1.23",
-    "orchestra/testbench": "^9.11 || ^10.0",
-    "phpstan/phpstan": "^2.1",
-    "phpunit/phpunit": "^11.5",
-    "squizlabs/php_codesniffer": "^3.11",
-    "symfony/var-dumper": "^7.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Fureev\\Trees\\": "src"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Fureev\\Trees\\Tests\\": "tests/",
-      "Fureev\\Trees\\Tests\\Database\\Factories\\": "tests/database/factories"
-    }
-  },
-  "config": {
-    "allow-plugins": {
-      "ergebnis/composer-normalize": true
-    }
-  },
-  "scripts": {
-    "cs-fix": "@php ./vendor/bin/phpcbf",
-    "phpcs": "@php ./vendor/bin/phpcs",
-    "phpstan": "@php ./vendor/bin/phpstan analyze -c phpstan.neon --no-progress --ansi",
-    "test": "@php ./vendor/bin/phpunit --no-coverage --testdox",
-    "test-cover": "@php ./vendor/bin/phpunit --coverage-text"
-  }
 }

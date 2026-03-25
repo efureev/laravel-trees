@@ -17,14 +17,19 @@ class MigrateTest extends AbstractTestCase
 {
     private static string $tableName = 'test_config';
 
-    protected static function isLaravel12(): bool
+    protected static function getLaravelMajorVersion(): int
     {
-        return str_starts_with(Application::VERSION, '12');
+        return (int)strtok(Application::VERSION, '.');
+    }
+
+    protected static function isLaravelGreaterThan12(): bool
+    {
+        return self::getLaravelMajorVersion() >= 12;
     }
 
     protected function getBlueprint(string $table): Blueprint
     {
-        return self::isLaravel12()
+        return self::isLaravelGreaterThan12()
             ? new Blueprint($this->getConnection(), $table)
             : new Blueprint($table);
     }
@@ -32,7 +37,7 @@ class MigrateTest extends AbstractTestCase
     #[Test]
     public function columnsForUnoTree(): void
     {
-        $table   = $this->getBlueprint(self::$tableName);
+        $table = $this->getBlueprint(self::$tableName);
         $builder = Builder::default();
 
         (new Migrate($builder, $table))->buildColumns();
@@ -50,7 +55,7 @@ class MigrateTest extends AbstractTestCase
     #[Test]
     public function buildColumnsExcludesTreeColumn(): void
     {
-        $table   = $this->getBlueprint(self::$tableName);
+        $table = $this->getBlueprint(self::$tableName);
         $builder = Builder::defaultMulti();
 
         (new Migrate($builder, $table))->buildColumns(true);
@@ -63,7 +68,7 @@ class MigrateTest extends AbstractTestCase
     #[Test]
     public function columnsForMultiTree(): void
     {
-        $table   = $this->getBlueprint(self::$tableName);
+        $table = $this->getBlueprint(self::$tableName);
         $builder = Builder::defaultMulti();
 
         (new Migrate($builder, $table))->buildColumns();
@@ -95,7 +100,7 @@ class MigrateTest extends AbstractTestCase
     #[Test]
     public function columnsForUuidMultiTree(): void
     {
-        $table   = $this->getBlueprint(self::$tableName);
+        $table = $this->getBlueprint(self::$tableName);
         $builder = Builder::defaultMulti();
         $builder->tree()->setType(FieldType::UUID)->setColumnName('tid');
 
