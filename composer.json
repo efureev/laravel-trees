@@ -51,6 +51,7 @@
         "phpcs": "@php ./vendor/bin/phpcs",
         "phpstan": "@php ./vendor/bin/phpstan analyze -c phpstan.neon --no-progress --ansi",
         "test": "@php ./vendor/bin/phpunit --no-coverage --testdox",
+        "test-local": "@php ./vendor/bin/phpunit -c phpunit.xml.dist  --no-coverage --testdox",
         "test-cover": "@php ./vendor/bin/phpunit --coverage-text"
     }
 }
