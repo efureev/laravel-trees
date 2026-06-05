@@ -81,7 +81,7 @@ trait UseTree
     {
         $traits = class_uses_recursive($this);
 
-        if (method_exists($this, 'usesUniqueIds') && $this->usesUniqueIds()) {
+        if ($this->usesUniqueIds()) {
             return match (true) {
                 isset($traits[HasUlids::class]) => FieldType::ULID,
                 isset($traits[HasUuids::class]) => FieldType::UUID,

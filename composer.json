@@ -16,17 +16,18 @@
         }
     ],
     "require": {
-        "php": "^8.2",
-        "efureev/support": "^4.27 || ^5.0",
-        "illuminate/database": "^11.0 || ^12.0 || ^13.0",
-        "illuminate/events": "^11.0 || ^12.0 || ^13.0"
+        "php": ">=8.4",
+        "ext-pdo": "*",
+        "efureev/support": "^5.0",
+        "illuminate/database": "^13.0",
+        "illuminate/events": "^13.0"
     },
     "require-dev": {
-        "ergebnis/composer-normalize": "^2.45",
+        "ergebnis/composer-normalize": "^2.52",
         "fakerphp/faker": "^1.23",
-        "orchestra/testbench": "^9.11 || ^10.0 || ^11.0",
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^11.5 || ^12.5.12",
+        "orchestra/testbench": "^11.0",
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^13.0",
         "squizlabs/php_codesniffer": "^3.11 || ^4.0",
         "symfony/var-dumper": "^7.0"
     },
@@ -44,14 +45,17 @@
     "config": {
         "allow-plugins": {
             "ergebnis/composer-normalize": true
-        }
+        },
+        "sort-packages": true
     },
     "scripts": {
         "cs-fix": "@php ./vendor/bin/phpcbf",
         "phpcs": "@php ./vendor/bin/phpcs",
         "phpstan": "@php ./vendor/bin/phpstan analyze -c phpstan.neon --no-progress --ansi",
-        "test": "@php ./vendor/bin/phpunit --no-coverage --testdox",
-        "test-local": "@php ./vendor/bin/phpunit -c phpunit.xml.dist  --no-coverage --testdox",
-        "test-cover": "@php ./vendor/bin/phpunit --coverage-text"
+        "phpunit": "@php ./vendor/bin/phpunit --no-coverage --testdox --colors=always",
+        "phpunit-cover": "@php ./vendor/bin/phpunit --coverage-clover ./storage/coverage/clover.xml",
+        "test": "@phpunit",
+        "test-cover": "@phpunit-cover",
+        "test:docker": "docker compose up --build --abort-on-container-exit --exit-code-from app"
     }
 }

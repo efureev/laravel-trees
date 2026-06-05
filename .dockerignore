@@ -1,0 +1,9 @@
+.git
+.idea
+vendor
+coverage
+storage
+.phpunit.cache
+.phpunit.result.cache
+composer.lock
+.DS_Store
