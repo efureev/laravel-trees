@@ -1,8 +1,8 @@
 # Laravel Tree Structure
 
 ![PHP Laravel Package](https://github.com/efureev/laravel-trees/workflows/PHP%20Laravel%20Package/badge.svg?branch=master)
-![PHP Version](https://img.shields.io/badge/php-8.2|8.3|8.4|8.5-blue.svg)
-![Laravel Version](https://img.shields.io/badge/Laravel-11|12.*-red.svg)
+![PHP Version](https://img.shields.io/badge/php-8.4|8.5-blue.svg)
+![Laravel Version](https://img.shields.io/badge/Laravel-13.*-red.svg)
 [![Total Downloads](https://poser.pugx.org/efureev/laravel-trees/downloads)](https://packagist.org/packages/efureev/laravel-trees)
 [![License](https://poser.pugx.org/efureev/laravel-trees/license)](https://packagist.org/packages/efureev/laravel-trees)
 [![composer.lock available](https://poser.pugx.org/efureev/laravel-trees/composerlock)](https://packagist.org/packages/efureev/laravel-trees)
@@ -57,8 +57,8 @@ NSM shows good performance when:
 
 ## Requirements
 
-- PHP: 8.2|8.3|8.4|8.5
-- Laravel: ^11.*, ^12.*
+- PHP: >= 8.4
+- Laravel: >= 13.0
 
 It is highly recommended to use a database that supports transactions (like PostgreSQL) to protect tree structures from
 corruption.
@@ -83,8 +83,18 @@ composer require efureev/laravel-trees
 
 ## Testing
 
+The test suite runs against PostgreSQL. If you don't have PostgreSQL installed locally, use the bundled Docker setup
+(PostgreSQL 18):
+
 ```shell
-./vendor/bin/phpunit --testdox
+# Run the whole test suite inside Docker (spins up PostgreSQL 18 automatically)
+composer test:docker
+```
+
+Or run the tests directly against an available PostgreSQL instance:
+
+```shell
+DB_HOST=localhost DB_PORT=5432 DB_DATABASE=forge DB_USERNAME=forge DB_PASSWORD=forge composer test
 # or
-composer test
+./vendor/bin/phpunit --testdox
 ```

@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" bootstrap="./tests/bootstrap_test.php"
-         backupGlobals="false" colors="false" processIsolation="false" stopOnFailure="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd" cacheDirectory=".phpunit.cache"
+         backupGlobals="false" colors="true" processIsolation="false" executionOrder="random"
+         resolveDependencies="true" stopOnFailure="false"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/13.0/phpunit.xsd" cacheDirectory=".phpunit.cache"
          backupStaticProperties="false">
     <coverage>
         <report>
-            <clover outputFile="./coverage/clover.xml"/>
-            <html outputDirectory="./coverage/html"/>
+            <clover outputFile="./storage/coverage/clover.xml"/>
+            <html outputDirectory="./storage/coverage/html"/>
             <text outputFile="php://stdout" showUncoveredFiles="false"/>
-            <xml outputDirectory="./coverage/xml"/>
+            <xml outputDirectory="./storage/coverage/coverage-xml"/>
         </report>
     </coverage>
     <testsuites>
@@ -17,11 +18,8 @@
         </testsuite>
     </testsuites>
     <logging>
-        <testdoxHtml outputFile="./coverage/index.html"/>
+        <junit outputFile="./storage/coverage/junit.xml"/>
     </logging>
-    <php>
-        <server name="XDEBUG_MODE" value="coverage"/>
-    </php>
     <source>
         <include>
             <directory suffix=".php">./src</directory>
@@ -30,4 +28,16 @@
             <directory>./vendor</directory>
         </exclude>
     </source>
+    <php>
+        <server name="DATABASE_DEFAULT" value="pgsql"/>
+        <server name="DB_DRIVER" value="pgsql"/>
+        <!-- DB connection defaults (forge / forge / forge). Real environment variables
+             (docker-compose for local runs, the job env in GitHub Actions) take precedence,
+             because force="false" keeps any value already present in the environment. -->
+        <env name="DB_HOST" value="localhost" force="false"/>
+        <env name="DB_PORT" value="5432" force="false"/>
+        <env name="DB_DATABASE" value="forge" force="false"/>
+        <env name="DB_USERNAME" value="forge" force="false"/>
+        <env name="DB_PASSWORD" value="forge" force="false"/>
+    </php>
 </phpunit>

@@ -1,5 +1,26 @@
 # Changelog
 
+## [6.0.0](https://github.com/efureev/laravel-trees/compare/v5.4.0...v6.0.0) (2026-06-05)
+
+### Changed
+
+- Raised minimum requirements to `PHP >= 8.4` and `Laravel >= 13` (`illuminate/*: ^13.0`)
+- Updated dev stack: `phpunit/phpunit: ^13.0`, `orchestra/testbench: ^11.0`, `phpstan/phpstan: ^2.2`,
+  `efureev/support: ^5.0`
+- Migrated PHPUnit configuration to the 13.0 schema; coverage artifacts moved to `./storage/coverage`
+- Made `.phpcs.xml` compatible with `squizlabs/php_codesniffer` 4.0
+
+### Added
+
+- Docker-based test environment with PostgreSQL 18 (`docker-compose.yml`, `.docker/Dockerfile`, `.dockerignore`)
+- Composer script `test:docker` to run the suite inside Docker
+
+### Removed
+
+- Dropped support for `Laravel 11/12` and `PHP 8.2/8.3`
+- Removed obsolete Travis CI configuration (`.travis.yml`)
+- Removed dead backward-compatibility check `method_exists($this, 'usesUniqueIds')` in `UseTree`
+
 ## [5.4.0](https://github.com/efureev/laravel-trees/compare/v5.3.0...v5.4.0) (2025-08-26)
 
 ### Added
