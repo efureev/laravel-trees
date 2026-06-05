@@ -56,6 +56,7 @@
         "phpunit-cover": "@php ./vendor/bin/phpunit --coverage-clover ./storage/coverage/clover.xml",
         "test": "@phpunit",
         "test-cover": "@phpunit-cover",
-        "test:docker": "docker compose up --build --abort-on-container-exit --exit-code-from app"
+        "test:docker": "docker compose up --build --abort-on-container-exit --exit-code-from app",
+        "test-cover:docker": "docker compose up --build --abort-on-container-exit --exit-code-from coverage coverage"
     }
 }

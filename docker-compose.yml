@@ -1,20 +1,29 @@
+x-app-build: &app-build
+  build:
+    context: .
+    dockerfile: .docker/Dockerfile
+  volumes:
+    - .:/app
+  depends_on:
+    db:
+      condition: service_healthy
+  environment:
+    DB_CONNECTION: pgsql
+    DB_HOST: db
+    DB_PORT: 5432
+    DB_DATABASE: forge
+    DB_USERNAME: forge
+    DB_PASSWORD: forge
+
 services:
   app:
-    build:
-      context: .
-      dockerfile: .docker/Dockerfile
-    volumes:
-      - .:/app
-    depends_on:
-      db:
-        condition: service_healthy
-    environment:
-      DB_CONNECTION: pgsql
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_DATABASE: forge
-      DB_USERNAME: forge
-      DB_PASSWORD: forge
+    <<: *app-build
+
+  # Runs the test suite with code coverage (pcov is bundled in the image).
+  # Coverage reports are written to ./storage/coverage (clover.xml, html, coverage-xml, junit.xml).
+  coverage:
+    <<: *app-build
+    command: ["composer", "test-cover"]
 
   db:
     image: postgres:18-alpine
