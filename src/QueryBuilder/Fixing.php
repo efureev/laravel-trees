@@ -11,7 +11,7 @@ use Illuminate\Database\Query\Builder as Query;
 use Illuminate\Database\Query\Expression;
 
 /**
- * @mixin QueryBuilderV2<\Illuminate\Database\Eloquent\Model>
+ * @mixin QueryBuilderV2<Model>
  *
  * !! Be careful !! It's not verified and tested on new Version 5!
  */
@@ -54,7 +54,15 @@ trait Fixing
             ->when(
                 $root,
                 function (self $query) use ($root) {
-                    return $query->whereDescendantOf($root);
+                    $query->whereDescendantOf($root);
+
+                    // For multi-trees, descendants are matched by bounds only, which
+                    // overlap across trees. Restrict the query to the root's tree.
+                    if ($root->isMulti() && ($treeId = $root->treeValue()) !== null) {
+                        $query->where((string)$root->treeAttribute(), $treeId);
+                    }
+
+                    return $query;
                 }
             )
             ->defaultOrder()
@@ -93,7 +101,7 @@ trait Fixing
         if ($parent && ($grown = $cut - abs($parent->rightValue())) !== 0) {
             $moved = $parent->newScopedQuery()->makeGap((abs($parent->rightValue()) + 1), $grown);
 
-            $updated[] = $parent->setAttribute($parent->rightAttribute()->name(), $cut);
+            $updated[] = $parent->setAttribute((string)$parent->rightAttribute(), $cut);
         }
 
         foreach ($updated as $model) {
@@ -106,7 +114,7 @@ trait Fixing
     protected static function reorderNodes(
         array &$dictionary,
         array &$updated,
-        int|string $parentId,
+        int|string|null $parentId,
         int $cut,
         int $parentLevel = 0
     ) {
