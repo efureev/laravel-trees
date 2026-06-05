@@ -196,7 +196,7 @@ class QueryBuilderV2 extends Builder
     }
 
     /** @phpstan-param Model&TreeModel $model */
-    public function whereAncestorOf(Model $model): static
+    public function whereAncestorOf(Model $model, string $boolean = 'and'): static
     {
         $condition = [
             [
@@ -210,6 +210,20 @@ class QueryBuilderV2 extends Builder
                 $model->rightValue(),
             ],
         ];
+
+        if ($boolean === 'or') {
+            $this->orWhere(
+                function (self $query) use ($condition, $model) {
+                    $query->where($condition);
+
+                    if ($query->model->isMulti() && ($treeId = $model->treeValue()) !== null) {
+                        $query->where((string)$model->treeAttribute(), $treeId);
+                    }
+                }
+            );
+
+            return $this->defaultOrder();
+        }
 
         return $this
             ->where($condition)

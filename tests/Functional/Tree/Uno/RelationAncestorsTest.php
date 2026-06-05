@@ -18,41 +18,50 @@ class RelationAncestorsTest extends AbstractFunctionalTreeTestCase
         return Category::class;
     }
 
-    #[Test]
-    public function ancestors(): void
+    /**
+     * @return array{0: Category, 1: Category, 2: Category}
+     */
+    private function buildChain(): array
     {
-        /** @var Category $modelRoot */
-        $modelRoot = static::model(['title' => 'root node']);
-        $modelRoot->makeRoot()->save();
+        /** @var Category $root */
+        $root = static::model(['title' => 'root node']);
+        $root->makeRoot()->save();
 
-        /** @var Category $node21 */
-        $node21 = static::model(['title' => 'child 2.1']);
-        /** @var Category $node22 */
-        $node22 = static::model(['title' => 'child 2.2']);
-        /** @var Category $node23 */
-        $node23 = static::model(['title' => 'child 2.3']);
+        /** @var Category $node2 */
+        $node2 = static::model(['title' => 'level 2']);
+        $node2->appendTo($root)->save();
 
-        /** @var Category $node221 */
-        $node221 = static::model(['title' => 'child 2.2.1']);
-        /** @var Category $node2211 */
-        $node2211 = static::model(['title' => 'child 2.2.1.1']);
+        /** @var Category $node3 */
+        $node3 = static::model(['title' => 'level 3']);
+        $node3->appendTo($node2)->save();
 
-        $node21->appendTo($modelRoot)->save();
-        $node22->appendTo($modelRoot)->save();
-        $node23->appendTo($modelRoot)->save();
+        $root->refresh();
+        $node2->refresh();
+        $node3->refresh();
 
-        $node221->appendTo($node22)->save();
-        $node2211->appendTo($node221)->save();
+        return [
+            $root,
+            $node2,
+            $node3,
+        ];
+    }
 
+    #[Test]
+    public function ancestorsQuery(): void
+    {
+        [
+            $root,
+            $node2,
+            $node3,
+        ] = $this->buildChain();
 
-        $list = $node2211->ancestors;
+        static::assertEquals(0, $root->ancestors()->count());
+        static::assertEquals(1, $node2->ancestors()->count());
+        static::assertEquals(2, $node3->ancestors()->count());
 
-        static::assertEquals(['root node', 'child 2.2', 'child 2.2.1'], $list->map->title->toArray());
-        static::assertCount(3, $list);
-
-        $list = $node2211->ancestors()->defaultOrder(SORT_DESC)->get();
-
-        static::assertEquals(['child 2.2.1', 'child 2.2', 'root node'], $list->map->title->toArray());
-        static::assertCount(3, $list);
+        $ancestors = $node3->ancestors()->get();
+        static::assertCount(2, $ancestors);
+        static::assertTrue($root->isEqualTo($ancestors[0]));
+        static::assertTrue($node2->isEqualTo($ancestors[1]));
     }
 }

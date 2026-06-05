@@ -30,7 +30,7 @@ class AncestorsRelation extends BaseRelation
 
     protected function addEagerConstraint(QueryBuilderV2 $query, Model $model): void
     {
-        $query->whereAncestorOf($model);
+        $query->whereAncestorOf($model, 'or');
     }
 
     protected function matches(Model $model, Model $related): bool
@@ -39,7 +39,8 @@ class AncestorsRelation extends BaseRelation
             return false;
         }
 
-        return $related->isChildOf($model);
+        // An ancestor ($related) contains the node ($model) within its bounds.
+        return $model->isChildOf($related);
     }
 
     protected function relationExistenceCondition(string $hash, string $table, string $lft, string $rgt): string
