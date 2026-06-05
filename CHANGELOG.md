@@ -22,6 +22,9 @@
   package exceptions (`Exceptions/*`), and ancestors/descendants relations (eager/lazy loading, multi-tree scoping)
 - Multi-tree UUID support coverage: `MultiCategoryWithUuid` test model and `tests/Functional/Tree/Multi/Uuid/*`
   suite (basic/creation/deletion/movement/query-builder), mirroring the existing ULID multi-tree tests
+- Multi-tree (base key) movement and deletion coverage: `tests/Functional/Tree/Multi/MoveTest.php` (within-tree,
+  between-trees, sub-tree relocation) and `tests/Functional/Tree/Multi/DeleteTest.php` (root, leaf,
+  cascade `deleteWithChildren`, move-children-to-parent)
 
 ## [6.0.0](https://github.com/efureev/laravel-trees/compare/v5.4.0...v6.0.0) (2026-06-05)
 
