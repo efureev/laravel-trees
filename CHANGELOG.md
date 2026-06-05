@@ -28,6 +28,10 @@
 - `UseConfigShorter` trait coverage: `tests/Unit/UseConfigShorterTest.php` (attribute/value shortcuts for uno &
   multi trees, `isRoot`/`isLevel`/`isEqualTo`/`getBounds`/`treeValue`, soft-delete config, and custom column
   names via `CustomColumnsCategory`)
+- Move edge-case coverage: `tests/Functional/Tree/Uno/MoveEdgeCaseTest.php` and
+  `tests/Functional/Tree/Multi/MoveEdgeCaseTest.php` (moving a node into its own descendant/self throws,
+  no-op re-append keeps bounds stable, cross-tree sub-tree relocation propagates `tree_id`, back-and-forth
+  moves keep bounds valid)
 
 ## [6.0.0](https://github.com/efureev/laravel-trees/compare/v5.4.0...v6.0.0) (2026-06-05)
 
