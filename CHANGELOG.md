@@ -1,5 +1,28 @@
 # Changelog
 
+## [Unreleased](https://github.com/efureev/laravel-trees/compare/v6.0.0...HEAD)
+
+### Fixed
+
+- `QueryBuilderV2::whereAncestorOf()` now supports an `or` boolean condition, fixing eager-loading of the
+  `ancestors`/`descendants` relations (`Model::with('ancestors')` previously returned empty collections)
+- `AncestorsRelation::matches()` corrected (an ancestor must contain the node within its bounds), so eager/`match`
+  pairing of ancestors works for both single- and multi-trees without leaking across trees
+- `Healthy\MissingParentCheck`: fixed infinite recursion (the `EXISTS` subquery now uses a dedicated builder instead of
+  reusing the main query)
+- `QueryBuilder\Fixing` repair logic is now operational again: `fixTree()`, `fixSubTree()`, `fixMultiTree()`,
+  `reorderNodes()` — fixed enum attribute name cast, nullable parent in `reorderNodes()`, and multi-tree descendant
+  scoping by `tree_id`
+
+### Added
+
+- Docker `coverage` service (bundled `pcov`) writing reports to `./storage/coverage`, plus composer script
+  `test-cover:docker`
+- Test coverage for previously untested areas: health checks (`Healthy/*`), tree fixing (`QueryBuilder\Fixing`),
+  package exceptions (`Exceptions/*`), and ancestors/descendants relations (eager/lazy loading, multi-tree scoping)
+- Multi-tree UUID support coverage: `MultiCategoryWithUuid` test model and `tests/Functional/Tree/Multi/Uuid/*`
+  suite (basic/creation/deletion/movement/query-builder), mirroring the existing ULID multi-tree tests
+
 ## [6.0.0](https://github.com/efureev/laravel-trees/compare/v5.4.0...v6.0.0) (2026-06-05)
 
 ### Changed
