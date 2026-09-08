@@ -32,7 +32,8 @@ final readonly class DuplicatesCheck extends AbstractCheck
             ->when(
                 $isMulti,
                 function (Builder $q) use ($waFirst, $waSecond) {
-                    $tid = (string)$this->model->treeAttribute();
+                    $tid = $this->model->getQuery()->getGrammar()
+                        ->wrap((string)$this->model->treeAttribute());
                     $q->whereRaw("$waFirst.$tid = $waSecond.$tid");
                 }
             )

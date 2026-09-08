@@ -745,11 +745,29 @@ trait UseNestedSet
      */
     private function shiftExpression(string $column, int $from, ?int $to, int $delta): Expression
     {
-        $col   = $this->getConnection()->getQueryGrammar()->wrap($column);
+        $col   = $this->wrapColumn($column);
         $range = ($to === null) ? "$col >= $from" : "$col between $from and $to";
 
         // Parenthesised so a negative delta reads as `"lft" + (-2)`.
         return new Expression("case when $range then $col + ($delta) else $col end");
+    }
+
+    /**
+     * Quote a column for raw SQL. PostgreSQL folds unquoted identifiers to lower case, while
+     * the schema builder creates them quoted, so a name like `leftBound` only resolves when
+     * it goes through the grammar.
+     */
+    private function wrapColumn(string $column): string
+    {
+        return $this->getConnection()->getQueryGrammar()->wrap($column);
+    }
+
+    /**
+     * `"column" + (delta)`
+     */
+    private function shiftedColumn(string $column, int $delta): Expression
+    {
+        return new Expression($this->wrapColumn($column) . ' + (' . $delta . ')');
     }
 
     protected function moveNode(int $to, int $depth = 0): void
@@ -760,13 +778,13 @@ trait UseNestedSet
 
         if (!$this->isMulti() || $this->treeValue() === $this->node->treeValue()) {
             // same root
+            $wrappedLevel = $this->wrapColumn((string)$this->levelAttribute());
+
             $this->newNestedSetQuery()
                 ->descendantsQuery(null, true)
                 ->update(
                     [
-                        (string)$this->levelAttribute() => new Expression(
-                            "-{$this->levelAttribute()} + " . $depth
-                        ),
+                        (string)$this->levelAttribute() => new Expression("-$wrappedLevel + ($depth)"),
                     ]
                 );
 
@@ -785,13 +803,15 @@ trait UseNestedSet
                 ->where((string)$this->levelAttribute(), '<', 0)
                 ->update(
                     [
-                        (string)$this->leftAttribute()  => new Expression(
-                            $this->leftAttribute() . ' + ' . $delta
+                        (string)$this->leftAttribute()  => $this->shiftedColumn(
+                            (string)$this->leftAttribute(),
+                            $delta
                         ),
-                        (string)$this->rightAttribute() => new Expression(
-                            $this->rightAttribute() . ' + ' . $delta
+                        (string)$this->rightAttribute() => $this->shiftedColumn(
+                            (string)$this->rightAttribute(),
+                            $delta
                         ),
-                        (string)$this->levelAttribute() => new Expression("-{$this->levelAttribute()}"),
+                        (string)$this->levelAttribute() => new Expression("-$wrappedLevel"),
                     ]
                 );
         } else {
@@ -807,14 +827,17 @@ trait UseNestedSet
                 ->descendantsQuery(null, true)
                 ->update(
                     [
-                        (string)$this->leftAttribute()  => new Expression(
-                            $this->leftAttribute() . ' + ' . $deltaMove
+                        (string)$this->leftAttribute()  => $this->shiftedColumn(
+                            (string)$this->leftAttribute(),
+                            $deltaMove
                         ),
-                        (string)$this->rightAttribute() => new Expression(
-                            $this->rightAttribute() . ' + ' . $deltaMove
+                        (string)$this->rightAttribute() => $this->shiftedColumn(
+                            (string)$this->rightAttribute(),
+                            $deltaMove
                         ),
-                        (string)$this->levelAttribute() => new Expression(
-                            $this->levelAttribute() . ' + ' . (-$depth)
+                        (string)$this->levelAttribute() => $this->shiftedColumn(
+                            (string)$this->levelAttribute(),
+                            -$depth
                         ),
                         (string)$this->treeAttribute()  => $tree,
                     ]
@@ -840,14 +863,17 @@ trait UseNestedSet
             ->descendantsQuery(null, true)
             ->update(
                 [
-                    (string)$this->leftAttribute()  => new Expression(
-                        $this->leftAttribute() . ' + ' . (1 - $left)
+                    (string)$this->leftAttribute()  => $this->shiftedColumn(
+                        (string)$this->leftAttribute(),
+                        (1 - $left)
                     ),
-                    (string)$this->rightAttribute() => new Expression(
-                        $this->rightAttribute() . ' + ' . (1 - $left)
+                    (string)$this->rightAttribute() => $this->shiftedColumn(
+                        (string)$this->rightAttribute(),
+                        (1 - $left)
                     ),
-                    (string)$this->levelAttribute() => new Expression(
-                        $this->levelAttribute() . ' + ' . (-$depth)
+                    (string)$this->levelAttribute() => $this->shiftedColumn(
+                        (string)$this->levelAttribute(),
+                        -$depth
                     ),
                     (string)$this->treeAttribute()  => $tree,
                 ]
@@ -864,9 +890,9 @@ trait UseNestedSet
         $this->descendantsQuery()
             ->update(
                 [
-                    (string)$this->leftAttribute()  => new Expression($this->leftAttribute() . '- 1'),
-                    (string)$this->rightAttribute() => new Expression($this->rightAttribute() . '- 1'),
-                    (string)$this->levelAttribute() => new Expression($this->levelAttribute() . '- 1'),
+                    (string)$this->leftAttribute()  => $this->shiftedColumn((string)$this->leftAttribute(), -1),
+                    (string)$this->rightAttribute() => $this->shiftedColumn((string)$this->rightAttribute(), -1),
+                    (string)$this->levelAttribute() => $this->shiftedColumn((string)$this->levelAttribute(), -1),
                 ]
             );
 

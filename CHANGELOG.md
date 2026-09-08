@@ -45,6 +45,11 @@
 - `Migrate::dropColumns()` drops each index under the name `buildColumns()` created it with:
   the name was assembled in two places that had drifted apart, so rolling back a migration
   always failed with `index "…" does not exist` on the very first index
+- Column names in the raw SQL behind moving and deleting nodes go through the query grammar.
+  PostgreSQL folds an unquoted identifier to lower case while the schema builder creates it
+  quoted, so a model with a column named `leftBound` failed with `column "leftbound" does not
+  exist` on every move, on deleting a branch and on `leaves()`. The tree column was raw in the
+  `Duplicates` and `WrongParent` health checks too
 - `Collection::toTree()` and `toBreadcrumbs()` accept the starting key as a string: with an integer
   primary key a string key never matched the cast parent value, so the call silently returned an
   empty collection instead of the subtree

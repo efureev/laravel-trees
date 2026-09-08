@@ -36,8 +36,8 @@ final readonly class WrongParentCheck extends AbstractCheck
             ->from($this->model->getQuery()->raw("$table as $waChild, $table as $waParent, $table as $waInterm"))
             ->when(
                 $isMulti,
-                function (Builder $q) use ($waChild, $waParent, $waInterm) {
-                    $tid = (string)$this->model->treeAttribute();
+                function (Builder $q) use ($waChild, $waParent, $waInterm, $grammar) {
+                    $tid = $grammar->wrap((string)$this->model->treeAttribute());
                     $q
                         ->whereRaw("$waChild.$tid = $waParent.$tid")
                         ->whereRaw("$waInterm.$tid = $waParent.$tid");

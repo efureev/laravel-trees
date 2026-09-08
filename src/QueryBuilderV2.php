@@ -329,7 +329,7 @@ class QueryBuilderV2 extends Builder
             ->where(
                 (string)$this->model->leftAttribute(),
                 '=',
-                new Expression($this->model->rightAttribute() . ' - 1')
+                new Expression($this->query->getGrammar()->wrap((string)$this->model->rightAttribute()) . ' - 1')
             )
             ->treeCondition();
     }
