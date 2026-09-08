@@ -39,6 +39,7 @@ jobs:
         run: composer phpstan
 
       - name: Run PHPCS
+        if: always()
         run: composer phpcs
 
   testing:

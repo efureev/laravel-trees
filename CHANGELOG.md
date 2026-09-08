@@ -10,8 +10,9 @@
   snake_case properties (`$model->parent_id`, `$model->tree_id`), which are schema rather than style
 - `.phpcs.xml` no longer requires a docblock on every property, joining the other
   `Squiz.Commenting.*` sniffs already disabled there
-- `.phpcs.xml` drops `Squiz.ControlStructures.ElseIfDeclaration`: it demands `else if` while the
-  `PSR12` base standard demands `elseif`, and the conflict left `phpcbf` unable to fix the file
+- `.phpcs.xml` drops `Squiz.ControlStructures.ElseIfDeclaration`: it demands `else if` while
+  `PSR2.ControlStructures.ElseIfDeclaration`, pulled in by the `PSR12` base standard, demands
+  `elseif`, and the conflict left `phpcbf` unable to fix the file
 
 ### Fixed
 

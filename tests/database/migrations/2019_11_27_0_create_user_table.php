@@ -1,9 +1,7 @@
 <?php
 
 /**
- * Class CreateUserTable
- *
- * Create table for Page model
+ * Creates the `users` table used by the test suite.
  */
 
 use Illuminate\Database\Migrations\Migration;

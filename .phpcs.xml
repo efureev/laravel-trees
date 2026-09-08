@@ -11,15 +11,18 @@
     <rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
     <rule ref="Squiz.Arrays.ArrayDeclaration"/>
     <rule ref="Squiz.ControlStructures.ControlSignature"/>
-<!--    Contradicts PSR12.ControlStructures.ElseIfDeclaration, which mandates `elseif`.
-        PSR-12 is the base standard of this ruleset, so the Squiz variant stays off.
+<!--    Contradicts PSR2.ControlStructures.ElseIfDeclaration, which PSR12 pulls in and
+        which mandates `elseif`. PSR-12 is the base standard here, so Squiz stays off.
     <rule ref="Squiz.ControlStructures.ElseIfDeclaration"/>-->
 <!--    <rule ref="Squiz.Commenting.BlockComment"/>-->
 <!--    <rule ref="Squiz.Commenting.DocCommentAlignment"/>-->
 <!--    <rule ref="Squiz.Commenting.EmptyCatchComment"/>-->
 <!--    <rule ref="Squiz.Commenting.InlineComment"/>-->
 <!--    <rule ref="Squiz.Commenting.PostStatementComment"/>-->
-<!--    <rule ref="Squiz.Commenting.VariableComment"/>-->
+<!--    Required a docblock above every property (40+ hits in Config/Builder, Table,
+        Collection, UseNestedSet and the test models). Redundant with typed properties,
+        and the sibling Squiz.Commenting.* sniffs above are already off.
+    <rule ref="Squiz.Commenting.VariableComment"/>-->
     <rule ref="Squiz.Formatting.OperatorBracket"/>
     <rule ref="Squiz.Functions.FunctionDeclarationArgumentSpacing"/>
 <!--    <rule ref="Squiz.Operators.ComparisonOperatorUsage"/>-->
@@ -121,6 +124,6 @@
 
     <!-- The testing bootstrap file uses string concats to stop IDEs seeing the class aliases -->
     <rule ref="Generic.Strings.UnnecessaryStringConcat">
-        <exclude-pattern>tests/bootstrap.php</exclude-pattern>
+        <exclude-pattern>tests/bootstrap_test.php</exclude-pattern>
     </rule>
 </ruleset>
