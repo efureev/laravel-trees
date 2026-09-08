@@ -25,6 +25,9 @@
 
 ### Fixed
 
+- `Migrate::dropColumns()` drops each index under the name `buildColumns()` created it with:
+  the name was assembled in two places that had drifted apart, so rolling back a migration
+  always failed with `index "…" does not exist` on the very first index
 - `Collection::toTree()` and `toBreadcrumbs()` accept the starting key as a string: with an integer
   primary key a string key never matched the cast parent value, so the call silently returned an
   empty collection instead of the subtree

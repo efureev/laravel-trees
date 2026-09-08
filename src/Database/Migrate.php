@@ -82,8 +82,16 @@ final readonly class Migrate
             array_unshift($columns, $this->builder->tree()->columnName());
         }
 
-        $indexFullName = $this->table->getTable() . "_{$indexName}_idx";
-        $this->table->index($columns, $indexFullName);
+        $this->table->index($columns, $this->indexName($indexName));
+    }
+
+    /**
+     * Index name shared by creation and removal: the two must not drift apart, or
+     * rolling a migration back fails with "index does not exist".
+     */
+    private function indexName(string $indexName): string
+    {
+        return $this->table->getTable() . "_{$indexName}_idx";
     }
 
 
@@ -101,8 +109,8 @@ final readonly class Migrate
      */
     private function dropTreeIndexes(): void
     {
-        foreach ($this->builder->columnIndexes() as $indexName => $columns) {
-            $this->table->dropIndex($indexName);
+        foreach (array_keys($this->builder->columnIndexes()) as $indexName) {
+            $this->table->dropIndex($this->indexName($indexName));
         }
     }
 
