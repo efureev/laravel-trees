@@ -17,6 +17,9 @@
   snake_case properties (`$model->parent_id`, `$model->tree_id`), which are schema rather than style
 - `.phpcs.xml` no longer requires a docblock on every property, joining the other
   `Squiz.Commenting.*` sniffs already disabled there
+- `BaseRelation::relationExistenceCondition()` replaced by `addExistenceConstraint()`, which
+  applies `whereColumn()` constraints instead of returning a raw SQL fragment. The method is
+  protected and had no callers
 - `QueryBuilder\Fixing::makeGap()` declares `int` parameter types. No working call changes
   behaviour: any non-integer argument already produced invalid SQL rather than a query
 - `.phpcs.xml` drops `Squiz.ControlStructures.ElseIfDeclaration`: it demands `else if` while
@@ -25,6 +28,13 @@
 
 ### Fixed
 
+- `has()`, `whereHas()`, `doesntHave()` and `withCount()` work over the `ancestors` and
+  `descendants` relations: `BaseRelation` never implemented `getRelationExistenceQuery()`, so
+  Laravel fell back to a key comparison and every such call died with
+  `BadMethodCallException: … getExistenceCompareKey()`
+- the existence condition for `ancestors` was a copy of the one for `descendants`, so it
+  described descendants; it is now the mirror image, and both are scoped by tree, since roots
+  all start at `lft = 1` and bounds overlap between trees
 - `Migrate::dropColumns()` drops each index under the name `buildColumns()` created it with:
   the name was assembled in two places that had drifted apart, so rolling back a migration
   always failed with `index "…" does not exist` on the very first index

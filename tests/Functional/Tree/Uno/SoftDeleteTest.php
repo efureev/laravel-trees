@@ -142,4 +142,82 @@ class SoftDeleteTest extends AbstractFunctionalTreeTestCase
         static::assertEquals(4, $node31->rightValue());
         static::assertEquals(2, $node31->levelValue());
     }
+
+    /**
+     * The existence subquery aliases the table, and SoftDeletingScope qualifies its column
+     * at execution time — the two must agree or the query references a missing table.
+     */
+    #[Test]
+    public function hasDescendantsWorksWithSoftDeletes(): void
+    {
+        /** @var ArchivedCategory $modelRoot */
+        $modelRoot = static::model(['title' => 'root node']);
+        $modelRoot->makeRoot()->save();
+
+        /** @var ArchivedCategory $node21 */
+        $node21 = static::model(['title' => 'child 2.1']);
+        $node21->appendTo($modelRoot)->save();
+
+        $branches = ArchivedCategory::query()->has('descendants')->get();
+
+        static::assertCount(1, $branches);
+        static::assertSame($modelRoot->getKey(), $branches->first()->getKey());
+
+        $leaves = ArchivedCategory::query()->doesntHave('descendants')->get();
+
+        static::assertCount(1, $leaves);
+        static::assertSame($node21->getKey(), $leaves->first()->getKey());
+    }
+
+    #[Test]
+    public function descendantsExcludeTrashedNodes(): void
+    {
+        /** @var ArchivedCategory $modelRoot */
+        $modelRoot = static::model(['title' => 'root node']);
+        $modelRoot->makeRoot()->save();
+
+        /** @var ArchivedCategory $keep */
+        $keep = static::model(['title' => 'keep']);
+        $keep->appendTo($modelRoot)->save();
+
+        /** @var ArchivedCategory $trash */
+        $trash = static::model(['title' => 'trash']);
+        $trash->appendTo($modelRoot)->save();
+
+        static::assertEquals(2, $modelRoot->refresh()->descendants()->count());
+
+        $trash->delete();
+
+        static::assertEquals(1, $modelRoot->refresh()->descendants()->count());
+        static::assertSame(
+            [$keep->getKey()],
+            $modelRoot->descendants()->get()->modelKeys()
+        );
+
+        // The node is only hidden by the global scope, not gone.
+        static::assertEquals(2, $modelRoot->descendants()->withTrashed()->count());
+    }
+
+    #[Test]
+    public function ancestorsExcludeTrashedNodes(): void
+    {
+        /** @var ArchivedCategory $modelRoot */
+        $modelRoot = static::model(['title' => 'root node']);
+        $modelRoot->makeRoot()->save();
+
+        /** @var ArchivedCategory $middle */
+        $middle = static::model(['title' => 'middle']);
+        $middle->appendTo($modelRoot)->save();
+
+        /** @var ArchivedCategory $leaf */
+        $leaf = static::model(['title' => 'leaf']);
+        $leaf->appendTo($middle)->save();
+
+        static::assertEquals(2, $leaf->refresh()->ancestors()->count());
+
+        $middle->refresh()->delete();
+
+        static::assertEquals(1, $leaf->refresh()->ancestors()->count());
+        static::assertEquals(2, $leaf->ancestors()->withTrashed()->count());
+    }
 }

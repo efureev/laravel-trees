@@ -7,6 +7,7 @@ namespace Fureev\Trees\Relations;
 use Fureev\Trees\Config\Helper;
 use Fureev\Trees\Contracts\TreeModel;
 use Fureev\Trees\QueryBuilderV2;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -42,8 +43,14 @@ class DescendantsRelation extends BaseRelation
         return $related->isChildOf($model);
     }
 
-    protected function relationExistenceCondition(string $hash, string $table, string $lft, string $rgt): string
+    protected function addExistenceConstraint(Builder $query, string $hash, string $parentTable): void
     {
-        return "$hash.$lft between $table.$lft + 1 and $table.$rgt";
+        $lft = (string)$this->parent->leftAttribute();
+        $rgt = (string)$this->parent->rightAttribute();
+
+        // A descendant opens after the parent and closes before it.
+        $query
+            ->whereColumn("$hash.$lft", '>', "$parentTable.$lft")
+            ->whereColumn("$hash.$lft", '<', "$parentTable.$rgt");
     }
 }

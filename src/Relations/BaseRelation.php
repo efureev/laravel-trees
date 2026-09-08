@@ -8,6 +8,7 @@ use Fureev\Trees\Collection;
 use Fureev\Trees\Config\Helper;
 use Fureev\Trees\Contracts\TreeModel;
 use Fureev\Trees\QueryBuilderV2;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -117,10 +118,60 @@ abstract class BaseRelation extends Relation
 
     abstract protected function matches(Model $model, Model $related): bool;
 
-    abstract protected function relationExistenceCondition(
+    /**
+     * Constrain the aliased related table against the parent table by nested set bounds.
+     *
+     * @param EloquentBuilder $query Query over the related table, aliased as $hash
+     */
+    abstract protected function addExistenceConstraint(
+        EloquentBuilder $query,
         string $hash,
-        string $table,
-        string $lft,
-        string $rgt
-    ): string;
+        string $parentTable
+    ): void;
+
+    /**
+     * Build the subquery behind has() / whereHas() / doesntHave() / withCount().
+     *
+     * @param EloquentBuilder<TModel> $query
+     * @param EloquentBuilder<TModel> $parentQuery
+     * @param mixed $columns
+     *
+     * @return EloquentBuilder<TModel>
+     */
+    public function getRelationExistenceQuery(
+        EloquentBuilder $query,
+        EloquentBuilder $parentQuery,
+        $columns = ['*']
+    ) {
+        $parentTable = $this->parent->getTable();
+        $hash        = $this->getRelationCountHash();
+
+        // This is a self relation, so the related table has to be aliased. It cannot be
+        // renamed on the related model itself the way HasOneOrMany does it: the relation is
+        // built from the parent's own query, so Relation::__construct() picked up the very
+        // same object as $this->related, and setTable() would rename the outer query too.
+        // The clone also keeps lazily applied global scopes (SoftDeletingScope qualifies
+        // its column at execution time) pointing at the alias rather than at a table that
+        // is no longer in the FROM clause.
+        $related = clone $query->getModel();
+        $related->setTable($hash);
+
+        // setModel() resets the FROM to the model table, so the alias is applied after it.
+        $query->setModel($related);
+        $query->from("$parentTable as $hash");
+
+        $this->addExistenceConstraint($query, $hash, $parentTable);
+
+        // Bounds alone are not enough: every root starts at lft = 1, so they overlap
+        // between trees.
+        if ($this->parent->isMulti()) {
+            $tree = (string)$this->parent->treeAttribute();
+            $query->whereColumn("$hash.$tree", '=', "$parentTable.$tree");
+        }
+
+        // Assigned rather than returned inline: Laravel types select() as a query builder.
+        $query->select($columns);
+
+        return $query;
+    }
 }
