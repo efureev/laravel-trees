@@ -169,4 +169,27 @@ class FixingTest extends AbstractFunctionalTreeTestCase
 
         static::assertFalse((new HealthyChecker(FixableCategory::class))->isBroken());
     }
+
+    #[Test]
+    public function makeGapWithZeroHeightLeavesBoundsUntouched(): void
+    {
+        $this->buildTree();
+
+        $bounds = static fn(): array => FixableCategory::query()
+            ->orderBy((string)FixableCategory::make()->leftAttribute())
+            ->pluck(
+                (string)FixableCategory::make()->rightAttribute(),
+                (string)FixableCategory::make()->leftAttribute()
+            )
+            ->all();
+
+        $before = $bounds();
+
+        // A zero offset used to render as `"lft"0` and fail as a SQL syntax error
+        // instead of behaving as the no-op it is.
+        FixableCategory::query()->makeGap(1, 0);
+
+        static::assertSame($before, $bounds());
+        static::assertFalse((new HealthyChecker(FixableCategory::class))->isBroken());
+    }
 }

@@ -148,7 +148,12 @@ trait Fixing
         return $cut;
     }
 
-    public function makeGap($cut, $height): int
+    /**
+     * Shift every bound at or past $cut by $height.
+     *
+     * @return int The number of updated rows
+     */
+    public function makeGap(int $cut, int $height): int
     {
         $params = compact('cut', 'height');
 
@@ -187,34 +192,18 @@ trait Fixing
         return $columns;
     }
 
+    /**
+     * @param array{cut: int, height: int} $params
+     */
     protected function columnPatch(mixed $col, array $params): Expression
     {
-        extract($params);
+        $cut = (int)$params['cut'];
 
-        /** @var int $height */
-        if ($height > 0) {
-            $height = '+' . $height;
-        }
+        // The sign has to be explicit: an unsigned zero would render as `"lft"0`,
+        // which is a syntax error rather than the no-op it is meant to be.
+        $height = sprintf('%+d', (int)$params['height']);
 
-        /** @var int $cut */
-        if (isset($cut)) {
-            return new Expression("case when $col >= $cut then $col$height else $col end");
-        }
-
-        /** @var int $distance */
-        /** @var int $lft */
-        /** @var int $rgt */
-        /** @var int $from */
-        /** @var int $to */
-        if ($distance > 0) {
-            $distance = '+' . $distance;
-        }
-
-        return new Expression(
-            "case when $col between $lft and $rgt then $col$distance " . // Move the node
-            "when $col between $from and $to then $col$height " . // Move other nodes
-            "else $col end"
-        );
+        return new Expression("case when $col >= $cut then $col$height else $col end");
     }
 
 

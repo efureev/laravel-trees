@@ -2,6 +2,13 @@
 
 ## [unreleased]
 
+### Added
+
+- Composer script `gate` running PHPStan, PHPCS and PHPUnit in the order CI uses them, plus
+  `gate:docker` and a matching `gate` service in `docker-compose.yml`, so the whole CI gate can be
+  reproduced locally with one command
+- Regression coverage for `QueryBuilder\Fixing::makeGap()` called with a zero offset
+
 ### Changed
 
 - CI job `lint` renamed to `Static Analysis & Coding Standards` and now runs `composer phpcs`
@@ -10,12 +17,18 @@
   snake_case properties (`$model->parent_id`, `$model->tree_id`), which are schema rather than style
 - `.phpcs.xml` no longer requires a docblock on every property, joining the other
   `Squiz.Commenting.*` sniffs already disabled there
+- `QueryBuilder\Fixing::makeGap()` declares `int` parameter types. No working call changes
+  behaviour: any non-integer argument already produced invalid SQL rather than a query
 - `.phpcs.xml` drops `Squiz.ControlStructures.ElseIfDeclaration`: it demands `else if` while
   `PSR2.ControlStructures.ElseIfDeclaration`, pulled in by the `PSR12` base standard, demands
   `elseif`, and the conflict left `phpcbf` unable to fix the file
 
 ### Fixed
 
+- `QueryBuilder\Fixing::columnPatch()` always signs the offset: `makeGap($cut, 0)` rendered
+  `"lft"0` and failed as a SQL syntax error instead of behaving as the no-op it is
+- `QueryBuilder\Fixing::columnPatch()` no longer carries an unreachable branch reached only when
+  `$cut` was null, where `extract()` left five variables undefined and produced broken SQL
 - Composer script `test:docker` now names the `app` service explicitly: without it `docker compose up`
   started `app` and `coverage` at once, both running the full suite against the same database and
   wiping each other in `setUp()`, so the script failed regardless of the state of the code
@@ -27,6 +40,8 @@
 
 ### Removed
 
+- `fakerphp/faker` from `require-dev`: the removed `Structure` factories were its only consumer,
+  and it still arrives transitively through `orchestra/testbench`
 - Dead test fixtures `StructureHelper`, `StructureFactory` and `SoftDeleteStructureFactory`
   referencing the `Structure` model that was removed earlier, together with their `autoload-dev`
   PSR-4 mapping

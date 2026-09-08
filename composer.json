@@ -24,7 +24,6 @@
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.52",
-        "fakerphp/faker": "^1.23",
         "orchestra/testbench": "^11.0",
         "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^13.0",
@@ -49,6 +48,12 @@
     },
     "scripts": {
         "cs-fix": "@php ./vendor/bin/phpcbf",
+        "gate": [
+            "@phpstan",
+            "@phpcs",
+            "@phpunit"
+        ],
+        "gate:docker": "docker compose up --build --abort-on-container-exit --exit-code-from gate gate",
         "phpcs": "@php ./vendor/bin/phpcs",
         "phpstan": "@php ./vendor/bin/phpstan analyze -c phpstan.neon --no-progress --ansi",
         "phpunit": "@php ./vendor/bin/phpunit --no-coverage --testdox --colors=always",

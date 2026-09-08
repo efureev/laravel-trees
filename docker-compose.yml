@@ -19,6 +19,11 @@ services:
   app:
     <<: *app-build
 
+  # Runs the full CI gate: PHPStan, PHPCS and PHPUnit, in that order.
+  gate:
+    <<: *app-build
+    command: ["composer", "gate"]
+
   # Runs the test suite with code coverage (pcov is bundled in the image).
   # Coverage reports are written to ./storage/coverage (clover.xml, html, coverage-xml, junit.xml).
   coverage:
