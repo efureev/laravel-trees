@@ -45,6 +45,19 @@
 - `Migrate::dropColumns()` drops each index under the name `buildColumns()` created it with:
   the name was assembled in two places that had drifted apart, so rolling back a migration
   always failed with `index "…" does not exist` on the very first index
+- Promoting an existing node to a root now clears its `parent_id` and works through a plain
+  `save()`. `moveNodeAsRoot()` moved the bounds, the level and the tree column but left the node
+  pointing at its former parent in another tree, so `isRoot()` answered false and the `parent`
+  relation led out of the tree. On top of that `makeRoot()` changed no attribute, so Eloquent
+  saved the node as clean, skipped the update and never reached `afterUpdate()` — the whole
+  operation was a silent no-op unless `forceSave()` was used
+- A pending operation is consumed by exactly one `save()`. The reset lived in `afterInsert()`
+  and `afterUpdate()`, which hang off `created` and `updated` and only fire when a write
+  happened, so a save that found nothing dirty left the operation armed and the next, unrelated
+  save executed it — renaming a root could silently move it into a freshly generated tree
+- The same operation on a single tree raises `Can not move a node as the root when Model is not
+  set to "MultiTree"` instead of silently doing nothing: the exception was already there, but
+  the skipped update meant `beforeUpdate()` never ran to throw it
 - Column names in the raw SQL behind moving and deleting nodes go through the query grammar.
   PostgreSQL folds an unquoted identifier to lower case while the schema builder creates it
   quoted, so a model with a column named `leftBound` failed with `column "leftbound" does not

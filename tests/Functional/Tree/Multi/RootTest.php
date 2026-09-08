@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Tests\Functional\Tree\Multi;
 
+use Fureev\Trees\Healthy\HealthyChecker;
 use Fureev\Trees\Tests\Functional\AbstractFunctionalTreeTestCase;
 use Fureev\Trees\Tests\models\v5\MultiCategory;
 use PHPUnit\Framework\Attributes\Test;
@@ -93,5 +94,108 @@ class RootTest extends AbstractFunctionalTreeTestCase
         static::model(['title' => 'root 2'])->saveAsRoot();
 
         static::assertEquals(2, MultiCategory::root()->count());
+    }
+
+    /**
+     * root -> branch -> leaf, all inside one tree.
+     *
+     * @return array<string, MultiCategory>
+     */
+    private function buildBranch(): array
+    {
+        /** @var MultiCategory $root */
+        $root = static::model(['title' => 'root node']);
+        $root->makeRoot()->save();
+
+        /** @var MultiCategory $branch */
+        $branch = static::model(['title' => 'branch']);
+        $branch->appendTo($root)->save();
+
+        /** @var MultiCategory $leaf */
+        $leaf = static::model(['title' => 'leaf']);
+        $leaf->appendTo($branch->refresh())->save();
+
+        return [
+            'root'   => $root->refresh(),
+            'branch' => $branch->refresh(),
+            'leaf'   => $leaf->refresh(),
+        ];
+    }
+
+    #[Test]
+    public function makeRootPromotesExistingNode(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['branch']->refresh()->makeRoot()->save();
+
+        $promoted = $nodes['branch']->refresh();
+
+        static::assertTrue($promoted->isRoot());
+        static::assertNull($promoted->parentValue());
+        static::assertSame(1, $promoted->leftValue());
+        static::assertSame(0, $promoted->levelValue());
+        static::assertNotSame($nodes['root']->refresh()->treeValue(), $promoted->treeValue());
+    }
+
+    #[Test]
+    public function promotedNodeTakesItsSubtreeAlong(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['branch']->refresh()->makeRoot()->save();
+
+        $promoted = $nodes['branch']->refresh();
+        $leaf     = $nodes['leaf']->refresh();
+
+        static::assertSame($promoted->treeValue(), $leaf->treeValue());
+        static::assertSame(1, $leaf->levelValue());
+        static::assertSame($promoted->getKey(), $leaf->parentValue());
+        static::assertTrue($leaf->isChildOf($promoted));
+    }
+
+    #[Test]
+    public function promotedNodeLeavesOldTreeConsistent(): void
+    {
+        $nodes = $this->buildBranch();
+
+        static::assertSame(6, $nodes['root']->rightValue());
+
+        $nodes['branch']->refresh()->makeRoot()->save();
+
+        $oldRoot = $nodes['root']->refresh();
+
+        // The gap left behind is closed: a lone root spans 1..2 again.
+        static::assertSame(1, $oldRoot->leftValue());
+        static::assertSame(2, $oldRoot->rightValue());
+        static::assertFalse((new HealthyChecker(MultiCategory::class))->isBroken());
+    }
+
+    #[Test]
+    public function saveAsRootPromotesExistingNode(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['branch']->refresh()->saveAsRoot();
+
+        $promoted = $nodes['branch']->refresh();
+
+        static::assertTrue($promoted->isRoot());
+        static::assertNull($promoted->parentValue());
+        static::assertSame(0, $promoted->levelValue());
+    }
+
+    #[Test]
+    public function forceSaveStillPromotes(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['branch']->refresh()->makeRoot()->forceSave();
+
+        $promoted = $nodes['branch']->refresh();
+
+        static::assertTrue($promoted->isRoot());
+        static::assertNull($promoted->parentValue());
+        static::assertSame(1, $promoted->leftValue());
     }
 }

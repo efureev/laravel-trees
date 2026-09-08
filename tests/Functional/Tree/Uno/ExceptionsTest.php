@@ -48,4 +48,26 @@ class ExceptionsTest extends AbstractFunctionalTreeTestCase
 
         $model->save();
     }
+
+    /**
+     * Promoting an existing node to a root is a multi-tree operation. It used to be a silent
+     * no-op here, because makeRoot() left the model clean and Eloquent skipped the update
+     * before beforeUpdate() could object.
+     */
+    #[Test]
+    public function makeRootOnExistingNodeFailsForSingleTree(): void
+    {
+        /** @var Category $root */
+        $root = static::model(['title' => 'root node']);
+        $root->makeRoot()->save();
+
+        /** @var Category $child */
+        $child = static::model(['title' => 'child']);
+        $child->appendTo($root)->save();
+
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Can not move a node as the root when Model is not set to "MultiTree"');
+
+        $child->refresh()->makeRoot()->save();
+    }
 }

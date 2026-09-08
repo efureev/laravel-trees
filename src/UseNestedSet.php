@@ -80,6 +80,13 @@ trait UseNestedSet
             }
         );
 
+        static::saved(
+            static function ($model) {
+                /** @var static $model */
+                $model->afterSave();
+            }
+        );
+
         static::deleting(
             static function ($model) {
                 /** @var static $model */
@@ -212,6 +219,14 @@ trait UseNestedSet
     public function beforeSave(): void
     {
         switch ($this->operation) {
+            case Operation::MakeRoot:
+                // A root has no parent. This belongs here rather than in moveNodeAsRoot() twice
+                // over: that method updates the whole subtree at once, so it cannot null a single
+                // row, and `saving` fires before Eloquent checks isDirty() — without a changed
+                // attribute an existing node would be saved as clean, skipping the update and
+                // with it afterUpdate(), leaving makeRoot()->save() a silent no-op.
+                $this->setAttribute((string)$this->parentAttribute(), null);
+                break;
             case Operation::PrependTo:
             case Operation::AppendTo:
                 $this->setAttribute((string)$this->parentAttribute(), $this->node->getKey());
@@ -229,6 +244,23 @@ trait UseNestedSet
     {
         $this->operation = null;
         $this->node      = null;
+    }
+
+    /**
+     * A pending operation has to be consumed by exactly one save().
+     *
+     * afterInsert() and afterUpdate() already clear it, but they hang off `created` and
+     * `updated`, which only fire when a write happened. A save that finds nothing dirty — say
+     * makeRoot() on a node that is already a root — left the operation armed, and the next,
+     * entirely unrelated save executed it. `saved` fires on that path too, so this is the last
+     * word either way; by the time it runs, afterUpdate() has already done the real work.
+     */
+    public function afterSave(): void
+    {
+        $this->operation  = null;
+        $this->node       = null;
+        $this->treeChange = null;
+        $this->forceSave  = false;
     }
 
     public function afterUpdate(): void
