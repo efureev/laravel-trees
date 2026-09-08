@@ -61,6 +61,25 @@
 - Stale comment in `.docker/Dockerfile` claiming the default command is a `PHPCS + PHPUnit` gate,
   while `CMD` runs `composer test`
 
+### Fixed — documentation
+
+- The main example in `docs/AdvancedTreeConfig.md` did not parse: a missing semicolon after
+  `setAttributes(...)`, plus `use Fureev\Trees\UseTree;` written inside the class body, which
+  resolves against the current namespace and fails with `Trait "App\Models\Fureev\Trees\UseTree"
+  not found`. All three examples in that file now carry proper imports
+- The "chain of parent nodes in Laravel-Relation manner" section of `docs/ReceivingNodes.md`
+  showed `$node->descendants` twice instead of `$node->ancestors`
+- `parentByLevel()` was documented as returning a collection and as being equivalent to
+  `parents($level)`; it returns a single model, `parents($level)->first()`
+- `parentWithTrashed` was documented as a chain of parent nodes; it is a `BelongsTo`, one parent
+- `docs/Helpers.md` listed `isSoftDelete()` as a public helper, but it is `protected`, so
+  `$node->isSoftDelete()` falls through to Eloquent's `__call` and throws `BadMethodCallException`.
+  The two working alternatives are documented instead. `parentValue()` was typed `?int` while it
+  returns `int|string|null` for uuid and ulid keys
+- Eleven query helpers in `docs/ReceivingNodes.md` had empty descriptions, `nextNodes()` among
+  them, which also returns the node's own descendants
+- `Migrate::dropColumns()` was not documented anywhere; `docs/Migration.md` now shows the rollback
+
 ### Removed
 
 - `fakerphp/faker` from `require-dev`: the removed `Structure` factories were its only consumer,

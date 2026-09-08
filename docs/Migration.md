@@ -40,3 +40,24 @@ return new class extends Migration {
     }
 };
 ```
+
+## Rolling the migration back
+
+`Migrate::dropColumns()` removes the tree columns together with the indexes `buildColumns()`
+created:
+
+```php
+public function down()
+{
+    Schema::table(
+        static::$tableName,
+        static function (Blueprint $table) {
+            (new \Fureev\Trees\Database\Migrate(Builder::default(), $table))->dropColumns();
+        }
+    );
+}
+```
+
+Pass the same builder the migration was created with — `Builder::default()` for a single tree,
+`Builder::defaultMulti()` for a multi-tree one — otherwise the column and index names will not
+match what is in the database.

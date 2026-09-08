@@ -6,23 +6,24 @@
 
 - `parent` - To get a Parent Node
 - `parents` - To get a Chain of Parent Nodes (till Root)
-- `parentByLevel` - To get a Chain of Parent Nodes (till specified level)
-- `parentWithTrashed` - To get a Chain of Parent Nodes with Trashed Nodes
+- `parentByLevel` - To get the single ancestor sitting at the given level
+- `parentWithTrashed` - To get a Parent Node, including a soft-deleted one
 - `children` - To get a Collection of direct descendants
 - `childrenWithTrashed` - To get a Collection of direct descendants with Trashed Nodes
 - `descendants` - To get a Collection of all descendants in Laravel-Relation manner
 - `ancestors` - To get a Chain of Parent Nodes (till Root) in Laravel-Relation manner
-- `prev` -
-- `next` -
-- `prevNodes` -
-- `nextNodes` -
-- `siblings` -
-- `prevSibling` -
-- `prevSiblings` -
-- `nextSibling` -
-- `nextSiblings` -
-- `leaves` -
-- `leaf` -
+- `prev` - The node immediately before this one, wherever it sits in the tree
+- `next` - The node immediately after this one
+- `prevNodes` - Every node positioned before this one, at any level
+- `nextNodes` - Every node positioned after this one, at any level. Note that this includes
+  the node's own descendants, since they open after it
+- `siblings` - Nodes sharing the same parent, this one excluded
+- `prevSibling` - The sibling immediately before this one
+- `prevSiblings` - All siblings before this one
+- `nextSibling` - The sibling immediately after this one
+- `nextSiblings` - All siblings after this one
+- `leaves` - Descendants that have no children of their own, optionally limited by depth
+- `leaf` - Narrows a query down to leaf nodes
 
 ### To get a Parent Node
 
@@ -42,15 +43,17 @@ $parent = $node->parent()->first();
 $parents = $node->parents();
 ```
 
-### To get a Chain of Parent Nodes (till specified level)
+### To get the ancestor at a given level
 
-> @return Collection
+> @return Model|null
 
 ```php
-$parents = $node->parentByLevel(1);
-# it's equal to
-$parents = $node->parents(1);
+$parent = $node->parentByLevel(1);
 ```
+
+This returns a **single node**, not a chain: it is `parents($level)->first()`, and `parents()`
+is ordered from the root down. For a node at level 3, `parentByLevel(1)` gives the ancestor at
+level 1, while `parents(1)` gives the whole collection of ancestors from level 1 downwards.
 
 ### To get a Collection of direct descendants
 
@@ -96,10 +99,12 @@ $children = $node->descendants()->get();
 > @return Collection
 
 ```php
-$children = $node->descendants;
+$ancestors = $node->ancestors;
 # it's equal to
-$children = $node->descendants()->get();
+$ancestors = $node->ancestors()->get();
 ```
+
+Ancestors come back ordered from the root down. Descendants carry no explicit ordering.
 
 ### Siblings
 
