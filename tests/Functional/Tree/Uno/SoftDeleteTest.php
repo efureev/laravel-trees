@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fureev\Trees\Tests\Functional\Tree\Uno;
 
 use Fureev\Trees\Exceptions\DeleteRootException;
+use Fureev\Trees\Healthy\HealthyChecker;
 use Fureev\Trees\Tests\Functional\AbstractFunctionalTreeTestCase;
 use Fureev\Trees\Tests\models\v5\ArchivedCategory;
 use PHPUnit\Framework\Attributes\Test;
@@ -219,5 +220,99 @@ class SoftDeleteTest extends AbstractFunctionalTreeTestCase
 
         static::assertEquals(1, $leaf->refresh()->ancestors()->count());
         static::assertEquals(2, $leaf->ancestors()->withTrashed()->count());
+    }
+
+    /**
+     * root -> mid -> (leaf1, leaf2)
+     *
+     * @return array<string, ArchivedCategory>
+     */
+    private function buildBranch(): array
+    {
+        /** @var ArchivedCategory $root */
+        $root = static::model(['title' => 'root node']);
+        $root->makeRoot()->save();
+
+        /** @var ArchivedCategory $mid */
+        $mid = static::model(['title' => 'mid']);
+        $mid->appendTo($root)->save();
+
+        /** @var ArchivedCategory $leaf1 */
+        $leaf1 = static::model(['title' => 'leaf 1']);
+        $leaf1->appendTo($mid)->save();
+
+        /** @var ArchivedCategory $leaf2 */
+        $leaf2 = static::model(['title' => 'leaf 2']);
+        $leaf2->appendTo($mid)->save();
+
+        return [
+            'root'  => $root->refresh(),
+            'mid'   => $mid->refresh(),
+            'leaf1' => $leaf1->refresh(),
+            'leaf2' => $leaf2->refresh(),
+        ];
+    }
+
+    #[Test]
+    public function deleteWithChildrenRemovesTrashedDescendants(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['leaf2']->delete();
+        static::assertEquals(1, ArchivedCategory::onlyTrashed()->count());
+
+        $nodes['mid']->refresh()->deleteWithChildren();
+
+        $subtree = [
+            $nodes['mid']->getKey(),
+            $nodes['leaf1']->getKey(),
+            $nodes['leaf2']->getKey(),
+        ];
+
+        // Nothing of the subtree may survive, not even behind the soft-delete scope.
+        static::assertEquals(
+            0,
+            ArchivedCategory::withTrashed()->whereIn($nodes['root']->getKeyName(), $subtree)->count()
+        );
+    }
+
+    #[Test]
+    public function deleteWithChildrenLeavesTheTreeHealthy(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['leaf2']->delete();
+        $nodes['mid']->refresh()->deleteWithChildren();
+
+        $root = $nodes['root']->refresh();
+
+        // The gap is closed: a lone root spans 1..2 again.
+        static::assertEquals(1, $root->leftValue());
+        static::assertEquals(2, $root->rightValue());
+        static::assertEquals(1, ArchivedCategory::withTrashed()->count());
+        static::assertFalse((new HealthyChecker(ArchivedCategory::class))->isBroken());
+    }
+
+    #[Test]
+    public function softDeleteWithChildrenKeepsAlreadyTrashedTimestamp(): void
+    {
+        $nodes  = $this->buildBranch();
+        $column = $nodes['leaf2']->getDeletedAtColumn();
+
+        $nodes['leaf2']->delete();
+        $trashedAt = ArchivedCategory::withTrashed()->find($nodes['leaf2']->getKey())->{$column};
+        static::assertNotNull($trashedAt);
+
+        $nodes['mid']->refresh()->deleteWithChildren(false);
+
+        // Every node of the subtree is trashed now...
+        static::assertEquals(4, ArchivedCategory::withTrashed()->count());
+        static::assertEquals(1, ArchivedCategory::query()->count());
+
+        // ...but the one already trashed keeps its original timestamp.
+        static::assertEquals(
+            $trashedAt,
+            ArchivedCategory::withTrashed()->find($nodes['leaf2']->getKey())->{$column}
+        );
     }
 }

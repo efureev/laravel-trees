@@ -20,6 +20,9 @@
 - `BaseRelation::relationExistenceCondition()` replaced by `addExistenceConstraint()`, which
   applies `whereColumn()` constraints instead of returning a raw SQL fragment. The method is
   protected and had no callers
+- `DeleteWithChildren` asks for the trashed rows explicitly on a hard delete instead of relying
+  on `Builder::forceDelete()` running on the raw query and skipping global scopes. Behaviour is
+  unchanged, the dependency on a Laravel implementation detail is not
 - `QueryBuilder\Fixing::makeGap()` declares `int` parameter types. No working call changes
   behaviour: any non-integer argument already produced invalid SQL rather than a query
 - `.phpcs.xml` drops `Squiz.ControlStructures.ElseIfDeclaration`: it demands `else if` while
