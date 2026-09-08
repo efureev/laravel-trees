@@ -65,7 +65,7 @@ abstract class BaseRelation extends Relation
         // The first model in the array is always the parent, so add the scope constraints based on that model.
         // @link https://github.com/laravel/framework/pull/25240
         // @link https://github.com/lazychaser/laravel-nestedset/issues/351
-        $firstModel = $models[0] ?? null;
+        $firstModel = ($models[0] ?? null);
         if (Helper::isTreeNode($firstModel)) {
             $firstModel->applyNestedSetScope($this->query);
         }

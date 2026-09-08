@@ -786,7 +786,7 @@ trait UseNestedSet
                             $this->rightAttribute() . ' + ' . $deltaMove
                         ),
                         (string)$this->levelAttribute() => new Expression(
-                            $this->levelAttribute() . ' + ' . -$depth
+                            $this->levelAttribute() . ' + ' . (-$depth)
                         ),
                         (string)$this->treeAttribute()  => $tree,
                     ]
@@ -819,7 +819,7 @@ trait UseNestedSet
                         $this->rightAttribute() . ' + ' . (1 - $left)
                     ),
                     (string)$this->levelAttribute() => new Expression(
-                        $this->levelAttribute() . ' + ' . -$depth
+                        $this->levelAttribute() . ' + ' . (-$depth)
                     ),
                     (string)$this->treeAttribute()  => $tree,
                 ]

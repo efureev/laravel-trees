@@ -31,6 +31,6 @@ COPY . /app
 
 RUN composer install --no-interaction --no-progress
 
-# Run the full test gate (PHPCS + PHPUnit) by default.
+# Run the test suite by default.
 # pcov is available in the image for `composer test-cover`.
 CMD ["composer", "test"]

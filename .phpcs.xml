@@ -11,13 +11,15 @@
     <rule ref="Squiz.Arrays.ArrayBracketSpacing"/>
     <rule ref="Squiz.Arrays.ArrayDeclaration"/>
     <rule ref="Squiz.ControlStructures.ControlSignature"/>
-    <rule ref="Squiz.ControlStructures.ElseIfDeclaration"/>
+<!--    Contradicts PSR12.ControlStructures.ElseIfDeclaration, which mandates `elseif`.
+        PSR-12 is the base standard of this ruleset, so the Squiz variant stays off.
+    <rule ref="Squiz.ControlStructures.ElseIfDeclaration"/>-->
 <!--    <rule ref="Squiz.Commenting.BlockComment"/>-->
 <!--    <rule ref="Squiz.Commenting.DocCommentAlignment"/>-->
 <!--    <rule ref="Squiz.Commenting.EmptyCatchComment"/>-->
 <!--    <rule ref="Squiz.Commenting.InlineComment"/>-->
 <!--    <rule ref="Squiz.Commenting.PostStatementComment"/>-->
-    <rule ref="Squiz.Commenting.VariableComment"/>
+<!--    <rule ref="Squiz.Commenting.VariableComment"/>-->
     <rule ref="Squiz.Formatting.OperatorBracket"/>
     <rule ref="Squiz.Functions.FunctionDeclarationArgumentSpacing"/>
 <!--    <rule ref="Squiz.Operators.ComparisonOperatorUsage"/>-->
@@ -68,6 +70,14 @@
     <!-- Check var names, but we don't want leading underscores for private vars -->
     <rule ref="Squiz.NamingConventions.ValidVariableName"/>
     <rule ref="Squiz.NamingConventions.ValidVariableName.PrivateNoUnderscore">
+        <severity>0</severity>
+    </rule>
+
+    <!-- Eloquent exposes database columns as snake_case member properties
+         ($model->parent_id, $model->tree_id, $model->lft). Those names are the
+         schema, not a style choice, so member naming cannot be enforced here.
+         Local variables are still checked by the sniff above. -->
+    <rule ref="Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps">
         <severity>0</severity>
     </rule>
 

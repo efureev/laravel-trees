@@ -9,3 +9,6 @@ composer.lock
 .phpunit.result.cache
 clover.xml
 coverage
+
+/.claude
+CLAUDE.md

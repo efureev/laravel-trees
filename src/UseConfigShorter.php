@@ -57,7 +57,7 @@ trait UseConfigShorter
     public function treeValue(): int|string|null
     {
         return $this->treeAttribute() !== null
-            ? $this->attributes[(string)$this->treeAttribute()] ?? null
+            ? ($this->attributes[(string)$this->treeAttribute()] ?? null)
             : null;
     }
 

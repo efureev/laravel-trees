@@ -6,7 +6,7 @@ on:
 
 jobs:
   lint:
-    name: Coding Standards (PHPCS)
+    name: Static Analysis & Coding Standards
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -37,6 +37,9 @@ jobs:
 
       - name: Run PHPStan
         run: composer phpstan
+
+      - name: Run PHPCS
+        run: composer phpcs
 
   testing:
     name: Test on PHP ${{ matrix.php }} with ${{ matrix.setup }} dependencies

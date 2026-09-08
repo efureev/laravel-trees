@@ -211,8 +211,7 @@ trait Fixing
         }
 
         return new Expression(
-            "case " .
-            "when $col between $lft and $rgt then $col$distance " . // Move the node
+            "case when $col between $lft and $rgt then $col$distance " . // Move the node
             "when $col between $from and $to then $col$height " . // Move other nodes
             "else $col end"
         );

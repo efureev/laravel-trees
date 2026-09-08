@@ -48,7 +48,10 @@ class TreeIdGeneratorTest extends AbstractUnitTestCase
         $result = $generator->generateId($model);
 
         $this->assertIsString($result);
-        $this->assertTrue(preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $result) === 1);
+        $this->assertSame(
+            1,
+            preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $result)
+        );
     }
 
     public function testGenerateUlid(): void

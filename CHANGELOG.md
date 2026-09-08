@@ -1,5 +1,35 @@
 # Changelog
 
+## [unreleased]
+
+### Changed
+
+- CI job `lint` renamed to `Static Analysis & Coding Standards` and now runs `composer phpcs`
+  next to `composer phpstan`, so the coding standard is enforced instead of merely declared
+- `.phpcs.xml` no longer enforces member variable naming: Eloquent exposes database columns as
+  snake_case properties (`$model->parent_id`, `$model->tree_id`), which are schema rather than style
+- `.phpcs.xml` no longer requires a docblock on every property, joining the other
+  `Squiz.Commenting.*` sniffs already disabled there
+- `.phpcs.xml` drops `Squiz.ControlStructures.ElseIfDeclaration`: it demands `else if` while the
+  `PSR12` base standard demands `elseif`, and the conflict left `phpcbf` unable to fix the file
+
+### Fixed
+
+- Composer script `test:docker` now names the `app` service explicitly: without it `docker compose up`
+  started `app` and `coverage` at once, both running the full suite against the same database and
+  wiping each other in `setUp()`, so the script failed regardless of the state of the code
+- Coding standard violations across `src/` and `tests/`, so `composer phpcs` passes: bracketed
+  null-coalesce and unary operations, folded an adjacent string concat, moved a migration file
+  docblock ahead of its imports, and wrapped three over-long lines
+- Stale comment in `.docker/Dockerfile` claiming the default command is a `PHPCS + PHPUnit` gate,
+  while `CMD` runs `composer test`
+
+### Removed
+
+- Dead test fixtures `StructureHelper`, `StructureFactory` and `SoftDeleteStructureFactory`
+  referencing the `Structure` model that was removed earlier, together with their `autoload-dev`
+  PSR-4 mapping
+
 ## [6.1.0](https://github.com/efureev/laravel-trees/compare/v6.0.0...v6.1.0) (2026-06-05)
 
 ### Fixed

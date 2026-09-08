@@ -20,8 +20,11 @@ final readonly class Migrate
     /**
      * @throws InvalidConfigException
      */
-    public static function columnsFromModel(Blueprint $table, Model|string $model, bool $excludeTreeCol = false): Builder
-    {
+    public static function columnsFromModel(
+        Blueprint $table,
+        Model|string $model,
+        bool $excludeTreeCol = false
+    ): Builder {
         $instance = is_string($model) ? new $model() : $model;
 
         if (!method_exists($instance, 'getTreeBuilder')) {
