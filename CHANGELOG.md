@@ -20,6 +20,10 @@
 - `BaseRelation::relationExistenceCondition()` replaced by `addExistenceConstraint()`, which
   applies `whereColumn()` constraints instead of returning a raw SQL fragment. The method is
   protected and had no callers
+- `UseNestedSet::shift()` moves both bounds in a single statement instead of one per column.
+  Rows are picked by either bound and each column re-checks its own range in a `CASE`, so a row
+  with both bounds in range — the common case — is written once rather than twice. Column names
+  now go through the query grammar
 - `DeleteWithChildren` asks for the trashed rows explicitly on a hard delete instead of relying
   on `Builder::forceDelete()` running on the raw query and skipping global scopes. Behaviour is
   unchanged, the dependency on a Laravel implementation detail is not

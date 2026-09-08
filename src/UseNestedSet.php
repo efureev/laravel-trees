@@ -690,38 +690,66 @@ trait UseNestedSet
     ///
     /// *********************
 
+    /**
+     * Shift the bounds that fall into [$from, $to] (or from $from onwards) by $delta.
+     */
     protected function shift(int $from, ?int $to, int $delta, int|string|null $tree = null): void
     {
-        // todo: reformat: and test it
-        // if ($delta === 0 || !($to === null || $to >= $from)) { return }
-        if ($delta !== 0 && ($to === null || $to >= $from)) {
-            if ($tree === null && $this->isMulti()) {
-                $tree = $this->treeValue();
-            }
-
-            foreach ([(string)$this->leftAttribute(), (string)$this->rightAttribute()] as $i => $attribute) {
-                $query = $this->query();
-                if ($this->isMulti()) {
-                    $query->where((string)$this->treeAttribute(), $tree);
-                }
-
-                if ($to !== null) {
-                    $query->whereBetween($attribute, [$from, $to]);
-                } else {
-                    $query->where($attribute, '>=', $from);
-                }
-
-                if ($this->isSoftDelete()) {
-                    $query->withTrashed();
-                }
-
-                $query->update(
-                    [
-                        $attribute => new Expression($attribute . '+ ' . $delta),
-                    ]
-                );
-            }
+        if ($delta === 0 || ($to !== null && $to < $from)) {
+            return;
         }
+
+        if ($tree === null && $this->isMulti()) {
+            $tree = $this->treeValue();
+        }
+
+        $left  = (string)$this->leftAttribute();
+        $right = (string)$this->rightAttribute();
+
+        $query = $this->query();
+
+        if ($this->isMulti()) {
+            $query->where((string)$this->treeAttribute(), $tree);
+        }
+
+        if ($this->isSoftDelete()) {
+            // A trashed node keeps its place in the tree, so its bounds move along.
+            $query->withTrashed();
+        }
+
+        // A row may need only one of its two bounds shifted, so rows are picked by either
+        // bound and each column re-checks its own range in the SET clause. One statement
+        // instead of one per column: a row with both bounds in range used to be written twice.
+        $query->where(
+            static function (QueryBuilderV2 $inner) use ($left, $right, $from, $to) {
+                if ($to === null) {
+                    $inner->where($left, '>=', $from)->orWhere($right, '>=', $from);
+
+                    return;
+                }
+
+                $inner->whereBetween($left, [$from, $to])->orWhereBetween($right, [$from, $to]);
+            }
+        );
+
+        $query->update(
+            [
+                $left  => $this->shiftExpression($left, $from, $to, $delta),
+                $right => $this->shiftExpression($right, $from, $to, $delta),
+            ]
+        );
+    }
+
+    /**
+     * `case when <column is in range> then <column> + <delta> else <column> end`
+     */
+    private function shiftExpression(string $column, int $from, ?int $to, int $delta): Expression
+    {
+        $col   = $this->getConnection()->getQueryGrammar()->wrap($column);
+        $range = ($to === null) ? "$col >= $from" : "$col between $from and $to";
+
+        // Parenthesised so a negative delta reads as `"lft" + (-2)`.
+        return new Expression("case when $range then $col + ($delta) else $col end");
     }
 
     protected function moveNode(int $to, int $depth = 0): void

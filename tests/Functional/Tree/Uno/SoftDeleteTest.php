@@ -315,4 +315,27 @@ class SoftDeleteTest extends AbstractFunctionalTreeTestCase
             ArchivedCategory::withTrashed()->find($nodes['leaf2']->getKey())->{$column}
         );
     }
+
+    /**
+     * shift() opts into withTrashed(): a soft-deleted node keeps its place in the tree, so
+     * its bounds have to move along with everyone else or the tree breaks once it is restored.
+     */
+    #[Test]
+    public function shiftMovesBoundsOfTrashedNodes(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['leaf2']->delete();
+        $trashedBefore = ArchivedCategory::withTrashed()->find($nodes['leaf2']->getKey());
+
+        /** @var ArchivedCategory $extra */
+        $extra = static::model(['title' => 'extra']);
+        $extra->prependTo($nodes['mid']->refresh())->save();
+
+        $trashedAfter = ArchivedCategory::withTrashed()->find($nodes['leaf2']->getKey());
+
+        static::assertSame(($trashedBefore->leftValue() + 2), $trashedAfter->leftValue());
+        static::assertSame(($trashedBefore->rightValue() + 2), $trashedAfter->rightValue());
+        static::assertFalse((new HealthyChecker(ArchivedCategory::class))->isBroken());
+    }
 }
