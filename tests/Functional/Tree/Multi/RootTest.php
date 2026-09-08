@@ -198,4 +198,31 @@ class RootTest extends AbstractFunctionalTreeTestCase
         static::assertNull($promoted->parentValue());
         static::assertSame(1, $promoted->leftValue());
     }
+
+    /**
+     * Promoting a node into an explicitly chosen tree. The generator only ever produces
+     * `max(tree_id) + 1`, so a zero identifier can only come from the caller — and a falsy
+     * check would silently swap it for a generated one.
+     */
+    #[Test]
+    public function promotesIntoAnExplicitlyChosenTree(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['branch']->refresh()->setTree(42)->makeRoot()->save();
+
+        static::assertSame(42, $nodes['branch']->refresh()->treeValue());
+        static::assertSame(42, $nodes['leaf']->refresh()->treeValue());
+    }
+
+    #[Test]
+    public function promotesIntoTreeZero(): void
+    {
+        $nodes = $this->buildBranch();
+
+        $nodes['branch']->refresh()->setTree(0)->makeRoot()->save();
+
+        static::assertSame(0, $nodes['branch']->refresh()->treeValue());
+        static::assertSame(0, $nodes['leaf']->refresh()->treeValue());
+    }
 }

@@ -889,7 +889,10 @@ trait UseNestedSet
             throw new TreeNeedValueException();
         }
 
-        $tree = $this->treeChange ?: $this->generateTreeId();
+        // `??`, not `?:` — a tree id of 0 is a value the caller can pick, and the generator
+        // never produces one (it returns max(tree_id) + 1), so a falsy check would swap the
+        // requested id for a freshly generated one.
+        $tree = ($this->treeChange ?? $this->generateTreeId());
 
         $this->newNestedSetQuery()
             ->descendantsQuery(null, true)

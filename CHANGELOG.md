@@ -51,6 +51,9 @@
   relation led out of the tree. On top of that `makeRoot()` changed no attribute, so Eloquent
   saved the node as clean, skipped the update and never reached `afterUpdate()` — the whole
   operation was a silent no-op unless `forceSave()` was used
+- Promoting a node into an explicitly chosen tree honours a tree id of `0`. `moveNodeAsRoot()`
+  picked the requested id with `?:`, so a falsy one was replaced by a freshly generated id — and
+  the generator never produces `0` itself, since it returns `max(tree_id) + 1`
 - A pending operation is consumed by exactly one `save()`. The reset lived in `afterInsert()`
   and `afterUpdate()`, which hang off `created` and `updated` and only fire when a write
   happened, so a save that found nothing dirty left the operation armed and the next, unrelated
