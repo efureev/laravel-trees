@@ -86,6 +86,22 @@ class Collection extends BaseCollection
 
 
     /**
+     * Compare a parent key with the requested one, ignoring int/string representation.
+     *
+     * parentValue() is cast to the model key type, while $fromNode arrives raw from the
+     * caller, so 5 and "5" are the same key. null stays strict: only a root matches a
+     * null $fromNode, and 0 or "0" must never be confused with it.
+     */
+    private static function isSameKey(int|string|null $parentKey, int|string|null $requested): bool
+    {
+        if ($parentKey === null || $requested === null) {
+            return $parentKey === $requested;
+        }
+
+        return (string)$parentKey === (string)$requested;
+    }
+
+    /**
      * Build a tree from a list of nodes. Each node will have its children relation set.
      *
      * @param Model|string|int|null $fromNode Starting node key or instance (null for all roots)
@@ -110,7 +126,7 @@ class Collection extends BaseCollection
 
         /** @var Model&TreeModel $node */
         foreach ($this->items as $node) {
-            if ($node->parentValue() === $fromNode) {
+            if (self::isSameKey($node->parentValue(), $fromNode)) {
                 $items[] = $node;
             }
         }

@@ -25,6 +25,9 @@
 
 ### Fixed
 
+- `Collection::toTree()` and `toBreadcrumbs()` accept the starting key as a string: with an integer
+  primary key a string key never matched the cast parent value, so the call silently returned an
+  empty collection instead of the subtree
 - `QueryBuilder\Fixing::columnPatch()` always signs the offset: `makeGap($cut, 0)` rendered
   `"lft"0` and failed as a SQL syntax error instead of behaving as the no-op it is
 - `QueryBuilder\Fixing::columnPatch()` no longer carries an unreachable branch reached only when

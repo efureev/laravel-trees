@@ -212,4 +212,85 @@ class CollectionTest extends AbstractFunctionalTreeTestCase
 
         static::assertEquals(4, $treeCollection->totalCount());
     }
+
+    /**
+     * Builds root -> node1 -> node21 -> node31 and returns the created nodes by name.
+     *
+     * @return array<string, Category>
+     */
+    private function buildChain(): array
+    {
+        /** @var Category $modelRoot */
+        $modelRoot = static::model(['title' => 'root node']);
+        $modelRoot->makeRoot()->save();
+
+        /** @var Category $node1 */
+        $node1 = static::model(['title' => 'node 1']);
+        $node1->appendTo($modelRoot)->save();
+
+        /** @var Category $node21 */
+        $node21 = static::model(['title' => 'child 2.1']);
+        $node21->appendTo($node1)->save();
+
+        /** @var Category $node31 */
+        $node31 = static::model(['title' => 'child 3.1']);
+        $node31->appendTo($node21)->save();
+
+        return [
+            'root'  => $modelRoot,
+            'node1' => $node1,
+            'leaf'  => $node31,
+        ];
+    }
+
+    #[Test]
+    public function toTreeAcceptsStringKey(): void
+    {
+        $node1 = $this->buildChain()['node1'];
+
+        $byInt    = static::model()::all()->toTree($node1->getKey());
+        $byString = static::model()::all()->toTree((string)$node1->getKey());
+
+        static::assertCount(1, $byInt);
+        static::assertSame(
+            $byInt->pluck($node1->getKeyName())->all(),
+            $byString->pluck($node1->getKeyName())->all()
+        );
+    }
+
+    #[Test]
+    public function toTreeAcceptsModelInstance(): void
+    {
+        $node1 = $this->buildChain()['node1'];
+
+        $byModel = static::model()::all()->toTree($node1);
+        $byKey   = static::model()::all()->toTree($node1->getKey());
+
+        static::assertCount(1, $byModel);
+        static::assertSame(
+            $byKey->pluck($node1->getKeyName())->all(),
+            $byModel->pluck($node1->getKeyName())->all()
+        );
+    }
+
+    #[Test]
+    public function toTreeDoesNotConfuseNullWithZero(): void
+    {
+        $this->buildChain();
+
+        static::assertCount(1, static::model()::all()->toTree());
+        static::assertCount(0, static::model()::all()->toTree(0));
+        static::assertCount(0, static::model()::all()->toTree('0'));
+    }
+
+    #[Test]
+    public function toBreadcrumbsAcceptsStringKey(): void
+    {
+        $chain = $this->buildChain();
+
+        $crumbs = (new Collection([$chain['leaf']]))->toBreadcrumbs((string)$chain['root']->getKey());
+
+        static::assertCount(1, $crumbs);
+        static::assertSame($chain['root']->getKey(), $crumbs->first()->parentValue());
+    }
 }
