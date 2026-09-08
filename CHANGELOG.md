@@ -82,6 +82,12 @@
 - Stale comment in `.docker/Dockerfile` claiming the default command is a `PHPCS + PHPUnit` gate,
   while `CMD` runs `composer test`
 
+- Deleting a node no longer runs a `select count(*)` over its children. The answer went to
+  `onDeletingNodeHasChildren()`, whose body is a commented-out throw, so nothing read it; where
+  the model does not soft-delete, `isLeaf()` answers the same question from the bounds already in
+  memory. `beforeDelete()` also refreshes first now, so both of its checks see current data
+  rather than a stale model
+
 ### Fixed — documentation
 
 - The main example in `docs/AdvancedTreeConfig.md` did not parse: a missing semicolon after

@@ -294,16 +294,21 @@ trait UseNestedSet
 
     public function beforeDelete(): void
     {
+        // Fresh data first: both checks below and the bound arithmetic in afterDelete() read it.
+        // It used to be fetched afterwards, which left the checks working off a stale model.
+        $this->refresh();
+
         if ($this->operation !== Operation::DeleteAll && $this->isRoot()) {
             $this->onDeletingRootNode();
         }
 
-        if (!$this->isSoftDelete() && $this->children()->count() > 0) {
+        // isLeaf() answers from the bounds alone unless the model soft-deletes, and this branch
+        // has already ruled that out, so no query is needed to learn whether children exist.
+        // onDeletingRootNode() above keeps counting on purpose: a trashed child keeps its bounds,
+        // so for a soft-deleting model the two questions have different answers.
+        if (!$this->isSoftDelete() && !$this->isLeaf()) {
             $this->onDeletingNodeHasChildren();
         }
-
-        // We will need fresh data to delete node safely
-        $this->refresh();
     }
 
     /**
