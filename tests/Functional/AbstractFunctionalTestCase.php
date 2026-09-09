@@ -78,4 +78,25 @@ abstract class AbstractFunctionalTestCase extends TestCase
 
         $this->artisan('db:wipe');
     }
+
+    /**
+     * Close every connection the test opened.
+     *
+     * Each test gets a fresh application, so the connections of the previous one are only
+     * released when the objects holding them are collected. With five hundred tests and a
+     * server allowing a hundred clients, that is late enough to run the server out of slots —
+     * and it shows up as an unrelated failure in whichever test happens to be next.
+     */
+    protected function tearDown(): void
+    {
+        $manager = $this->app?->make('db');
+
+        if ($manager !== null) {
+            foreach (array_keys($manager->getConnections()) as $name) {
+                $manager->purge($name);
+            }
+        }
+
+        parent::tearDown();
+    }
 }
