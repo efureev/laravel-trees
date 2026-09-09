@@ -56,6 +56,13 @@
 
 ### Fixed
 
+- `isMulti()` reports how the model itself is configured. It used to answer about the node a
+  pending `appendTo()` / `prependTo()` / `insertBefore()` / `insertAfter()` targeted, which is
+  the same answer for two nodes of one class — the tree builder is static — and the wrong one
+  for two classes over one table, where a single-tree model reported itself as multi-tree
+  purely because of what it was being appended to. The documented meaning, "is the model
+  configured with a tree column", is now what the code does. With that settled, the second half
+  of the condition in `insertNode()` goes: it asked the same question twice
 - `getPlainNodeData()` builds the positional bounds array from the configured column list
   instead of from the order the driver returned the columns in. It used to be
   `array_values()` over the fetched row, so the agreement between the two halves of

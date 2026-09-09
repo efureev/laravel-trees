@@ -407,12 +407,16 @@ trait UseNestedSet
         $this->newNestedSetQuery()->descendantsQuery()->delete();
     }
 
+    /**
+     * Is this model configured with a tree column?
+     *
+     * A property of the class, not of the row: the tree builder is static, so every instance
+     * answers the same. It used to answer about the node a pending operation targeted, which
+     * gave the same answer for two nodes of one class and the wrong one for a single-tree model
+     * being appended to a multi-tree one.
+     */
     public function isMulti(): bool
     {
-        if ($this->node !== null) {
-            return $this->node->getTreeConfig()->isMulti();
-        }
-
         return $this->getTreeConfig()->isMulti();
     }
 
@@ -611,7 +615,7 @@ trait UseNestedSet
         $this->setAttribute((string)$this->rightAttribute(), ($to + 1));
         $this->setAttribute((string)$this->levelAttribute(), ($this->node->levelValue() + $depth));
 
-        if ($this->isMulti() || ($depth > 0 && $this->node->isMulti())) {
+        if ($this->isMulti()) {
             $this->setAttribute((string)$this->treeAttribute(), $this->node->treeValue());
         }
 
