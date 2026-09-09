@@ -64,7 +64,7 @@ Pass a timestamp to touch only nodes trashed at or after it. See
 |---|---|---|
 | `parent()` | `BelongsTo` — the direct parent | 1 |
 | `parentWithTrashed()` | `BelongsTo`, trashed included | 1 |
-| `children()` | `HasMany` — direct children, ordered | 1 |
+| `children()` | `HasMany` — direct children, in position order (**reorders**) | 1 |
 | `childrenWithTrashed()` | `HasMany`, trashed included | 1 |
 | `ancestors()` | relation — every ancestor, **root first** | 1 |
 | `descendants()` | relation — the whole subtree, any depth, **unordered** | 1 |
@@ -118,7 +118,12 @@ On the model statically, or on any `QueryBuilderV2`.
 | `byParent(Model\|string\|int\|null $parent)` | the direct children of a node |
 | `leaf()` | nodes with no children |
 | `leaves(?int $level = null)` | the leaves of a subtree |
-| `defaultOrder(int $dir = SORT_ASC)` | ordered by `lft` — **replaces** any existing ordering |
+| `defaultOrder(int $dir = SORT_ASC)` | ordered by `lft` — **replaces** any existing ordering, bindings included |
+
+> [!NOTE]
+> **Reorders** means the method ends with `defaultOrder()`: any ordering already on the query is
+> replaced by `lft`, and one added afterwards ranks below it. Call `reorder()` to make your own
+> ordering the primary key. See [Receiving Nodes](./ReceivingNodes.md#ordering).
 
 ## Navigating from a node
 
@@ -130,9 +135,9 @@ On the model statically, or on any `QueryBuilderV2`.
 | `prevSibling()` / `nextSibling()` | the adjacent sibling |
 | `prevSiblings()` / `nextSiblings()` | siblings before / after |
 | `descendantsQuery(?int $level = null, bool $andSelf = false, bool $backOrder = false)` | the subtree, optionally depth-limited |
-| `parents(?int $level = null, bool $andSelf = false)` | the ancestors |
-| `parentsByModelId(string\|int $modelId, ?int $level = null, bool $andSelf = false)` | ancestors of another node, by its id, in one query |
-| `whereDescendantOf(...)` / `whereAncestorOf(...)` | bound conditions for composing queries |
+| `parents(?int $level = null, bool $andSelf = false)` | the ancestors, root first (**reorders**) |
+| `parentsByModelId(string\|int $modelId, ?int $level = null, bool $andSelf = false)` | ancestors of another node, by its id, in one query (**reorders**) |
+| `whereDescendantOf(...)` / `whereAncestorOf(...)` | bound conditions for composing queries; `whereAncestorOf()` **reorders** |
 
 ## Collections
 

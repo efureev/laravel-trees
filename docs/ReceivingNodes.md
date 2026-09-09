@@ -125,8 +125,33 @@ Category::query()->defaultOrder()->get();              // by lft, ascending
 Category::query()->defaultOrder(SORT_DESC)->get();
 ```
 
+`defaultOrder()` **replaces** the ordering on the query rather than adding to it. It is also
+applied for you, at the end, by four things:
+
+| | |
+|---|---|
+| `parents()` | ancestors have to come back root first |
+| `parentsByModelId()` | same |
+| `whereAncestorOf()` | same |
+| `children()` | siblings come back in position order |
+
+So an ordering set **before** any of those is gone, and one set **after** ranks below `lft` —
+which is unique within a tree, so the tie it would break never occurs and the ordering has no
+effect at all:
+
+```php
+$node->children()->orderBy('title')->get();   // still position order — title never decides
+```
+
+Use `reorder()` to drop the tree ordering and put your own first:
+
+```php
+$node->children()->reorder('title')->get();   // alphabetical
+```
+
 > [!NOTE]
-> `defaultOrder()` **replaces** any ordering already on the query rather than adding to it.
+> `reorder()` is Laravel's own query builder method. `defaultOrder()` delegates to it, so a raw
+> ordering's bindings are dropped along with its clause.
 
 ## Filtering by a relation
 

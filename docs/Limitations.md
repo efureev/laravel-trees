@@ -14,7 +14,7 @@
 | [Single trees](#a-single-tree-holds-exactly-one-root) | One root only; a node cannot be promoted to a root |
 | [Soft deletes](#a-trashed-node-keeps-its-place) | A trashed node keeps its bounds and its place |
 | [Databases](#postgresql-is-the-tested-database) | Tested on PostgreSQL only |
-| [Semantics](#names-that-mean-something-slightly-different) | `isChildOf()` means "is a descendant"; descendants come back unordered |
+| [Semantics](#names-that-mean-something-slightly-different) | `isChildOf()` means "is a descendant"; several methods reorder for you; descendants come back unordered |
 
 ---
 
@@ -136,6 +136,7 @@ one code path but no test exercises it. Other engines are unverified.
 | Name | What it actually does |
 |---|---|
 | `isChildOf($node)` | True for a descendant at **any** depth, not only a direct child — it compares bounds. Kept under its historical name; `isDescendantOf()` is the same check, `isDirectChildOf()` the one level down |
+| `orderBy()` after `children()`, `parents()` or `whereAncestorOf()` | Kept, but below `lft`. `lft` is unique within a tree, so the tie never happens and the ordering never applies — `reorder()` first |
 | `descendants` | Comes back in no defined order; the order you see is the query plan's choice. `ancestors` is ordered, root first |
 | `Fixing` trait | Carries the author's note that it is not verified since v5. Treat repairs as a last resort and check the result |
 

@@ -43,6 +43,15 @@
 
 ### Fixed
 
+- `defaultOrder()` no longer leaves the bindings of a raw ordering behind. It cleared the
+  `orders` array by hand and nothing else, so a query built as
+  `orderByRaw('... ?', [$v])->defaultOrder()` reached the database carrying a value with no
+  placeholder left to fill — PostgreSQL answered `bind message supplies 1 parameters, but
+  prepared statement requires 0`, and where the counts happened to match instead, every binding
+  after it shifted by one. Reachable without naming the method at all: `parents()`,
+  `parentsByModelId()`, `whereAncestorOf()` and the `children()` relation all call it. It now
+  delegates to Laravel's `reorder()`, which drops the clause, its bindings and the union
+  ordering together
 - `moveChildrenToParent()` refuses a node with no parent instead of dying on it, and refuses
   before writing anything. It used to shift the descendants first and only then dereference the
   missing parent, so a root left the call with a raw `Error` and a renumbered tree behind it

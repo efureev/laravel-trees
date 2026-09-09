@@ -69,7 +69,11 @@ trait WithRelations
     }
 
     /**
-     * Relation to children. Return direct children
+     * Relation to children. Return direct children, in position order.
+     *
+     * The relation applies `defaultOrder()`, so an ordering added to it afterwards ranks below
+     * `lft` and never decides anything. Call `reorder()` on the relation to sort children by
+     * something of your own.
      */
     public function children(): HasMany
     {

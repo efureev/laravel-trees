@@ -56,6 +56,11 @@ class QueryBuilderV2 extends Builder
         return $this;
     }
 
+    /**
+     * Ancestors of this query's model, root first.
+     *
+     * Ends with `defaultOrder()`, so any ordering already on the query is replaced by `lft`.
+     */
     public function parents(?int $level = null, bool $andSelf = false): static
     {
         $condition = [
@@ -85,6 +90,11 @@ class QueryBuilderV2 extends Builder
             ->defaultOrder();
     }
 
+    /**
+     * Ancestors of a node identified by its key, root first, without loading that node first.
+     *
+     * Ends with `defaultOrder()`, so any ordering already on the query is replaced by `lft`.
+     */
     public function parentsByModelId(string|int $modelId, ?int $level = null, bool $andSelf = false): static
     {
         $target = $this->model->newNestedSetQuery()
@@ -203,7 +213,11 @@ class QueryBuilderV2 extends Builder
         return $this->whereNodeBetween($data, $boolean, $not);
     }
 
-    /** @phpstan-param Model&TreeModel $model */
+    /**
+     * Ends with `defaultOrder()`, so any ordering already on the query is replaced by `lft`.
+     *
+     * @phpstan-param Model&TreeModel $model
+     */
     public function whereAncestorOf(Model $model, string $boolean = 'and'): static
     {
         $condition = [
@@ -343,12 +357,22 @@ class QueryBuilderV2 extends Builder
     }
 
     /**
+     * Order by `lft`, replacing whatever ordering the query already carried.
+     *
+     * Replacing it by hand used to mean clearing `orders` and nothing else, which left the
+     * bindings of a raw ordering behind with no placeholder to fill: every binding after them
+     * shifted by one. `reorder()` drops the clause, its bindings, and the union ordering
+     * together.
+     *
+     * Call `reorder()` yourself before this if your own ordering has to be the primary key —
+     * an ordering added afterwards ranks below `lft`, which is unique within a tree and so
+     * never leaves a tie to break.
+     *
      * @param int $dir SORT_ASC|SORT_DESC
      */
     public function defaultOrder(int $dir = SORT_ASC): static
     {
-        $this->query->orders = null;
-        $this->query->orderBy(
+        $this->query->reorder(
             $this->columnWithTbl((string)$this->model->leftAttribute()),
             $dir === SORT_ASC ? 'asc' : 'desc'
         );
