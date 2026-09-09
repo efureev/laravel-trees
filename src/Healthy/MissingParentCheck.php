@@ -7,43 +7,46 @@ namespace Fureev\Trees\Healthy;
 use Fureev\Trees\QueryBuilderV2;
 use Illuminate\Database\Query\Builder;
 
+/**
+ * Counts the nodes whose `parent_id` names a row that is not there.
+ *
+ * This is what a query-level delete leaves behind: the row goes, the children keep pointing at
+ * it, and nothing else about the tree looks wrong. The bounds still nest, so no other check
+ * notices.
+ *
+ * A left join and a null test. The previous version asked the same question with a correlated
+ * `not exists` per row, which had to build a second builder to avoid the query referencing
+ * itself.
+ */
 final readonly class MissingParentCheck extends AbstractCheck
 {
     protected function query(): Builder
     {
-        /** @var QueryBuilderV2 $builder */
-        $builder = $this->model->newNestedSetQuery();
+        $grammar = $this->model->getQuery()->getGrammar();
 
-        $table   = $builder->wrappedTable();
-        $keyName = $builder->wrappedKey();
+        $table   = $this->model->wrappedTable();
+        $keyName = $this->model->wrappedKey();
+        $parent  = $grammar->wrap((string)$this->model->parentAttribute());
 
-        $grammar = $builder->getGrammar();
+        $childAlias  = 'c';
+        $parentAlias = 'p';
 
-        $parentIdName = $grammar->wrap((string)$this->model->parentAttribute());
-        $alias        = 'p';
-        $wrappedAlias = $grammar->wrapTable($alias);
+        $waChild  = $grammar->wrapTable($childAlias);
+        $waParent = $grammar->wrapTable($parentAlias);
 
-        return $builder
+        /** @var QueryBuilderV2 $query */
+        $query = $this->model->newNestedSetQuery($childAlias);
+
+        $query
             ->toBase()
-            ->whereNested(
-                function (Builder $inner) use ($table, $keyName, $parentIdName, $alias, $wrappedAlias) {
-                    // Build the correlated sub-query on a dedicated builder. Re-using the outer
-                    // builder here would make the query reference itself and recurse infinitely.
-                    $sub = $this->model->newNestedSetQuery();
+            ->from($this->model->getQuery()->raw("$table as $waChild"))
+            ->leftJoin(
+                $this->model->getQuery()->raw("$table as $waParent"),
+                fn($join) => $join->whereRaw("$waParent.$keyName = $waChild.$parent")
+            )
+            ->whereRaw("$waChild.$parent is not null")
+            ->whereRaw("$waParent.$keyName is null");
 
-                    $sub
-                        ->toBase()
-                        ->selectRaw('1')
-                        ->from($this->model->getQuery()->raw("$table as $wrappedAlias"))
-                        ->whereRaw("$table.$parentIdName = $wrappedAlias.$keyName")
-                        ->limit(1);
-
-                    $this->model->applyNestedSetScope($sub, $alias);
-
-                    $inner
-                        ->whereRaw("$parentIdName is not null")
-                        ->addWhereExistsQuery($sub->getQuery(), 'and', true);
-                }
-            );
+        return $query->getQuery();
     }
 }

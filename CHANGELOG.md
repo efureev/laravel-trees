@@ -4,6 +4,12 @@
 
 ### Added
 
+- `RangeCheck` and `RootCheck`, and `MissingParentCheck` joins the list `HealthyChecker` runs.
+  Between them they close three blind spots: a tree whose numbering has holes because bounds
+  were vacated and never reclaimed — which is what a subtree deleted by query leaves, and what
+  every other check reads as perfectly nested; a second root, whose bounds need not collide with
+  anything; and an orphan, which was already implemented but commented out of the list, so the
+  documentation had to warn that an orphaned node reads as a healthy tree
 - Composer script `gate` running PHPStan, PHPCS and PHPUnit in the order CI uses them, plus
   `gate:docker` and a matching `gate` service in `docker-compose.yml`, so the whole CI gate can be
   reproduced locally with one command
@@ -19,6 +25,12 @@
 
 ### Changed
 
+- `HealthyChecker::check()` returns six entries rather than three. Code comparing the whole
+  array against a literal needs the new keys; `isBroken()` and `getTotalErrors()` are unaffected
+- `DuplicatesCheck::check()` and `WrongParentCheck::check()` answer with a number of nodes, as
+  the documentation always said they did. They used to count ordered pairs and (child, parent,
+  intermediate) triples, so the same single defect scored higher on a bigger tree. Zero still
+  means a healthy tree, and `isBroken()` is unaffected
 - The `ancestors` and `descendants` relations come back in tree order on every path. Only one
   of the four was ordered before: `descendants` never was, and `ancestors` was ordered when
   read one node at a time but not when eager loaded — `whereAncestorOf()` applies the ordering
@@ -56,6 +68,21 @@
 
 ### Fixed
 
+- The health checks run against the model they were handed. Both `HealthyChecker` and
+  `AbstractCheck` reduced it to its class name and built a fresh one, discarding a connection
+  chosen with `setConnection()` — so a tree on another connection was checked on the default one
+  — and the attribute values that `getScopeAttributes()` narrows queries by, which left a scoped
+  model checking against a scope of nulls
+- `HealthyChecker` runs on a tree of any size. `DuplicatesCheck` cross joined the table with
+  itself and compared four combinations of bounds with inequalities; `WrongParentCheck` joined
+  three copies. No index helps such a join, so the cost was quadratic — 2.1 s at five thousand
+  rows, 33.5 s at twenty thousand, and hours at a million, while the documentation presented the
+  checker as the way to verify a tree. Both are now single passes that group and join on
+  equality: 3 ms at five thousand rows, 8 ms at twenty thousand, 47 ms at a hundred thousand
+- `WrongParentCheck` sees a broken link in a tree of two. It looked for a third row sitting
+  between the child and the parent, so with no third row there was nothing to find. It now reads
+  the same fact off the level, which also catches a corrupted `lvl` that the previous form could
+  not see
 - The bound shift runs on the node's own connection. It reached for its query through
   `Model::query()`, which is static and therefore builds a fresh instance carrying the default
   connection: the select and the insert went to the node's connection while the statement that

@@ -116,16 +116,25 @@ class RemoveDescendantsTest extends AbstractFunctionalTreeTestCase
     }
 
     /**
-     * And none of the three active checks notices: a span wider than its contents is not
-     * something HealthyChecker looks for.
+     * The vacated span is now visible. `RangeCheck` compares the outermost bound with the node
+     * count, and every other check still reads the tree as perfectly nested — which is why the
+     * damage went unreported until that check existed.
      */
     #[Test]
-    public function theHealthCheckerReportsNothing(): void
+    public function theHealthCheckerReportsTheVacatedSpan(): void
     {
         $nodes = $this->buildTree();
 
         $nodes['a']->removeDescendants();
 
-        static::assertFalse((new HealthyChecker(Category::class))->isBroken());
+        $report = (new HealthyChecker(Category::class))->check();
+
+        static::assertSame(0, $report['OddnessCheck']);
+        static::assertSame(0, $report['DuplicatesCheck']);
+        static::assertSame(0, $report['WrongParentCheck']);
+        static::assertSame(0, $report['MissingParentCheck']);
+        static::assertSame(1, $report['RangeCheck']);
+
+        static::assertTrue((new HealthyChecker(Category::class))->isBroken());
     }
 }

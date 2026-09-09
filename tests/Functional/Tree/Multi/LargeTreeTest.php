@@ -69,7 +69,7 @@ class LargeTreeTest extends AbstractFunctionalTreeTestCase
         static::assertSame((self::TREES * self::PER_TREE), MultiCategory::query()->count());
         static::assertSame(self::PER_TREE, MultiCategory::query()->byTree(7)->count());
 
-        $this->assertTreeIsStructurallySound(perTree: true);
+        $this->assertTreeIsStructurallySound();
 
         // All ten hold identical numbers, which is what makes the isolation below meaningful.
         $before = $this->outerBounds();
@@ -106,6 +106,6 @@ class LargeTreeTest extends AbstractFunctionalTreeTestCase
         static::assertSame([2, 3], [$node->refresh()->leftValue(), $node->rightValue()]);
         static::assertSame(4, $node->treeValue());
 
-        $this->assertTreeIsStructurallySound(perTree: true);
+        $this->assertTreeIsStructurallySound();
     }
 }

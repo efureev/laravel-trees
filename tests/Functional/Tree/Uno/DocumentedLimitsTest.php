@@ -93,33 +93,4 @@ class DocumentedLimitsTest extends AbstractFunctionalTreeTestCase
         static::assertTrue($nodes['leaf']->isChildOf($nodes['branch']));
         static::assertTrue($nodes['leaf']->isChildOf($nodes['root']));
     }
-
-    /**
-     * Backs docs/Troubleshooting.md: HealthyChecker runs three of the four checks — the missing
-     * parent one is commented out of its list — so an orphaned node passes unnoticed. A clean
-     * report means "none of the three found anything", not "the tree is sound".
-     */
-    #[Test]
-    public function theCheckerDoesNotCatchAnOrphanedNode(): void
-    {
-        $nodes = $this->buildBranch();
-
-        static::assertFalse((new HealthyChecker(Category::class))->isBroken());
-
-        // Remove the middle node behind the package's back: the leaf now points at a row that
-        // no longer exists, and the bounds have a hole in them.
-        Category::query()->whereKey($nodes['branch']->getKey())->delete();
-
-        static::assertNull(Category::query()->find($nodes['branch']->getKey()));
-        static::assertSame(
-            $nodes['branch']->getKey(),
-            $nodes['leaf']->refresh()->parentValue()
-        );
-
-        // And the checker still reports a healthy tree.
-        static::assertFalse((new HealthyChecker(Category::class))->isBroken());
-
-        // The check that would have caught it exists, but is not part of HealthyChecker.
-        static::assertSame(1, (new \Fureev\Trees\Healthy\MissingParentCheck(Category::class))->check());
-    }
 }

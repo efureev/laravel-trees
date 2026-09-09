@@ -31,6 +31,28 @@ Rolling a migration back used to fail with `index "..." does not exist`, because
 were built differently on creation and removal. Migrations whose `down()` never worked will now
 run.
 
+### Health check counts
+
+`DuplicatesCheck::check()` and `WrongParentCheck::check()` return a number of offending nodes
+now. They used to return a number of ordered pairs and of (child, parent, intermediate) triples,
+so the figure grew with the size of the tree for one and the same defect. Zero still means a
+healthy tree, so `isBroken()` and `getTotalErrors() > 0` behave exactly as before; only code
+comparing against a specific non-zero count is affected.
+
+`WrongParentCheck` also reports more than it did: a level that does not sit one below the parent
+now counts, and a broken link is found in a tree of two nodes, which previously had no third row
+for the check to notice.
+
+### More health checks
+
+`HealthyChecker` now runs six checks instead of three, so `check()` returns six entries.
+`MissingParentCheck` was already written and merely commented out of the list; `RangeCheck` and
+`RootCheck` are new. Trees that passed before may now report errors — that is the point, since
+a vacated span, a second root and an orphan all used to read as healthy.
+
+Pass the model rather than its class name where the connection or the query scope matters:
+`new HealthyChecker($node)`.
+
 ### Nothing to do
 
 No configuration changes, no schema changes, no code changes required.

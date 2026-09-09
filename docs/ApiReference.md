@@ -180,7 +180,8 @@ use Fureev\Trees\Healthy\HealthyChecker;
 | `getTotalErrors(): int` | their sum |
 | `isBroken(): bool` | whether the sum is above zero |
 
-The checks: `OddnessCheck`, `DuplicatesCheck`, `WrongParentCheck`, `MissingParentCheck` — each
+The checks: `OddnessCheck`, `DuplicatesCheck`, `WrongParentCheck`, `MissingParentCheck`,
+`RangeCheck`, `RootCheck` — each
 usable on its own with `->check()`.
 
 > [!WARNING]

@@ -103,23 +103,12 @@ The four checks and what each one finds:
 | `DuplicatesCheck` | nodes sharing a bound value with another node |
 | `WrongParentCheck` | nodes whose `parent_id` disagrees with their bounds |
 | `MissingParentCheck` | nodes whose `parent_id` points at a row that no longer exists |
+| `RangeCheck` | trees whose numbering has holes — bounds vacated and never reclaimed |
+| `RootCheck` | trees that do not have exactly one root |
 
-> [!WARNING]
-> `HealthyChecker` runs only the **first three**. `MissingParentCheck` is commented out of its
-> list, so an orphaned node passes as healthy. A clean report means "none of the three found
-> anything", not "the tree is sound".
+> [!NOTE]
+> `RangeCheck` and `RootCheck` answer with a count of **trees**; the rest count nodes.
 
-Run the fourth one yourself when you suspect orphans:
-
-```php
-use Fureev\Trees\Healthy\MissingParentCheck;
-
-(new MissingParentCheck(Category::class))->check();   // number of orphaned nodes
-```
-
-## Repairing
-
-```php
 Category::fixTree();        // single tree
 Category::fixMultiTree();   // every tree in the table
 ```

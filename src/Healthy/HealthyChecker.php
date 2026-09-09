@@ -11,19 +11,25 @@ final readonly class HealthyChecker
     private Model $model;
     private array $checkers;
 
+    /**
+     * Takes the model to check, or the name of its class.
+     *
+     * A model handed over is kept as it is — see AbstractCheck for why reducing it to a class
+     * name threw away the connection and the scope values it carried.
+     */
     public function __construct(Model|string $model)
     {
-        if ($model instanceof Model) {
-            $model = $model::class;
-        }
+        $model = $model instanceof Model ? $model : instance($model);
 
-        $this->model = instance($model);
+        $this->model = $model;
 
         $this->checkers = [
             OddnessCheck::class,
             DuplicatesCheck::class,
             WrongParentCheck::class,
-//            MissingParentCheck::class,
+            MissingParentCheck::class,
+            RangeCheck::class,
+            RootCheck::class,
         ];
     }
 

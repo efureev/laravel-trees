@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Tests\Functional\Tree\Uno;
 
+use Fureev\Trees\Healthy\DuplicatesCheck;
 use Fureev\Trees\Healthy\HealthyChecker;
+use Fureev\Trees\Healthy\MissingParentCheck;
+use Fureev\Trees\Healthy\OddnessCheck;
+use Fureev\Trees\Healthy\RootCheck;
 use Fureev\Trees\Tests\Functional\AbstractFunctionalTreeTestCase;
 use Fureev\Trees\Tests\Functional\Helpers\TreeBuilder;
 use Fureev\Trees\Tests\models\v5\FixableCategory;
@@ -167,7 +171,21 @@ class FixingTest extends AbstractFunctionalTreeTestCase
 
         FixableCategory::fixTree();
 
-        static::assertFalse((new HealthyChecker(FixableCategory::class))->isBroken());
+        $repaired = FixableCategory::query()->whereKey($child->getKey())->first();
+
+        static::assertNull($repaired->parentValue());
+        static::assertTrue($repaired->isRoot());
+
+        // The bounds are sound again, and the parent link no longer dangles.
+        static::assertSame(0, (new OddnessCheck(FixableCategory::class))->check());
+        static::assertSame(0, (new DuplicatesCheck(FixableCategory::class))->check());
+        static::assertSame(0, (new MissingParentCheck(FixableCategory::class))->check());
+
+        // But a single tree may hold one root, and the repair has made a second one. See the
+        // finding in INSPECTION.md: promoting an orphan is right for a multi-tree model and
+        // leaves a single tree in a shape the package refuses to write.
+        static::assertSame(1, (new RootCheck(FixableCategory::class))->check());
+        static::assertTrue((new HealthyChecker(FixableCategory::class))->isBroken());
     }
 
     #[Test]

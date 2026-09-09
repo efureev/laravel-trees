@@ -23,8 +23,12 @@ $checker->check();           // ['OddnessCheck' => 0, 'DuplicatesCheck' => 2, 'W
 | `DuplicatesCheck` | share a bound value with another node in the same tree |
 | `WrongParentCheck` | have a `parent_id` that disagrees with where their bounds place them |
 | `MissingParentCheck` | have a `parent_id` pointing at a row that no longer exists |
+| `RangeCheck` | count the trees whose numbering has holes — bounds vacated and never reclaimed |
+| `RootCheck` | count the trees that do not have exactly one root |
 
-Each runs on its own:
+`HealthyChecker` runs all six.
+
+Each runs on its own, and each answers with a count of **nodes**:
 
 ```php
 use Fureev\Trees\Healthy\DuplicatesCheck;
@@ -32,15 +36,23 @@ use Fureev\Trees\Healthy\DuplicatesCheck;
 (new DuplicatesCheck(Category::class))->check();   // number of offending nodes
 ```
 
-> [!WARNING]
-> `HealthyChecker` runs the **first three only** — `MissingParentCheck` is commented out of its
-> list. An orphaned node is therefore reported as a healthy tree. Run that check yourself when
-> you suspect orphans, which is what a query-level delete leaves behind.
+> [!NOTE]
+> `WrongParentCheck` compares each node with the parent its `parent_id` names: the parent has to
+> enclose it and sit exactly one level above. A level that does not line up means something is
+> between them, or that the level itself is wrong.
+
+The checks group and join on equality, so they scan rather than compare every node with every
+other. A hundred thousand nodes take about 50 ms.
+
+> [!NOTE]
+> `RangeCheck` and `RootCheck` answer with a count of **trees**, not of nodes — a hole in the
+> numbering and a missing root belong to the tree, and no single node is to blame.
+
+Pass the model itself rather than its class name when it lives on a connection of its own, or
+when `getScopeAttributes()` narrows its queries by attributes the check has to see:
 
 ```php
-use Fureev\Trees\Healthy\MissingParentCheck;
-
-(new MissingParentCheck(Category::class))->check();
+(new HealthyChecker($node))->check();
 ```
 
 ## Fixing

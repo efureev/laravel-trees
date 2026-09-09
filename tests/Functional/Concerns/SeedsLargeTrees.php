@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Tests\Functional\Concerns;
 
+use Fureev\Trees\Healthy\HealthyChecker;
 use Fureev\Trees\Healthy\MissingParentCheck;
 use Illuminate\Database\ConnectionInterface;
 
@@ -148,43 +149,25 @@ trait SeedsLargeTrees
     }
 
     /**
-     * The structural invariants, as aggregate queries.
+     * `HealthyChecker` on the whole fixture.
      *
-     * `HealthyChecker` answers the same question but cross joins the table with itself on
-     * inequality conditions, which is quadratic: 20 seconds at twenty thousand rows, and hours
-     * at a million. These take under a second on a million because they group and scan.
+     * These tests originally hand-rolled the same invariants as aggregate queries, because the
+     * checker cross joined the table with itself and took twenty seconds at twenty thousand
+     * rows. It groups and joins on equality now — 47 ms at a hundred thousand — so there is no
+     * reason to keep a second implementation of the same questions.
      */
-    private function assertTreeIsStructurallySound(bool $perTree = false): void
+    private function assertTreeIsStructurallySound(): void
     {
-        $table = $this->tableName();
-        $conn  = $this->connection();
-        $scope = $perTree ? '"tree_id", ' : '';
-
-        $duplicates = $conn->selectOne(
-            "select count(*) as n from (select $scope\"lft\" from \"$table\" group by 1"
-            . ($perTree ? ', 2' : '') . ' having count(*) > 1) x'
-        )->n;
-
-        static::assertSame(0, (int)$duplicates, 'two nodes share a left bound');
-
-        $malformed = $conn->selectOne(
-            "select count(*) as n from \"$table\" where mod(\"rgt\" - \"lft\", 2) = 0 or \"rgt\" <= \"lft\""
-        )->n;
-
-        static::assertSame(0, (int)$malformed, 'a node spans an even number of bounds');
-
-        $perTreeSpans = <<<SQL
-            select count(*) as n from (
-                select "tree_id", max("rgt") as m, count(*) as c from "$table" group by 1
-            ) x where x.m <> x.c * 2
-            SQL;
-
-        $singleSpan = <<<SQL
-            select case when max("rgt") <> count(*) * 2 then 1 else 0 end as n from "$table"
-            SQL;
-
-        $mismatched = $conn->selectOne($perTree ? $perTreeSpans : $singleSpan)->n;
-
-        static::assertSame(0, (int)$mismatched, 'the outermost bound does not match the node count');
+        static::assertSame(
+            [
+                'OddnessCheck'       => 0,
+                'DuplicatesCheck'    => 0,
+                'WrongParentCheck'   => 0,
+                'MissingParentCheck' => 0,
+                'RangeCheck'         => 0,
+                'RootCheck'          => 0,
+            ],
+            (new HealthyChecker(static::model()))->check()
+        );
     }
 }

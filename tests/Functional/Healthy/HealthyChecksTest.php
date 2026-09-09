@@ -9,12 +9,15 @@ use Fureev\Trees\Healthy\DuplicatesCheck;
 use Fureev\Trees\Healthy\HealthyChecker;
 use Fureev\Trees\Healthy\MissingParentCheck;
 use Fureev\Trees\Healthy\OddnessCheck;
+use Fureev\Trees\Healthy\RangeCheck;
+use Fureev\Trees\Healthy\RootCheck;
 use Fureev\Trees\Healthy\WrongParentCheck;
 use Fureev\Trees\Tests\Functional\AbstractFunctionalTreeTestCase;
 use Fureev\Trees\Tests\Functional\Helpers\TreeBuilder;
 use Fureev\Trees\Tests\models\v5\Category;
 use Fureev\Trees\Tests\models\v5\NonTreeModel;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Covers detection of broken trees by the Healthy checks (category A).
@@ -133,9 +136,12 @@ class HealthyChecksTest extends AbstractFunctionalTreeTestCase
 
         static::assertSame(
             [
-                'OddnessCheck'     => 0,
-                'DuplicatesCheck'  => 0,
-                'WrongParentCheck' => 0,
+                'OddnessCheck'       => 0,
+                'DuplicatesCheck'    => 0,
+                'WrongParentCheck'   => 0,
+                'MissingParentCheck' => 0,
+                'RangeCheck'         => 0,
+                'RootCheck'          => 0,
             ],
             $checker->check()
         );
@@ -162,5 +168,132 @@ class HealthyChecksTest extends AbstractFunctionalTreeTestCase
         $this->expectExceptionMessage('Model should be a Tree Node');
 
         new OddnessCheck(NonTreeModel::class);
+    }
+    /**
+     * The count is a number of nodes. It used to be a number of ordered pairs, so two nodes
+     * sharing a bound scored two only by coincidence and three sharing one scored six.
+     */
+    public function testDuplicatesCountsNodesRatherThanPairs(): void
+    {
+        $root     = TreeBuilder::from(self::modelClass())->build(3);
+        $children = $this->children($root);
+
+        static::assertSame(0, (new DuplicatesCheck($root))->check());
+
+        $shared = $children->first()->leftValue();
+
+        foreach ($children->skip(1) as $node) {
+            $this->corrupt($node, [(string)$root->leftAttribute() => $shared]);
+        }
+
+        // Three nodes now share one left bound, and three is the answer.
+        static::assertSame(3, (new DuplicatesCheck($root))->check());
+    }
+
+    /**
+     * A level that does not sit one below the parent means something is between them — or that
+     * the level itself is wrong. Either way the parent link no longer describes the tree. The
+     * previous implementation looked for the intermediate row instead and saw neither.
+     */
+    public function testWrongParentDetectsABrokenLevel(): void
+    {
+        $root  = $this->buildTree();
+        $child = $this->children($root)->first();
+
+        static::assertSame(0, (new WrongParentCheck($root))->check());
+
+        // Bounds untouched, so the parent still encloses the child.
+        $this->corrupt($child, [(string)$root->levelAttribute() => 5]);
+
+        static::assertSame(1, (new WrongParentCheck($root))->check());
+    }
+
+    /**
+     * With only a root and one child there is no third row to find, which is all the previous
+     * implementation could look for.
+     */
+    public function testWrongParentDetectsABrokenLinkInATreeOfTwo(): void
+    {
+        $root  = TreeBuilder::from(self::modelClass())->build(1);
+        $child = $this->children($root)->first();
+
+        static::assertSame(0, (new WrongParentCheck($root))->check());
+
+        $this->corrupt(
+            $child,
+            [
+                (string)$root->leftAttribute()  => 1000,
+                (string)$root->rightAttribute() => 1001,
+            ]
+        );
+
+        static::assertSame(1, (new WrongParentCheck($root))->check());
+    }
+    /**
+     * A tree of N nodes uses the numbers 1..2N, so the outermost bound is twice the node count.
+     * `removeDescendants()` deletes a subtree without closing the span it used, which leaves a
+     * tree wider than its contents — and every other check sees a perfectly nested tree.
+     */
+    public function testRangeCheckDetectsAVacatedSpan(): void
+    {
+        $root  = $this->buildTree();
+        $child = $this->children($root)->first();
+
+        /** @var Category $grandchild */
+        $grandchild = Category::make(['title' => 'grandchild']);
+        $grandchild->appendTo($child->refresh())->save();
+
+        static::assertSame(0, (new RangeCheck($root))->check());
+
+        $child->refresh()->removeDescendants();
+
+        static::assertSame(0, (new OddnessCheck($root))->check());
+        static::assertSame(0, (new DuplicatesCheck($root))->check());
+        static::assertSame(0, (new WrongParentCheck($root))->check());
+        static::assertSame(0, (new MissingParentCheck($root))->check());
+
+        // Only this one notices.
+        static::assertSame(1, (new RangeCheck($root))->check());
+    }
+
+    /**
+     * Two roots whose bounds do not collide look sound to every check that compares bounds.
+     */
+    public function testRootCheckDetectsASecondRoot(): void
+    {
+        $root = $this->buildTree();
+
+        static::assertSame(0, (new RootCheck($root))->check());
+
+        $child = $this->children($root)->first();
+
+        $this->corrupt($child, [(string)$root->parentAttribute() => null]);
+
+        static::assertSame(1, (new RootCheck($root))->check());
+    }
+
+    /**
+     * The check runs against the model it was handed, connection and all. Reducing it to a class
+     * name and building it again dropped anything the caller had set.
+     */
+    public function testTheCheckStaysOnTheModelsConnection(): void
+    {
+        config(['database.connections.other' => config('database.connections.pgsql')]);
+
+        $this->buildTree();
+
+        $onOther = new Category();
+        $onOther->setConnection('other');
+
+        DB::connection('other')->enableQueryLog();
+        DB::connection('other')->flushQueryLog();
+        DB::connection()->flushQueryLog();
+
+        (new HealthyChecker($onOther))->check();
+
+        static::assertNotSame([], DB::connection('other')->getQueryLog());
+        static::assertSame([], DB::connection()->getQueryLog());
+
+        DB::purge('other');
     }
 }

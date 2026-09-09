@@ -29,9 +29,12 @@ class NodeBuilderHealthyTreeTest extends AbstractFunctionalTreeTestCase
 
         static::assertEquals(
             [
-                "OddnessCheck"     => 0,
-                "DuplicatesCheck"  => 0,
-                "WrongParentCheck" => 0,
+                'OddnessCheck'       => 0,
+                'DuplicatesCheck'    => 0,
+                'WrongParentCheck'   => 0,
+                'MissingParentCheck' => 0,
+                'RangeCheck'         => 0,
+                'RootCheck'          => 0,
             //                "missing_parent" => 0,
             ],
             $result
