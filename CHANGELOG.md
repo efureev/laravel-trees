@@ -5,7 +5,7 @@
 A major, and a large one: an audit of the package produced this release almost in full. Most
 entries are defects that were quietly wrong rather than loudly broken — a delete that re-parented
 someone else's children, a bound shift that ran on the wrong connection, health checks that could
-not be run on a real tree. Requirements are unchanged: PHP 8.4 and Laravel 13.
+not be run on a real tree. It also raises the floor to PHP 8.5; Laravel stays at 13.
 
 **What breaks is short**, and [MigrationGuide.md](./MigrationGuide.md) walks through it: three
 signatures only reachable from inside the package, the counts `HealthyChecker` returns, the
@@ -56,9 +56,9 @@ every method and every line in `src/` is executed.
   FieldType::UnsignedInteger)`. The trait it came from took `mixed ...$arguments`, so nothing
   described what an attribute is made of, to a reader or to static analysis. Existing calls are
   unaffected
-- The `php` constraint reads `^8.4` rather than `>=8.4`. The old one had no upper bound, so
-  Composer would have installed the package on PHP 9 and anything after it. The supported
-  versions are unchanged, and both are on CI
+- **PHP 8.5 is the minimum.** The constraint reads `^8.5`, where v6 asked for `>=8.4` — a floor
+  one version lower, and no upper bound at all, so Composer would have installed the package on
+  PHP 9 and anything after it. CI, the Docker image and the badges all say 8.5 now
 - `Contracts\TreeModel` describes every method the tree traits add, rather than about a third of
   them. Code typed as `Model&TreeModel` — the delete strategies, the relations, the health
   checks — could not call the rest without static analysis objecting. What it leaves out on
@@ -142,6 +142,10 @@ every method and every line in `src/` is executed.
 
 ### Fixed
 
+- `TreeModelContractTest` compares what a signature declares rather than what each side
+  resolves it to. PHP 8.5 reports `self` in an interface as the interface's own name while a
+  trait still reports the word, so the check went red on 8.5 over a return type nobody had
+  touched
 - Deleting a node no longer re-parents other people's children. The node's own children were
   found by level — every row in the tree sitting one below the deleted node's parent — so
   deleting a node two levels down handed the cousins to its parent while their bounds said they

@@ -11,11 +11,20 @@ you compare `check()` against a literal.
 
 ### Requirements
 
-Unchanged from v6: PHP 8.4 or newer, Laravel 13. There is nothing to upgrade before this one.
+**PHP 8.5 or newer.** v6 ran on 8.4, and that floor rises here. Laravel is unchanged at 13.
 
-The constraint is written `^8.4` now instead of `>=8.4`, which had no upper bound and would have
-let Composer install the package on PHP 9. The versions that work are the same two, and both run
-on CI.
+```json
+"require": {
+    "php": "^8.5",
+    "illuminate/database": "^13.0"
+}
+```
+
+The constraint is also bounded now: it was `>=8.4`, with no upper bound, so Composer would have
+installed the package on PHP 9 and anything after it.
+
+If you are on 8.4, stay on v6 until you can move — 8.4 has security support until the end of
+2028, and v6 is not going anywhere.
 
 ### One less dependency
 

@@ -15,7 +15,7 @@ jobs:
       - name: Use PHP 8.4
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: '8.5'
           extensions: mbstring
           coverage: none
 
@@ -54,7 +54,7 @@ jobs:
       fail-fast: false
       matrix:
         setup: [ basic, lowest, stable ]
-        php: [ '8.4', '8.5' ]
+        php: [ '8.5' ]
 
     services:
       postgres:

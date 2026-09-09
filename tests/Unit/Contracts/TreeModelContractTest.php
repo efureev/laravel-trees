@@ -76,10 +76,11 @@ class TreeModelContractTest extends AbstractTestCase
 
     private function describe(ReflectionMethod $method): string
     {
+        $declaring  = $method->getDeclaringClass()->getName();
         $parameters = [];
 
         foreach ($method->getParameters() as $parameter) {
-            $parameters[] = $this->typeName($parameter->getType()) . ' $' . $parameter->getName()
+            $parameters[] = $this->typeName($parameter->getType(), $declaring) . ' $' . $parameter->getName()
                 . ($parameter->isDefaultValueAvailable() ? ' = ...' : '');
         }
 
@@ -87,19 +88,25 @@ class TreeModelContractTest extends AbstractTestCase
             '%s(%s): %s',
             $method->getName(),
             implode(', ', $parameters),
-            $this->typeName($method->getReturnType())
+            $this->typeName($method->getReturnType(), $declaring)
         );
     }
 
-    private function typeName(?ReflectionType $type): string
+    private function typeName(?ReflectionType $type, string $declaring): string
     {
         if ($type === null) {
             return 'mixed';
         }
 
-        // `self` means the trait's using class on one side and the interface on the other, so
-        // comparing the words rather than resolving them is the whole point.
         $name = $type instanceof ReflectionNamedType ? $type->getName() : (string)$type;
+
+        // `self` is written on both sides and resolves differently: to the using class in a
+        // trait, to the interface in an interface. PHP 8.4 reported the word back as written and
+        // 8.5 resolves it, so the declaring class is folded back to `self` to compare what was
+        // declared rather than what each side resolves it to.
+        if ($name === $declaring) {
+            $name = 'self';
+        }
 
         return ($type->allowsNull() && $name !== 'mixed' && !str_contains($name, 'null') ? '?' : '') . $name;
     }

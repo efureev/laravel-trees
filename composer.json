@@ -16,18 +16,18 @@
         }
     ],
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "ext-pdo": "*",
         "illuminate/database": "^13.0",
         "illuminate/events": "^13.0"
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.52",
-        "orchestra/testbench": "^11.0",
+        "orchestra/testbench": "^11.2",
         "phpstan/phpstan": "^2.2",
-        "phpunit/phpunit": "^13.0",
+        "phpunit/phpunit": "^13.3",
         "squizlabs/php_codesniffer": "^4.0",
-        "symfony/var-dumper": "^8.0"
+        "symfony/var-dumper": "^8.1"
     },
     "autoload": {
         "psr-4": {
