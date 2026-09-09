@@ -42,6 +42,7 @@ root is `makeRoot()->save()` — multi-tree only, see
 | `delete()` | remove the node, lift its children one level | 3 |
 | `deleteWithChildren(bool $forceDelete = true): mixed` | remove the node and its subtree | 3+ |
 | `removeDescendants(): void` | remove the subtree, keep the node; closes the bounds it freed | 2 |
+| `moveChildrenToParent(): void` | lift the children into the parent, keep the node as a leaf | 3 |
 
 > [!WARNING]
 > Always delete through the model. A query-level `delete()` skips the bookkeeping and breaks the
@@ -268,7 +269,6 @@ to the model, and helpers for its own queries:
 `afterRestore()`, `getDirty()`, `newEloquentBuilder()`, `newCollection()`, `trace()`,
 `treeCondition()`, `applyNestedSetScope()`, `whereNodeBetween()`, `getNodeData()`,
 `getPlainNodeData()`, `getNodeBounds()`, `wrappedColumns()`, `wrappedKey()`, `wrappedTable()`,
-`moveChildrenToParent()`,
 `newNestedSetQuery()`, `newScopedQuery()`, `isForceSaving()`.
 
 Calling them directly bypasses the bookkeeping described in

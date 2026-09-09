@@ -68,6 +68,19 @@
 
 ### Fixed
 
+- Deleting a node no longer re-parents other people's children. The node's own children were
+  found by level — every row in the tree sitting one below the deleted node's parent — so
+  deleting a node two levels down handed the cousins to its parent while their bounds said they
+  were somewhere else. They are matched by `parent_id` now
+- A children handler that refuses a delete by throwing actually prevents it. The handler ran
+  from `afterDelete()`, once the row was already gone, so `RefuseToOrphanChildren` announced a
+  delete it had not stopped and left the children pointing at a row that no longer existed. It
+  runs before the row is removed
+- `moveChildrenToParent()` is correct on a node that stays. It shifted the children one to the
+  left, which only adds up while the node is on its way out and something else is about to close
+  the two bounds it held; called on a live node it left a child sharing a bound with its former
+  parent. The children now move out to the place directly after the node, which becomes a leaf,
+  and the tree keeps exactly the width it had
 - `removeDescendants()` closes the bounds it frees. It deleted the rows and left the node as
   wide as the subtree it no longer had, so `isLeaf()` read `false` off the bounds with no
   children to show for it, and the vacated numbers were never reclaimed — a node appended

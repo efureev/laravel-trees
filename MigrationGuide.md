@@ -66,6 +66,12 @@ rows occupied, so the node becomes a leaf and everything positioned after it mov
 holding bounds read before the call has to re-read them — as it already had to after any other
 write.
 
+### The children handler runs before the delete
+
+`childrenHandlerOnDelete` used to be called from `afterDelete()`, after the row was gone. It is
+called before, so a handler that refuses by throwing now leaves the node in place. A handler
+that counted on the node already being deleted has to be looked at.
+
 ### Nothing to do
 
 No configuration changes, no schema changes, no code changes required.

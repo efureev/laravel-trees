@@ -316,6 +316,23 @@ trait UseNestedSet
         if (!$this->isSoftDelete() && !$this->isLeaf()) {
             $this->onDeletingNodeHasChildren();
         }
+
+        // Before the row goes, not after. The handler used to run from afterDelete(), so a
+        // handler that refuses by throwing announced it once the node was already gone and its
+        // children stranded. Running it here also means the node is still there to be turned
+        // into a leaf, which is what leaves the tree valid at every step.
+        if ($this->operation !== Operation::DeleteAll && $this->rowWillBeRemoved() && !$this->isLeaf()) {
+            static::resolveChildrenHandler($this->getTreeConfig()->childrenHandlerOnDelete)
+                ->handle($this);
+        }
+    }
+
+    /**
+     * Is this delete going to take the row away, rather than mark it?
+     */
+    protected function rowWillBeRemoved(): bool
+    {
+        return !$this->isSoftDelete() || $this->isForceDeleting();
     }
 
     /**
@@ -326,14 +343,10 @@ trait UseNestedSet
         $left  = $this->leftValue();
         $right = $this->rightValue();
 
-        if ($this->operation === Operation::DeleteAll || $this->isLeaf()) {
-            $this->shift(($right + 1), null, ($left - $right - 1));
-        } else {
-            $handler = static::resolveChildrenHandler($this->getTreeConfig()->childrenHandlerOnDelete);
-            $handler->handle($this);
-
-            $this->shift(($right + 1), null, -2);
-        }
+        // The children were lifted before the row went, so this node is a leaf by now whatever
+        // it held, and a whole-subtree delete took everything below it. One expression covers
+        // both: close the span the node itself occupied.
+        $this->shift(($right + 1), null, ($left - $right - 1));
 
         $this->operation = null;
         $this->node      = null;
@@ -975,7 +988,14 @@ trait UseNestedSet
     }
 
     /**
-     * Move target node's children to it's parent
+     * Lift this node's children into its parent, and stay behind as a leaf.
+     *
+     * The children move out of this node's span and take the place directly after it, so the
+     * tree keeps exactly the width it had — nothing outside the node moves at all.
+     *
+     * It used to shift them the other way, by one to the left, which is only right while the
+     * node is on its way out and something else is about to close the two bounds it occupied.
+     * Called on a node that stays, it left a child sharing a bound with its former parent.
      */
     public function moveChildrenToParent(): void
     {
@@ -990,31 +1010,48 @@ trait UseNestedSet
             );
         }
 
-        $this->descendantsQuery()
+        $left  = $this->leftValue();
+        $right = $this->rightValue();
+
+        if (($right - $left) === 1) {
+            return;
+        }
+
+        $leftName  = (string)$this->leftAttribute();
+        $rightName = (string)$this->rightAttribute();
+
+        // withTrashed, through newNestedSetQuery(): a trashed descendant keeps its place in the
+        // tree, so it has to travel with the rest or be left behind inside a span that moved.
+        $this->newNestedSetQuery()
+            ->descendantsQuery()
             ->update(
                 [
-                    (string)$this->leftAttribute()  => $this->shiftedColumn((string)$this->leftAttribute(), -1),
-                    (string)$this->rightAttribute() => $this->shiftedColumn((string)$this->rightAttribute(), -1),
-                    (string)$this->levelAttribute() => $this->shiftedColumn((string)$this->levelAttribute(), -1),
+                    $leftName                       => $this->shiftedColumn($leftName, 1),
+                    $rightName                      => $this->shiftedColumn($rightName, 1),
+                    (string)$this->levelAttribute() => $this->shiftedColumn(
+                        (string)$this->levelAttribute(),
+                        -1
+                    ),
                 ]
             );
 
-        $condition = [
-            [
-                (string)$this->levelAttribute(),
-                '=',
-                ($parent->levelValue() + 1),
-            ],
-        ];
+        // By parent, not by level. Matching on the level rewrote the parent of every node in the
+        // tree that happened to sit there — deleting a node two levels down handed its cousins
+        // to its own parent, and the bounds said otherwise.
+        $this->newNestedSetQuery()
+            ->where((string)$this->parentAttribute(), $this->getKey())
+            ->update([(string)$this->parentAttribute() => $parent->getKey()]);
 
-        $this
-            ->where($condition)
-            ->treeCondition()
-            ->update(
-                [
-                    (string)$this->parentAttribute() => $parent->getKey(),
-                ]
-            );
+        $this->newNestedSetQuery()
+            ->whereKey($this->getKey())
+            ->update([$rightName => ($left + 1)]);
+
+        $this->setAttribute($rightName, ($left + 1));
+        $this->syncOriginalAttribute($rightName);
+
+        if ($this->relationLoaded('children')) {
+            $this->setRelation('children', $this->newCollection());
+        }
     }
 
     public function trace(): array

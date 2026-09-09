@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fureev\Trees\Tests\Functional\Tree\Uno;
 
 use Fureev\Trees\Exceptions\DeletedNodeHasChildrenException;
+use Fureev\Trees\Healthy\HealthyChecker;
 use Fureev\Trees\Tests\Functional\AbstractFunctionalTreeTestCase;
 use Fureev\Trees\Tests\models\v5\StrictCategory;
 use PHPUnit\Framework\Attributes\Test;
@@ -46,12 +47,22 @@ class DeleteStrategyTest extends AbstractFunctionalTreeTestCase
         $leaf->refresh()->delete();
         static::assertSame(2, StrictCategory::query()->count());
 
-        $this->expectException(DeletedNodeHasChildrenException::class);
-
         /** @var StrictCategory $another */
         $another = static::model(['title' => 'another leaf']);
         $another->appendTo($branch->refresh())->save();
 
-        $branch->refresh()->delete();
+        try {
+            $branch->refresh()->delete();
+            static::fail('the handler should have refused the delete');
+        } catch (DeletedNodeHasChildrenException) {
+            // expected
+        }
+
+        // Refusing means the node is still there. The handler used to run once the row was
+        // already gone, so it announced a delete it had not prevented and left the children
+        // pointing at a row that no longer existed.
+        static::assertTrue(StrictCategory::query()->whereKey($branch->getKey())->exists());
+        static::assertSame(3, StrictCategory::query()->count());
+        static::assertFalse((new HealthyChecker(StrictCategory::class))->isBroken());
     }
 }
