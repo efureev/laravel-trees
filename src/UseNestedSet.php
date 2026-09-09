@@ -460,11 +460,26 @@ trait UseNestedSet
         return $this->insertAfter($next)->forceSave();
     }
 
+    /**
+     * Save even when nothing changed.
+     *
+     * A positioning call sets no attribute, so an unchanged model is skipped by `save()`;
+     * raising this flag makes `getDirty()` report the parent column and the save go through.
+     *
+     * The flag is lowered in `finally`, so it lives exactly as long as the one save it was
+     * raised for. Clearing it on the `saved` event alone was not enough: a listener vetoing
+     * `saving` makes `save()` return before any of ours runs, and the flag stayed raised on the
+     * model for good — every later plain `save()` then wrote whether or not anything changed.
+     */
     public function forceSave(): bool
     {
         $this->forceSave = true;
 
-        return $this->save();
+        try {
+            return $this->save();
+        } finally {
+            $this->forceSave = false;
+        }
     }
 
     public function isForceSaving(): bool
@@ -630,17 +645,11 @@ trait UseNestedSet
         $this->operation  = null;
         $this->node       = null;
         $this->treeChange = null;
-
-        if ($this->forceSave) {
-            $this->forceSave = false;
-        }
     }
 
     /// *********************
     ///
     /// Restore block: start
-    ///
-    /// Todo: move to actions
     ///
     protected static ?Closure $customRestoreWithDescendantsFn = null;
     protected static ?Closure $customRestoreWithParentsFn     = null;

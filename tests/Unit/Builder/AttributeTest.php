@@ -47,6 +47,26 @@ class AttributeTest extends AbstractTestCase
         static::assertSame($attr->columnName(), (string)$attr);
     }
 
+    public function testChangeName(): void
+    {
+        $attr = Attribute::make(AttributeType::Left);
+        static::assertSame(AttributeType::Left, $attr->name());
+        static::assertSame(AttributeType::Left->value, (string)$attr);
+
+        $attr->setName(AttributeType::Right);
+
+        static::assertSame(AttributeType::Right, $attr->name());
+
+        // The column name follows the attribute name while none was set explicitly.
+        static::assertSame(AttributeType::Right->value, (string)$attr);
+
+        $attr->setColumnName('kept');
+        $attr->setName(AttributeType::Level);
+
+        // Once set explicitly it stops following.
+        static::assertSame('kept', (string)$attr);
+    }
+
     public function testChangeDefault(): void
     {
         $attr = Attribute::make(AttributeType::Left);

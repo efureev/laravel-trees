@@ -56,6 +56,15 @@
 
 ### Fixed
 
+- `forceSave()` lowers its flag in a `finally`, so it lives exactly as long as the one save it
+  was raised for. It was cleared on the `saved` and `updated` events only, and a listener
+  vetoing `saving` makes `save()` return before either fires — the flag then stayed raised on
+  the model for good, and every later plain `save()` wrote whether or not anything had changed.
+  `up()` and `down()` go through the same helper
+- `Table` renders its own columns. `getColumnNames()` memoised into a `static` declared inside
+  the method, so the cache lived for the whole process rather than for the object: the second
+  table built in one request took the first one's columns while showing its own headers, and
+  the output was silently wrong rather than an error
 - `isMulti()` reports how the model itself is configured. It used to answer about the node a
   pending `appendTo()` / `prependTo()` / `insertBefore()` / `insertAfter()` targeted, which is
   the same answer for two nodes of one class — the tree builder is static — and the wrong one
@@ -172,6 +181,13 @@
 
 ### Removed
 
+- The `forceSave` reset in `afterRestore()`, which only mopped up the stuck flag if the model
+  happened to be restored afterwards. `forceSave()` now clears it on every exit
+- `Table::getColumnNames()`, which forwarded to `getExtraColumnNames()` once its cache was
+  taken out, and named itself wrongly besides: it returned the extra columns only, never the
+  `level` and `ID` that `buildRowData()` adds. The remaining method pairs with
+  `getExtraColumnLabel()`. Both are protected on a `final` class, so nothing outside the package
+  could reach either
 - Commented-out code that referenced methods which do not exist: a `throw` calling a factory
   `DeletedNodeHasChildrenException` never had, a call to an `onRestoredNode…` method absent from
   the whole package, and an abandoned `makeRoot()` signature taking a tree id the method does
