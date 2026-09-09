@@ -25,6 +25,16 @@
 
 ### Changed
 
+- `Contracts\TreeModel` describes every method the tree traits add, rather than about a third of
+  them. Code typed as `Model&TreeModel` — the delete strategies, the relations, the health
+  checks — could not call the rest without static analysis objecting. What it leaves out on
+  purpose are the methods the traits override rather than add (`getDirty()`, `newCollection()`,
+  `newEloquentBuilder()`, `uniqueIds()`) along with the initialiser and booter Laravel calls on
+  a trait: those belong to Eloquent, and an intersection with `Model` already covers them.
+
+  Nothing implements the interface and nothing tests for it — `Helper::isTreeNode()` asks
+  whether the model uses `UseTree` — so this changes no runtime behaviour and breaks no model.
+  A test now fails if the contract and the traits drift apart again
 - `Table::fromQuery()` is static, like `fromModel()` and `fromTree()` beside it. It was the odd
   one out, so the form written by analogy was a fatal error rather than a mistake with a
   message — and PHP refuses before any magic could soften it, since a public non-static method

@@ -140,8 +140,9 @@ one code path but no test exercises it. Other engines are unverified.
 | `Fixing` trait | Carries the author's note that it is not verified since v5. Treat repairs as a last resort and check the result |
 
 > [!NOTE]
-> `Fureev\Trees\Contracts\TreeModel` does not declare every public method the trait provides.
-> Type against the concrete model, or the trait, rather than the interface.
+> `Fureev\Trees\Contracts\TreeModel` describes a node for static analysis; nothing implements it
+> and nothing tests for it, so declaring it on a model of your own gains nothing. What makes a
+> model a node is the `UseTree` trait, which is what `Helper::isTreeNode()` looks for.
 
 ## Related
 
