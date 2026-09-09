@@ -9,6 +9,9 @@
   reproduced locally with one command
 - Regression coverage for `QueryBuilder\Fixing::makeGap()` called with a zero offset
 
+- `moveChildrenToParent()` refuses a node with no parent instead of dying on it, and refuses
+  before writing anything. It used to shift the descendants first and only then dereference the
+  missing parent, so a root left the call with a raw `Error` and a renumbered tree behind it
 - `parentsByModelId()` works on single trees as well. It joins a subquery holding the target
   node and compares bounds, and the only thing a single tree lacked was something to join on —
   so the subquery is cross joined instead, which is the same thing without a condition. The

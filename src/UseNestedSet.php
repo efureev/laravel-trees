@@ -934,6 +934,17 @@ trait UseNestedSet
      */
     public function moveChildrenToParent(): void
     {
+        $parent = $this->parent;
+
+        if ($parent === null) {
+            // Checked before anything is written. The descendants used to be shifted first, so
+            // a root reached the dereference below with the tree already renumbered and was
+            // left broken by the failure.
+            throw new Exception(
+                'Can not move children to the parent: node #' . $this->getKey() . ' has none.'
+            );
+        }
+
         $this->descendantsQuery()
             ->update(
                 [
@@ -942,8 +953,6 @@ trait UseNestedSet
                     (string)$this->levelAttribute() => $this->shiftedColumn((string)$this->levelAttribute(), -1),
                 ]
             );
-
-        $parent = $this->parent;
 
         $condition = [
             [

@@ -73,12 +73,16 @@ $node->deleteWithChildren(false);   // soft delete, for models using SoftDeletes
 > without closing the gap, and a later correct delete cannot repair it — see
 > [Limitations](./Limitations.md#never-delete-through-a-query).
 
-Related helpers:
+Related helper:
 
 | Method | Does |
 |---|---|
 | `removeDescendants()` | delete the subtree, keep the node |
-| `moveChildrenToParent()` | lift the children one level, keep the node |
+
+> [!NOTE]
+> `moveChildrenToParent()` is public, but it is the hook the delete strategy calls, not something
+> to invoke yourself. It moves the children without closing the node's own span, which only adds
+> up while the node is on its way out — called on a live node it leaves the tree inconsistent.
 
 ## Changing what a delete does
 
