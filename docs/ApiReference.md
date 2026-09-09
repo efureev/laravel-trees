@@ -41,7 +41,7 @@ root is `makeRoot()->save()` — multi-tree only, see
 |---|---|---|
 | `delete()` | remove the node, lift its children one level | 3 |
 | `deleteWithChildren(bool $forceDelete = true): mixed` | remove the node and its subtree | 3+ |
-| `removeDescendants(): void` | remove the subtree, keep the node | 1 |
+| `removeDescendants(): void` | remove the subtree, keep the node; closes the bounds it freed | 2 |
 
 > [!WARNING]
 > Always delete through the model. A query-level `delete()` skips the bookkeeping and breaks the

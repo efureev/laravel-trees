@@ -10,9 +10,8 @@ use Fureev\Trees\Tests\models\v5\Category;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
- * `removeDescendants()` deletes the subtree with a query and keeps the node. What it does not do
- * is close the span those descendants occupied, and these pin that down rather than wish it
- * away — see the finding in INSPECTION.md.
+ * `removeDescendants()` deletes the subtree and keeps the node. It used to leave the node as
+ * wide as the subtree it no longer had, so these pin down that the room is given back.
  */
 class RemoveDescendantsTest extends AbstractFunctionalTreeTestCase
 {
@@ -25,7 +24,7 @@ class RemoveDescendantsTest extends AbstractFunctionalTreeTestCase
     }
 
     /**
-     * root -> a (-> a1), b
+     * root(1..8) -> a(2..5) -> a1(3..4), b(6..7)
      *
      * @return array<string, Category>
      */
@@ -55,6 +54,25 @@ class RemoveDescendantsTest extends AbstractFunctionalTreeTestCase
         ];
     }
 
+    /**
+     * @return array<string, array{0: int, 1: int}>
+     */
+    private function bounds(): array
+    {
+        return Category::query()
+            ->defaultOrder()
+            ->get()
+            ->mapWithKeys(
+                static fn(Category $n) => [
+                    $n->title => [
+                        $n->leftValue(),
+                        $n->rightValue(),
+                    ],
+                ]
+            )
+            ->all();
+    }
+
     #[Test]
     public function itDeletesTheSubtreeAndKeepsTheNode(): void
     {
@@ -74,34 +92,64 @@ class RemoveDescendantsTest extends AbstractFunctionalTreeTestCase
     }
 
     /**
-     * The node keeps the span its children used. Nothing shifts, so `isLeaf()` — which answers
-     * from the bounds — reports a node with no children as not a leaf.
+     * The node becomes a leaf and everything positioned after it moves up by the width that was
+     * freed. The whole tree closes ranks.
      */
     #[Test]
-    public function theVacatedSpanIsLeftBehind(): void
+    public function theVacatedSpanIsClosed(): void
     {
         $nodes = $this->buildTree();
 
-        static::assertSame([2, 5], [$nodes['a']->leftValue(), $nodes['a']->rightValue()]);
+        static::assertSame(
+            [
+                'root' => [
+                    1,
+                    8,
+                ],
+                'a'    => [
+                    2,
+                    5,
+                ],
+                'a1'   => [
+                    3,
+                    4,
+                ],
+                'b'    => [
+                    6,
+                    7,
+                ],
+            ],
+            $this->bounds()
+        );
 
         $nodes['a']->removeDescendants();
 
-        $a = $nodes['a']->refresh();
+        static::assertSame(
+            [
+                'root' => [
+                    1,
+                    6,
+                ],
+                'a'    => [
+                    2,
+                    3,
+                ],
+                'b'    => [
+                    4,
+                    5,
+                ],
+            ],
+            $this->bounds()
+        );
 
-        static::assertSame([2, 5], [$a->leftValue(), $a->rightValue()]);
-        static::assertSame(0, $a->children()->count());
-        static::assertFalse($a->isLeaf());
-
-        // Neither does the sibling move up into the freed room.
-        static::assertSame([6, 7], [$nodes['b']->refresh()->leftValue(), $nodes['b']->rightValue()]);
+        // The model in hand agrees with the row, and is not left dirty by saying so.
+        static::assertSame([2, 3], [$nodes['a']->leftValue(), $nodes['a']->rightValue()]);
+        static::assertSame([], $nodes['a']->getDirty());
+        static::assertTrue($nodes['a']->isLeaf());
     }
 
-    /**
-     * The leftover room is never reused: a node appended afterwards opens a gap of its own and
-     * the empty pair stays inside the parent for good.
-     */
     #[Test]
-    public function aLaterInsertDoesNotReclaimTheRoom(): void
+    public function aLaterInsertUsesTheFreedRoom(): void
     {
         $nodes = $this->buildTree();
 
@@ -111,30 +159,70 @@ class RemoveDescendantsTest extends AbstractFunctionalTreeTestCase
         $fresh = static::model(['title' => 'fresh']);
         $fresh->appendTo($nodes['a']->refresh())->save();
 
-        static::assertSame([2, 7], [$nodes['a']->refresh()->leftValue(), $nodes['a']->refresh()->rightValue()]);
-        static::assertSame([5, 6], [$fresh->refresh()->leftValue(), $fresh->refresh()->rightValue()]);
+        static::assertSame(
+            [
+                'root'  => [
+                    1,
+                    8,
+                ],
+                'a'     => [
+                    2,
+                    5,
+                ],
+                'fresh' => [
+                    3,
+                    4,
+                ],
+                'b'     => [
+                    6,
+                    7,
+                ],
+            ],
+            $this->bounds()
+        );
     }
 
-    /**
-     * The vacated span is now visible. `RangeCheck` compares the outermost bound with the node
-     * count, and every other check still reads the tree as perfectly nested — which is why the
-     * damage went unreported until that check existed.
-     */
     #[Test]
-    public function theHealthCheckerReportsTheVacatedSpan(): void
+    public function theTreeStaysHealthy(): void
     {
         $nodes = $this->buildTree();
 
         $nodes['a']->removeDescendants();
 
-        $report = (new HealthyChecker(Category::class))->check();
+        static::assertFalse((new HealthyChecker(Category::class))->isBroken());
+    }
 
-        static::assertSame(0, $report['OddnessCheck']);
-        static::assertSame(0, $report['DuplicatesCheck']);
-        static::assertSame(0, $report['WrongParentCheck']);
-        static::assertSame(0, $report['MissingParentCheck']);
-        static::assertSame(1, $report['RangeCheck']);
+    /**
+     * A leaf has nothing below it, so there is nothing to delete and no room to give back.
+     */
+    #[Test]
+    public function callingItOnALeafChangesNothing(): void
+    {
+        $nodes = $this->buildTree();
 
-        static::assertTrue((new HealthyChecker(Category::class))->isBroken());
+        $before = $this->bounds();
+
+        $nodes['b']->removeDescendants();
+
+        static::assertSame($before, $this->bounds());
+        static::assertFalse((new HealthyChecker(Category::class))->isBroken());
+    }
+
+    /**
+     * The loaded relation is emptied along with the rows, rather than left holding models that
+     * are no longer there.
+     */
+    #[Test]
+    public function aLoadedChildrenRelationIsEmptied(): void
+    {
+        $nodes = $this->buildTree();
+
+        $a = Category::query()->with('children')->find($nodes['a']->getKey());
+
+        static::assertCount(1, $a->children);
+
+        $a->removeDescendants();
+
+        static::assertCount(0, $a->children);
     }
 }

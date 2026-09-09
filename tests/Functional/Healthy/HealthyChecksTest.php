@@ -231,8 +231,8 @@ class HealthyChecksTest extends AbstractFunctionalTreeTestCase
     }
     /**
      * A tree of N nodes uses the numbers 1..2N, so the outermost bound is twice the node count.
-     * `removeDescendants()` deletes a subtree without closing the span it used, which leaves a
-     * tree wider than its contents — and every other check sees a perfectly nested tree.
+     * Deleting a subtree with a query takes the rows and leaves their numbers behind, so the
+     * tree ends up wider than its contents — and every other check sees a perfectly nested one.
      */
     public function testRangeCheckDetectsAVacatedSpan(): void
     {
@@ -245,7 +245,8 @@ class HealthyChecksTest extends AbstractFunctionalTreeTestCase
 
         static::assertSame(0, (new RangeCheck($root))->check());
 
-        $child->refresh()->removeDescendants();
+        // Straight through the query builder, so none of the bookkeeping runs.
+        $child->refresh()->newNestedSetQuery()->descendantsQuery()->getQuery()->delete();
 
         static::assertSame(0, (new OddnessCheck($root))->check());
         static::assertSame(0, (new DuplicatesCheck($root))->check());

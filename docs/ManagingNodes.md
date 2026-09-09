@@ -77,7 +77,7 @@ Related helper:
 
 | Method | Does |
 |---|---|
-| `removeDescendants()` | delete the subtree, keep the node |
+| `removeDescendants()` | delete the subtree, keep the node — the room it used is given back |
 
 > [!NOTE]
 > `moveChildrenToParent()` is public, but it is the hook the delete strategy calls, not something

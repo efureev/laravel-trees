@@ -403,11 +403,44 @@ trait UseNestedSet
     }
 
     /**
-     * Remove target node's children
+     * Delete everything below this node and close the room it used.
+     *
+     * Only deleting the rows left the node as wide as the subtree it no longer had: `isLeaf()`
+     * read `false` off the bounds with no children to show for it, and the vacated numbers were
+     * never reclaimed — a node appended afterwards opened a gap of its own and left the empty
+     * pair inside the parent for good.
+     *
+     * One shift closes it. The node's own right bound is the first thing at or past the cut, so
+     * it collapses to `left + 1` and everything after it moves up by the same width.
      */
     public function removeDescendants(): void
     {
+        $left  = $this->leftValue();
+        $right = $this->rightValue();
+
         $this->newNestedSetQuery()->descendantsQuery()->delete();
+
+        $width = ($right - $left - 1);
+
+        // A soft-deleting model keeps the rows, and a trashed node keeps its place in the tree,
+        // so the room is still occupied. Same rule as `afterDelete()`, which does not shift for
+        // a soft delete either.
+        if ($width === 0 || $this->isSoftDelete()) {
+            return;
+        }
+
+        $this->shift($right, null, -$width);
+
+        // The row is right; make the model in hand agree with it, without a query and without
+        // leaving it dirty.
+        $rightName = (string)$this->rightAttribute();
+
+        $this->setAttribute($rightName, ($left + 1));
+        $this->syncOriginalAttribute($rightName);
+
+        if ($this->relationLoaded('children')) {
+            $this->setRelation('children', $this->newCollection());
+        }
     }
 
     /**

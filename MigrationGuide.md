@@ -59,6 +59,13 @@ Pass the model rather than its class name where the connection or the query scop
 root of the tree being repaired, because a single tree may hold only one root. If you relied on
 the old behaviour to split a tree, promote the node yourself with `makeRoot()` after the repair.
 
+### `removeDescendants()` renumbers the tree
+
+It used to delete the rows and leave every bound where it was. It now closes the room those
+rows occupied, so the node becomes a leaf and everything positioned after it moves up. Code
+holding bounds read before the call has to re-read them — as it already had to after any other
+write.
+
 ### Nothing to do
 
 No configuration changes, no schema changes, no code changes required.

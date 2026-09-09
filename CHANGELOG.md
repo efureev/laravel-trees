@@ -68,6 +68,12 @@
 
 ### Fixed
 
+- `removeDescendants()` closes the bounds it frees. It deleted the rows and left the node as
+  wide as the subtree it no longer had, so `isLeaf()` read `false` off the bounds with no
+  children to show for it, and the vacated numbers were never reclaimed — a node appended
+  afterwards opened a gap of its own and left the empty pair inside the parent for good. One
+  shift now collapses the node's own right bound and moves everything after it up. On a
+  soft-deleting model nothing shifts, because the rows are still there holding their place
 - `fixTree()` places a node whose parent row is gone under the root of the tree it is
   repairing, and so does `fixMultiTree()`. Both used to hand such a node to a salvage pass that
   ran after the numbering and re-keyed one group at a time to `null`, then walked again with the

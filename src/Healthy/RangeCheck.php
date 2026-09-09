@@ -16,7 +16,7 @@ use Illuminate\Database\Query\Builder;
  *
  * Nothing else sees this. The bounds still nest, nothing is duplicated, and every parent still
  * encloses its children — the tree is merely wider than its contents. That is what a subtree
- * deleted by query leaves behind, and what `removeDescendants()` leaves on purpose.
+ * deleted straight through the query builder leaves behind.
  *
  * Counted per tree rather than per node: a hole belongs to the tree, and there is no one node
  * to blame for it.
