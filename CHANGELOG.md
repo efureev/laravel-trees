@@ -42,6 +42,12 @@ every method and every line in `src/` is executed.
 
 ### Changed
 
+- Development dependencies sit on their current majors. `squizlabs/php_codesniffer` drops the
+  `^3.11 ||` half of its constraint now that 4 is out, and `symfony/var-dumper` moves to `^8.0`
+  — the old `^7.0` was the one thing holding a Symfony 7 package in a tree where everything else
+  had moved to 8. The rest were already current. Checked in both resolutions CI uses: the
+  highest, and `--prefer-lowest`, where the floors are testbench 11.0.0, PHPUnit 13.0.0, PHPStan
+  2.2.0, CodeSniffer 4.0.2 and var-dumper 8.0.0
 - `Migrate::columnsFromModel()` raises `Fureev\Trees\Exceptions\InvalidConfigException` rather
   than the one from `Php\Support`. Same short name, same message, so a `catch` block only needs
   its import changed — and it now sits under the package's own exception, so
