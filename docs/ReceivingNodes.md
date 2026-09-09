@@ -116,8 +116,9 @@ MultiCategory::parentsByModelId($id, andSelf: true)->get();
 ```
 
 > [!WARNING]
-> `parentsByModelId()` works on multi-tree models only, and raises the **global** `\Exception` on
-> a single tree — not the package one.
+> `parentsByModelId()` works on multi-tree models only. On a single tree it raises
+> `NotSupportedException`, which — like every error the package throws — extends
+> `Fureev\Trees\Exceptions\Exception`.
 
 ## Ordering
 

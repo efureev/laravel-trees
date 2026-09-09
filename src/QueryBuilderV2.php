@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Fureev\Trees;
 
-use Exception;
 use Fureev\Trees\Contracts\TreeModel;
+use Fureev\Trees\Exceptions\NotSupportedException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -89,7 +89,7 @@ class QueryBuilderV2 extends Builder
     public function parentsByModelId(string|int $modelId, ?int $level = null, bool $andSelf = false): static
     {
         if (!$this->model->isMulti()) {
-            throw new Exception('Does not support single tree yet');
+            throw new NotSupportedException(null, 'Does not support single tree yet');
         }
 
         /** @var static $query */

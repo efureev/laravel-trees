@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Tests\Functional\Tree\Uno;
 
-use Exception;
+use Fureev\Trees\Exceptions\NotSupportedException;
 use Fureev\Trees\Tests\Functional\AbstractFunctionalTreeTestCase;
 use Fureev\Trees\Tests\models\v5\Category;
 use PHPUnit\Framework\Attributes\Test;
@@ -73,7 +73,8 @@ class QueryBuilderTest extends AbstractFunctionalTreeTestCase
         $modelRoot = static::model(['title' => 'root node']);
         $modelRoot->makeRoot()->save();
 
-        $this->expectException(Exception::class);
+        // The package's own hierarchy: catching Fureev\Trees\Exceptions\Exception must catch it.
+        $this->expectException(NotSupportedException::class);
         $this->expectExceptionMessage('Does not support single tree yet');
 
         Category::parentsByModelId($modelRoot->id)->get();

@@ -252,8 +252,8 @@ All extend `Fureev\Trees\Exceptions\Exception`.
 | `UnsavedNodeException` | an unsaved node is used as a target |
 
 > [!NOTE]
-> `parentsByModelId()` on a single-tree model raises the **global** `\Exception`, not the
-> package one. Catching `Fureev\Trees\Exceptions\Exception` will not catch it.
+> `parentsByModelId()` on a single-tree model raises `NotSupportedException`, so it is caught by
+> `Fureev\Trees\Exceptions\Exception` along with everything else here.
 
 ## Internal
 

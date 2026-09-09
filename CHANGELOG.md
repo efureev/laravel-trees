@@ -51,6 +51,10 @@
   relation led out of the tree. On top of that `makeRoot()` changed no attribute, so Eloquent
   saved the node as clean, skipped the update and never reached `afterUpdate()` — the whole
   operation was a silent no-op unless `forceSave()` was used
+- `parentsByModelId()` raises the package's own `NotSupportedException` on a single tree instead
+  of the global `\Exception`, so an application catching `Fureev\Trees\Exceptions\Exception`
+  now catches it along with everything else. Not a breaking change: the new type descends from
+  the old one, so any existing `catch (\Exception)` still matches
 - Promoting a node into an explicitly chosen tree honours a tree id of `0`. `moveNodeAsRoot()`
   picked the requested id with `?:`, so a falsy one was replaced by a freshly generated id — and
   the generator never produces `0` itself, since it returns `max(tree_id) + 1`
