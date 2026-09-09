@@ -87,6 +87,12 @@
   the same shape of question — which rows enclose its bounds — so they fold into a single `OR`
   group; for multi-trees the tree condition sits inside each group, since the nodes may come from
   different trees
+- Deleting a node refreshes that node alone. `Model::refresh()` also reloads every relation that
+  happens to be loaded, one query each, and `Collection::linkNodes()` leaves `children` — plus
+  `parent` on request — set on every node it walks, so deleting a node taken from `toTree()` cost
+  three queries where one was needed. Nothing was preserved by those reloads either: `refresh()`
+  discarded the caller's relations and read them again. Where a relation is genuinely consulted —
+  `isLeaf()` on a soft-deleting model — the count is unchanged
 - Deleting a node no longer runs a `select count(*)` over its children. The answer went to
   `onDeletingNodeHasChildren()`, whose body is a commented-out throw, so nothing read it; where
   the model does not soft-delete, `isLeaf()` answers the same question from the bounds already in

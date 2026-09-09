@@ -338,4 +338,35 @@ class SoftDeleteTest extends AbstractFunctionalTreeTestCase
         static::assertSame(($trashedBefore->rightValue() + 2), $trashedAfter->rightValue());
         static::assertFalse((new HealthyChecker(ArchivedCategory::class))->isBroken());
     }
+
+    /**
+     * beforeDelete() drops loaded relations before refreshing, so isLeaf() can no longer read
+     * `children` off the model and goes to the database instead. The answer has to stay the
+     * same, or afterDelete() takes the wrong branch and the subtree collapses incorrectly.
+     *
+     * A plain delete never gets there — the `deleted` listener returns early while the model is
+     * only soft-deleted — so this forces the delete to reach afterDelete().
+     */
+    #[Test]
+    public function forceDeletingBranchWithLoadedChildrenMovesThemUp(): void
+    {
+        $nodes = $this->buildBranch();
+
+        /** @var ArchivedCategory $branch */
+        $branch = ArchivedCategory::query()->with('children')->find($nodes['mid']->getKey());
+
+        static::assertTrue($branch->relationLoaded('children'));
+        static::assertCount(2, $branch->getRelation('children'));
+
+        $branch->forceDelete();
+
+        // Both leaves are pulled up to the root rather than left dangling.
+        foreach (['leaf1', 'leaf2'] as $leaf) {
+            $moved = $nodes[$leaf]->refresh();
+            static::assertSame($nodes['root']->getKey(), $moved->parentValue());
+            static::assertSame(1, $moved->levelValue());
+        }
+
+        static::assertFalse((new HealthyChecker(ArchivedCategory::class))->isBroken());
+    }
 }

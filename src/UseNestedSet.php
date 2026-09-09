@@ -296,6 +296,13 @@ trait UseNestedSet
     {
         // Fresh data first: both checks below and the bound arithmetic in afterDelete() read it.
         // It used to be fetched afterwards, which left the checks working off a stale model.
+        //
+        // Relations go before that: refresh() reloads every one that happens to be loaded, a
+        // query apiece, and linkNodes() leaves `children` — plus `parent` on request — set on
+        // every node it walks, so a node taken from toTree() paid for reloads nobody reads.
+        // isLeaf() is the only reader left, and only for a soft-deleting model; it queries on
+        // its own when the relation is absent.
+        $this->unsetRelations();
         $this->refresh();
 
         if ($this->operation !== Operation::DeleteAll && $this->isRoot()) {
