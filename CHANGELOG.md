@@ -8,8 +8,9 @@ someone else's children, a bound shift that ran on the wrong connection, health 
 not be run on a real tree. Requirements are unchanged: PHP 8.4 and Laravel 13.
 
 **What breaks is short**, and [MigrationGuide.md](./MigrationGuide.md) walks through it: three
-signatures only reachable from inside the package, the counts `HealthyChecker` returns, and the
-order `Table::fromQuery()` expects its configuration in. Everything else changes behaviour that
+signatures only reachable from inside the package, the counts `HealthyChecker` returns, the
+order `Table::fromQuery()` expects its configuration in, and one import if you catch
+`InvalidConfigException`. Everything else changes behaviour that
 was wrong to begin with.
 
 Test coverage over the same period went from 198 tests to 547, and from partial to complete —
@@ -41,6 +42,17 @@ every method and every line in `src/` is executed.
 
 ### Changed
 
+- `Migrate::columnsFromModel()` raises `Fureev\Trees\Exceptions\InvalidConfigException` rather
+  than the one from `Php\Support`. Same short name, same message, so a `catch` block only needs
+  its import changed — and it now sits under the package's own exception, so
+  `catch (Fureev\Trees\Exceptions\Exception)` catches it too
+- `Attribute::make()` declares its arguments: `make(AttributeType $name, FieldType $type =
+  FieldType::UnsignedInteger)`. The trait it came from took `mixed ...$arguments`, so nothing
+  described what an attribute is made of, to a reader or to static analysis. Existing calls are
+  unaffected
+- The `php` constraint reads `^8.4` rather than `>=8.4`. The old one had no upper bound, so
+  Composer would have installed the package on PHP 9 and anything after it. The supported
+  versions are unchanged, and both are on CI
 - `Contracts\TreeModel` describes every method the tree traits add, rather than about a third of
   them. Code typed as `Model&TreeModel` — the delete strategies, the relations, the health
   checks — could not call the rest without static analysis objecting. What it leaves out on
@@ -100,6 +112,11 @@ every method and every line in `src/` is executed.
 
 ### Removed
 
+- The dependency on `efureev/support`. Three small things came from it — a `Maker` trait whose
+  whole body is `new static(...$arguments)`, one exception class, and a global `instance()`
+  helper — and carrying a package for them meant inheriting its release policy: its v6 requires
+  PHP 8.5, which the tree has no use for. The package now requires nothing but
+  `illuminate/database`, `illuminate/events` and `ext-pdo`
 - The `forceSave` reset in `afterRestore()`, which only mopped up the stuck flag if the model
   happened to be restored afterwards. `forceSave()` now clears it on every exit
 - `Table::getColumnNames()`, which forwarded to `getExtraColumnNames()` once its cache was

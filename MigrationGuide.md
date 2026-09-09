@@ -13,6 +13,31 @@ you compare `check()` against a literal.
 
 Unchanged from v6: PHP 8.4 or newer, Laravel 13. There is nothing to upgrade before this one.
 
+The constraint is written `^8.4` now instead of `>=8.4`, which had no upper bound and would have
+let Composer install the package on PHP 9. The versions that work are the same two, and both run
+on CI.
+
+### One less dependency
+
+`efureev/support` is gone. The tree took three small things from it — a trait whose body is
+`new static(...)`, an exception class, and a global `instance()` — and a dependency for that much
+means inheriting someone else's release policy: its v6 requires PHP 8.5, which nothing here needs.
+
+One import changes if you catch it:
+
+```php
+-use Php\Support\Exceptions\InvalidConfigException;
++use Fureev\Trees\Exceptions\InvalidConfigException;
+```
+
+Same name and same message, thrown from the same place — `Migrate::columnsFromModel()` on a model
+with no tree configuration. It extends the package's own `Exception` now, so a `catch` on that
+catches this too.
+
+`Attribute::make()` names its arguments rather than taking `mixed ...$arguments`. Calls written
+as `Attribute::make(AttributeType::Left)` or `Attribute::make(AttributeType::Tree, FieldType::UUID)`
+are unaffected; anything passing a third argument was passing something that was ignored.
+
 ### Signatures
 
 `BaseRelation::relationExistenceCondition()` is gone, replaced by `addExistenceConstraint()`.

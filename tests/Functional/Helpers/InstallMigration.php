@@ -2,6 +2,7 @@
 
 namespace Fureev\Trees\Tests\Functional\Helpers;
 
+use Fureev\Trees\Config\Helper;
 use Fureev\Trees\Config\Builder;
 use Fureev\Trees\Database\Migrate;
 use Fureev\Trees\UseTree;
@@ -19,7 +20,7 @@ class InstallMigration
 
     public function __construct(Model|string $model)
     {
-        $this->model = instance($model);
+        $this->model = Helper::instance($model);
 
         $this->prepare();
     }

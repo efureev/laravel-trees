@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Tests\Functional\Helpers;
 
+use Fureev\Trees\Config\Helper;
 use Fureev\Trees\Tests\models\v5\AbstractModel;
 
 final class TreeBuilder
@@ -14,7 +15,7 @@ final class TreeBuilder
 
     public static function from(string $model, string $title = 'Root Node'): self
     {
-        $model = instance($model, ['title' => $title]);
+        $model = Helper::instance($model, ['title' => $title]);
         $model->makeRoot()->save();
 
         return new self($model);
@@ -49,7 +50,7 @@ final class TreeBuilder
         $path[]  = $lvl;
         $pathStr = implode('.', $path);
 
-        $node       = instance($this->parentNode::class, ['title' => "child $pathStr"]);
+        $node       = Helper::instance($this->parentNode::class, ['title' => "child $pathStr"]);
         $node->path = $path;
 
         $node->prependTo($this->parentNode);

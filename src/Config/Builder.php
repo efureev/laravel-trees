@@ -7,15 +7,12 @@ namespace Fureev\Trees\Config;
 use Fureev\Trees\Strategy\DeleteWithChildren;
 use Fureev\Trees\Strategy\MoveChildrenToParent;
 use Illuminate\Database\Eloquent\Model;
-use Php\Support\Traits\Maker;
 
 /**
  * @method static Builder make()
  */
 class Builder
 {
-    use Maker;
-
     protected Attribute $left;
 
     protected Attribute $right;
@@ -70,6 +67,12 @@ class Builder
         }
 
         return $this;
+    }
+
+    public static function make(): static
+    {
+        // @phpstan-ignore-next-line new.static — the constructor is not final by design
+        return new static();
     }
 
     public static function default(): self

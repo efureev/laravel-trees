@@ -377,7 +377,7 @@ trait UseNestedSet
 
     protected static function resolveDeleterWithChildren(string $value): DeleteStrategy
     {
-        $remover = instance($value);
+        $remover = Helper::instance($value);
         if (!$remover instanceof DeleteStrategy) {
             throw new Exception('Invalid Delete Strategy for `deleteWithChildren`');
         }
@@ -387,7 +387,7 @@ trait UseNestedSet
 
     protected static function resolveChildrenHandler(string $value): ChildrenHandler
     {
-        $remover = instance($value);
+        $remover = Helper::instance($value);
         if (!$remover instanceof ChildrenHandler) {
             throw new Exception('Invalid ChildrenHandler for `delete`');
         }
@@ -566,7 +566,7 @@ trait UseNestedSet
 
     protected function generateTreeId(): string|int
     {
-        $generator = instance($this->treeIdGenerator(), $this->treeAttribute());
+        $generator = Helper::instance($this->treeIdGenerator(), $this->treeAttribute());
         if ($generator instanceof GeneratorTreeIdContract) {
             return $generator->generateId($this);
         }

@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Config;
 
-use Php\Support\Traits\Maker;
-
 /**
  * @method static static make(AttributeType $name, FieldType $type = FieldType::UnsignedInteger)
  */
 class Attribute
 {
-    use Maker;
-
     protected ?string $column = null;
 
     protected bool $nullable = false;
@@ -23,6 +19,18 @@ class Attribute
         protected AttributeType $name,
         protected FieldType $type = FieldType::UnsignedInteger
     ) {
+    }
+
+    /**
+     * Named rather than variadic: the two arguments are the whole of it, and spelling them out
+     * is what tells a reader — and static analysis — what an attribute is made of.
+     */
+    public static function make(
+        AttributeType $name,
+        FieldType $type = FieldType::UnsignedInteger
+    ): static {
+        // @phpstan-ignore-next-line new.static — the constructor is not final by design
+        return new static($name, $type);
     }
 
     public function name(): AttributeType

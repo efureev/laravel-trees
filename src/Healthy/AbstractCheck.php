@@ -25,7 +25,7 @@ abstract readonly class AbstractCheck
      */
     public function __construct(Model|string $model)
     {
-        $model = $model instanceof Model ? $model : instance($model);
+        $model = $model instanceof Model ? $model : Helper::instance($model);
 
         if (!Helper::isTreeNode($model)) {
             throw new Exception('Model should be a Tree Node');

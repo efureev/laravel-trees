@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Tests\Functional;
 
+use Fureev\Trees\Config\Helper;
 use Exception;
 use Fureev\Trees\Database\Migrate;
 use Fureev\Trees\Tests\models\v5\AbstractModel;
@@ -28,7 +29,7 @@ abstract class AbstractFunctionalTreeTestCase extends AbstractFunctionalTestCase
      */
     protected static function model(array $attributes = []): AbstractModel
     {
-        return instance(static::modelClass(), $attributes);
+        return Helper::instance(static::modelClass(), $attributes);
     }
 
     protected static function createRoot(string $title = 'root node'): AbstractModel

@@ -7,7 +7,7 @@ namespace Fureev\Trees\Database;
 use Fureev\Trees\Config\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
-use Php\Support\Exceptions\InvalidConfigException;
+use Fureev\Trees\Exceptions\InvalidConfigException;
 
 final readonly class Migrate
 {
@@ -28,7 +28,7 @@ final readonly class Migrate
         $instance = is_string($model) ? new $model() : $model;
 
         if (!method_exists($instance, 'getTreeBuilder')) {
-            throw new InvalidConfigException([], 'Model does not implement tree structure');
+            throw new InvalidConfigException('Model does not implement tree structure');
         }
 
         $builder = $instance->getTreeBuilder();

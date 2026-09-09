@@ -10,7 +10,7 @@ use Fureev\Trees\Tests\models\v5\Category;
 use Fureev\Trees\Tests\models\v5\NonTreeModel;
 use Illuminate\Database\Schema\Blueprint;
 use PHPUnit\Framework\Attributes\Test;
-use Php\Support\Exceptions\InvalidConfigException;
+use Fureev\Trees\Exceptions\InvalidConfigException;
 
 /**
  * `columnsFromModel()` takes a class name, so the only moment it can tell a tree model from

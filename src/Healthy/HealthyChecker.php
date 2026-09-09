@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Healthy;
 
+use Fureev\Trees\Config\Helper;
 use Illuminate\Database\Eloquent\Model;
 
 final readonly class HealthyChecker
@@ -19,7 +20,7 @@ final readonly class HealthyChecker
      */
     public function __construct(Model|string $model)
     {
-        $model = $model instanceof Model ? $model : instance($model);
+        $model = $model instanceof Model ? $model : Helper::instance($model);
 
         $this->model = $model;
 
@@ -36,7 +37,7 @@ final readonly class HealthyChecker
     private function checkOne(string $checker): int
     {
         /** @var AbstractCheck $checker */
-        $checker = instance($checker, $this->model);
+        $checker = Helper::instance($checker, $this->model);
 
         return $checker->check();
     }

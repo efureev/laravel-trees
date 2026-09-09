@@ -16,9 +16,8 @@
         }
     ],
     "require": {
-        "php": ">=8.4",
+        "php": "^8.4",
         "ext-pdo": "*",
-        "efureev/support": "^5.0",
         "illuminate/database": "^13.0",
         "illuminate/events": "^13.0"
     },
