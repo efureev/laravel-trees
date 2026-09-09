@@ -125,12 +125,12 @@ class QueryBuilderV2 extends Builder
             [
                 $this->columnWithTbl((string)$this->model->leftAttribute()),
                 $andSelf ? '<=' : '<',
-                't.' . $this->model->leftAttribute(),
+                't.' . (string)$this->model->leftAttribute(),
             ],
             [
                 $this->columnWithTbl((string)$this->model->rightAttribute()),
                 $andSelf ? '>=' : '>',
-                't.' . $this->model->rightAttribute(),
+                't.' . (string)$this->model->rightAttribute(),
             ],
         ];
 
@@ -480,7 +480,7 @@ class QueryBuilderV2 extends Builder
     public function byTree(int|string $treeId): static
     {
         if ($this->model->isMulti()) {
-            $this->query->where($this->model->treeAttribute()->columnName(), $treeId);
+            $this->query->where((string)$this->model->treeAttribute(), $treeId);
         }
 
         return $this;

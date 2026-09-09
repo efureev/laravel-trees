@@ -151,7 +151,9 @@ class Collection extends BaseCollection
 
         $firstModel = $this->validateTreeNode();
 
-        $groupedByParent = $this->groupBy($firstModel->parentAttribute());
+        // The column name, not the Attribute object: groupBy() checks a non-string argument for
+        // is_callable() before treating it as a key, and a string skips that branch entirely.
+        $groupedByParent = $this->groupBy((string)$firstModel->parentAttribute());
 
         /** @var Model&TreeModel $node */
         foreach ($this->items as $node) {

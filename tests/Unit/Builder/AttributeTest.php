@@ -33,6 +33,20 @@ class AttributeTest extends AbstractTestCase
         static::assertEquals('test', $attr->columnName());
     }
 
+    /**
+     * The package writes `(string)$attribute` wherever a column name is wanted. That spelling is
+     * only safe while it stays identical to `columnName()`, renamed attributes included.
+     */
+    public function testStringifiesToItsColumnName(): void
+    {
+        $attr = Attribute::make(AttributeType::Left);
+        static::assertSame($attr->columnName(), (string)$attr);
+
+        $attr->setColumnName('left_bound');
+        static::assertSame('left_bound', (string)$attr);
+        static::assertSame($attr->columnName(), (string)$attr);
+    }
+
     public function testChangeDefault(): void
     {
         $attr = Attribute::make(AttributeType::Left);

@@ -19,6 +19,12 @@
 
 ### Changed
 
+- Column names are taken as strings everywhere an `Attribute` object used to be handed over
+  directly — `Collection::linkNodes()` grouping, the two subquery bounds in
+  `parentsByModelId()`, and `byTree()`. Stringification produced the same name, so nothing
+  changes, but the object took a route the string does not: `groupBy()` checks a non-string
+  argument for `is_callable()` before treating it as a key, and an untyped `data_get()` is all
+  that keeps the object from being a fatal
 - CI job `lint` renamed to `Static Analysis & Coding Standards` and now runs `composer phpcs`
   next to `composer phpstan`, so the coding standard is enforced instead of merely declared
 - `.phpcs.xml` no longer enforces member variable naming: Eloquent exposes database columns as
