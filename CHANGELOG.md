@@ -1,6 +1,19 @@
 # Changelog
 
-## [unreleased]
+## [7.0.0](https://github.com/efureev/laravel-trees/compare/v6.1.0...v7.0.0) (2026-09-09)
+
+A major, and a large one: an audit of the package produced this release almost in full. Most
+entries are defects that were quietly wrong rather than loudly broken — a delete that re-parented
+someone else's children, a bound shift that ran on the wrong connection, health checks that could
+not be run on a real tree. Requirements are unchanged: PHP 8.4 and Laravel 13.
+
+**What breaks is short**, and [MigrationGuide.md](./MigrationGuide.md) walks through it: three
+signatures only reachable from inside the package, the counts `HealthyChecker` returns, and the
+order `Table::fromQuery()` expects its configuration in. Everything else changes behaviour that
+was wrong to begin with.
+
+Test coverage over the same period went from 198 tests to 547, and from partial to complete —
+every method and every line in `src/` is executed.
 
 ### Added
 
@@ -84,6 +97,25 @@
 - `.phpcs.xml` drops `Squiz.ControlStructures.ElseIfDeclaration`: it demands `else if` while
   `PSR2.ControlStructures.ElseIfDeclaration`, pulled in by the `PSR12` base standard, demands
   `elseif`, and the conflict left `phpcbf` unable to fix the file
+
+### Removed
+
+- The `forceSave` reset in `afterRestore()`, which only mopped up the stuck flag if the model
+  happened to be restored afterwards. `forceSave()` now clears it on every exit
+- `Table::getColumnNames()`, which forwarded to `getExtraColumnNames()` once its cache was
+  taken out, and named itself wrongly besides: it returned the extra columns only, never the
+  `level` and `ID` that `buildRowData()` adds. The remaining method pairs with
+  `getExtraColumnLabel()`. Both are protected on a `final` class, so nothing outside the package
+  could reach either
+- Commented-out code that referenced methods which do not exist: a `throw` calling a factory
+  `DeletedNodeHasChildrenException` never had, a call to an `onRestoredNode…` method absent from
+  the whole package, and an abandoned `makeRoot()` signature taking a tree id the method does
+  not accept
+- `fakerphp/faker` from `require-dev`: the removed `Structure` factories were its only consumer,
+  and it still arrives transitively through `orchestra/testbench`
+- Dead test fixtures `StructureHelper`, `StructureFactory` and `SoftDeleteStructureFactory`
+  referencing the `Structure` model that was removed earlier, together with their `autoload-dev`
+  PSR-4 mapping
 
 ### Fixed
 
@@ -278,25 +310,6 @@
 - Eleven query helpers in `docs/ReceivingNodes.md` had empty descriptions, `nextNodes()` among
   them, which also returns the node's own descendants
 - `Migrate::dropColumns()` was not documented anywhere; `docs/Migration.md` now shows the rollback
-
-### Removed
-
-- The `forceSave` reset in `afterRestore()`, which only mopped up the stuck flag if the model
-  happened to be restored afterwards. `forceSave()` now clears it on every exit
-- `Table::getColumnNames()`, which forwarded to `getExtraColumnNames()` once its cache was
-  taken out, and named itself wrongly besides: it returned the extra columns only, never the
-  `level` and `ID` that `buildRowData()` adds. The remaining method pairs with
-  `getExtraColumnLabel()`. Both are protected on a `final` class, so nothing outside the package
-  could reach either
-- Commented-out code that referenced methods which do not exist: a `throw` calling a factory
-  `DeletedNodeHasChildrenException` never had, a call to an `onRestoredNode…` method absent from
-  the whole package, and an abandoned `makeRoot()` signature taking a tree id the method does
-  not accept
-- `fakerphp/faker` from `require-dev`: the removed `Structure` factories were its only consumer,
-  and it still arrives transitively through `orchestra/testbench`
-- Dead test fixtures `StructureHelper`, `StructureFactory` and `SoftDeleteStructureFactory`
-  referencing the `Structure` model that was removed earlier, together with their `autoload-dev`
-  PSR-4 mapping
 
 ## [6.1.0](https://github.com/efureev/laravel-trees/compare/v6.0.0...v6.1.0) (2026-06-05)
 

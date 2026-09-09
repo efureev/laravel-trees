@@ -2,12 +2,16 @@
 
 ## From v6 to v7
 
-Two signatures changed and a number of behaviours did, almost all of them because something was
-silently wrong. Nothing here needs a schema change, and most applications need no code change
-at all — the sections below say which ones do.
+Three signatures changed and a number of behaviours did, almost all of them because something
+was silently wrong. Nothing here needs a schema change, and most applications need no code
+change at all — the sections below say which ones do.
 
 Start with **Signatures** if you extend the package's own classes, and with **Health checks** if
 you compare `check()` against a literal.
+
+### Requirements
+
+Unchanged from v6: PHP 8.4 or newer, Laravel 13. There is nothing to upgrade before this one.
 
 ### Signatures
 
