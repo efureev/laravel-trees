@@ -63,7 +63,6 @@ entity, a menu per site.
 | A second root | `UniqueRootException` | ordinary |
 | Promoting a node to a root | not possible — raises an exception | supported, the subtree comes along |
 | Moving a node to another tree | nothing to move to | supported |
-| `parentsByModelId()` | unsupported | supported |
 | Query scoping | nothing to scope | every query carries the tree condition |
 
 > [!NOTE]

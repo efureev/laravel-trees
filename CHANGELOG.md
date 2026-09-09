@@ -9,6 +9,11 @@
   reproduced locally with one command
 - Regression coverage for `QueryBuilder\Fixing::makeGap()` called with a zero offset
 
+- `parentsByModelId()` works on single trees as well. It joins a subquery holding the target
+  node and compares bounds, and the only thing a single tree lacked was something to join on —
+  so the subquery is cross joined instead, which is the same thing without a condition. The
+  method no longer raises `NotSupportedException`
+
 ### Changed
 
 - CI job `lint` renamed to `Static Analysis & Coding Standards` and now runs `composer phpcs`

@@ -66,17 +66,119 @@ class QueryBuilderTest extends AbstractFunctionalTreeTestCase
         static::assertCount(2, $list);
     }
 
-    #[Test]
-    public function parentsByModelIdException(): void
+    /**
+     * root -> a -> a1 -> a2, plus a sibling branch off the root.
+     *
+     * @return array<string, Category>
+     */
+    private function buildChain(): array
     {
-        /** @var Category $modelRoot */
-        $modelRoot = static::model(['title' => 'root node']);
-        $modelRoot->makeRoot()->save();
+        /** @var Category $root */
+        $root = static::model(['title' => 'root node']);
+        $root->makeRoot()->save();
 
-        // The package's own hierarchy: catching Fureev\Trees\Exceptions\Exception must catch it.
-        $this->expectException(NotSupportedException::class);
-        $this->expectExceptionMessage('Does not support single tree yet');
+        $nodes  = ['root' => $root];
+        $parent = $root;
 
-        Category::parentsByModelId($modelRoot->id)->get();
+        foreach (['a', 'a1', 'a2'] as $title) {
+            /** @var Category $node */
+            $node = static::model(['title' => $title]);
+            $node->appendTo($parent->refresh())->save();
+            $nodes[$title] = $node->refresh();
+            $parent        = $nodes[$title];
+        }
+
+        /** @var Category $aside */
+        $aside = static::model(['title' => 'aside']);
+        $aside->appendTo($root->refresh())->save();
+        $nodes['aside'] = $aside->refresh();
+
+        return $nodes;
+    }
+
+    #[Test]
+    public function parentsByModelIdReturnsAncestors(): void
+    {
+        $nodes = $this->buildChain();
+
+        $titles = Category::parentsByModelId($nodes['a2']->getKey())
+            ->get()
+            ->pluck('title')
+            ->all();
+
+        // Root first, the node itself excluded, the sibling branch left out.
+        static::assertSame(
+            [
+                'root node',
+                'a',
+                'a1',
+            ],
+            $titles
+        );
+    }
+
+    #[Test]
+    public function parentsByModelIdCanIncludeSelf(): void
+    {
+        $nodes = $this->buildChain();
+
+        $titles = Category::parentsByModelId($nodes['a2']->getKey(), andSelf: true)
+            ->get()
+            ->pluck('title')
+            ->all();
+
+        static::assertSame(
+            [
+                'root node',
+                'a',
+                'a1',
+                'a2',
+            ],
+            $titles
+        );
+    }
+
+    #[Test]
+    public function parentsByModelIdCanBeLimitedByLevel(): void
+    {
+        $nodes = $this->buildChain();
+
+        $titles = Category::parentsByModelId($nodes['a2']->getKey(), level: 1)
+            ->get()
+            ->pluck('title')
+            ->all();
+
+        // The root sits at level 0 and drops out.
+        static::assertSame(
+            [
+                'a',
+                'a1',
+            ],
+            $titles
+        );
+    }
+
+    #[Test]
+    public function parentsByModelIdOnAMissingIdReturnsNothing(): void
+    {
+        $this->buildChain();
+
+        static::assertCount(0, Category::parentsByModelId(999999)->get());
+    }
+
+    /**
+     * The whole point of the method is answering without loading the node first — one statement,
+     * not a fetch followed by a query.
+     */
+    #[Test]
+    public function parentsByModelIdIssuesASingleQuery(): void
+    {
+        $nodes = $this->buildChain();
+
+        static::model()->getConnection()->flushQueryLog();
+
+        Category::parentsByModelId($nodes['a2']->getKey())->get();
+
+        static::assertCount(1, static::model()->getConnection()->getQueryLog());
     }
 }

@@ -137,7 +137,6 @@ one code path but no test exercises it. Other engines are unverified.
 |---|---|
 | `isChildOf($node)` | True for a descendant at **any** depth, not only a direct child — it compares bounds |
 | `descendants` | Comes back in no defined order; the order you see is the query plan's choice. `ancestors` is ordered, root first |
-| `parentsByModelId()` | Multi-tree only; the source marks it "in progress" |
 | `Fixing` trait | Carries the author's note that it is not verified since v5. Treat repairs as a last resort and check the result |
 
 > [!NOTE]

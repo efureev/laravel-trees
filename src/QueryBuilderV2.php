@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fureev\Trees;
 
 use Fureev\Trees\Contracts\TreeModel;
-use Fureev\Trees\Exceptions\NotSupportedException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -88,19 +87,28 @@ class QueryBuilderV2 extends Builder
 
     public function parentsByModelId(string|int $modelId, ?int $level = null, bool $andSelf = false): static
     {
-        if (!$this->model->isMulti()) {
-            throw new NotSupportedException(null, 'Does not support single tree yet');
+        $target = $this->model->newNestedSetQuery()
+            ->where($this->model->getKeyName(), $modelId)
+            ->limit(1);
+
+        if ($this->model->isMulti()) {
+            $treeAttrName = (string)$this->model->treeAttribute();
+
+            /** @var static $query */
+            $query = $this->joinSub(
+                $target,
+                't',
+                function ($join) use ($treeAttrName) {
+                    $join->on("t.$treeAttrName", '=', $this->columnWithTbl($treeAttrName));
+                }
+            );
+        } else {
+            // A single tree has no tree column to join on, and the subquery yields one row,
+            // so the join carries no condition at all.
+            /** @var static $query */
+            $query = $this->crossJoinSub($target, 't');
         }
 
-        /** @var static $query */
-        $query     = $this->joinSub(
-            $this->model->newNestedSetQuery()->where($this->model->getKeyName(), $modelId)->limit(1),
-            't',
-            function ($join) {
-                $treeAttrName = (string)$this->model->treeAttribute();
-                $join->on("t.$treeAttrName", '=', $this->columnWithTbl($treeAttrName));
-            }
-        );
         $condition = [
 
             [

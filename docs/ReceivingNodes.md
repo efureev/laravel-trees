@@ -107,18 +107,16 @@ Category::toLevel(1)->get();        // level 1 and above
 Category::byParent($node)->get();   // the direct children of a node
 ```
 
-Ancestors of a node you have only the id of:
+Ancestors of a node you have only the id of, without loading that node first:
 
 ```php
-MultiCategory::parentsByModelId($id)->get();
-MultiCategory::parentsByModelId($id, level: 1)->get();
-MultiCategory::parentsByModelId($id, andSelf: true)->get();
+Category::parentsByModelId($id)->get();
+Category::parentsByModelId($id, level: 1)->get();     // stop at level 1
+Category::parentsByModelId($id, andSelf: true)->get(); // include the node itself
 ```
 
-> [!WARNING]
-> `parentsByModelId()` works on multi-tree models only. On a single tree it raises
-> `NotSupportedException`, which — like every error the package throws — extends
-> `Fureev\Trees\Exceptions\Exception`.
+One query, on both tree shapes. An id that matches nothing returns an empty result rather than
+raising.
 
 ## Ordering
 

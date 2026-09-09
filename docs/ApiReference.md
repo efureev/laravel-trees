@@ -130,7 +130,7 @@ On the model statically, or on any `QueryBuilderV2`.
 | `prevSiblings()` / `nextSiblings()` | siblings before / after |
 | `descendantsQuery(?int $level = null, bool $andSelf = false, bool $backOrder = false)` | the subtree, optionally depth-limited |
 | `parents(?int $level = null, bool $andSelf = false)` | the ancestors |
-| `parentsByModelId(string\|int $modelId, ?int $level = null, bool $andSelf = false)` | ancestors of another node — **multi-tree only** |
+| `parentsByModelId(string\|int $modelId, ?int $level = null, bool $andSelf = false)` | ancestors of another node, by its id, in one query |
 | `whereDescendantOf(...)` / `whereAncestorOf(...)` | bound conditions for composing queries |
 
 ## Collections
@@ -250,10 +250,6 @@ All extend `Fureev\Trees\Exceptions\Exception`.
 | `DeletedNodeHasChildrenException` | a root with children is deleted |
 | `TreeNeedValueException` | a tree id is required and cannot be generated |
 | `UnsavedNodeException` | an unsaved node is used as a target |
-
-> [!NOTE]
-> `parentsByModelId()` on a single-tree model raises `NotSupportedException`, so it is caught by
-> `Fureev\Trees\Exceptions\Exception` along with everything else here.
 
 ## Internal
 
