@@ -1,196 +1,138 @@
-# Receiving nodes
+# Retrieving Nodes
 
-> In some cases we will use an `$id` variable which is an id of the target node.
+Everything here is a read. Costs are given per call — see [Performance](./Performance.md) for
+where the numbers come from.
 
-## Ways to get nodes
+## Choosing the right tool
 
-- `parent` - To get a Parent Node
-- `parents` - To get a Chain of Parent Nodes (till Root)
-- `parentByLevel` - To get the single ancestor sitting at the given level
-- `parentWithTrashed` - To get a Parent Node, including a soft-deleted one
-- `children` - To get a Collection of direct descendants
-- `childrenWithTrashed` - To get a Collection of direct descendants with Trashed Nodes
-- `descendants` - To get a Collection of all descendants in Laravel-Relation manner
-- `ancestors` - To get a Chain of Parent Nodes (till Root) in Laravel-Relation manner
-- `prev` - The node immediately before this one, wherever it sits in the tree
-- `next` - The node immediately after this one
-- `prevNodes` - Every node positioned before this one, at any level
-- `nextNodes` - Every node positioned after this one, at any level. Note that this includes
-  the node's own descendants, since they open after it
-- `siblings` - Nodes sharing the same parent, this one excluded
-- `prevSibling` - The sibling immediately before this one
-- `prevSiblings` - All siblings before this one
-- `nextSibling` - The sibling immediately after this one
-- `nextSiblings` - All siblings after this one
-- `leaves` - Descendants that have no children of their own, optionally limited by depth
-- `leaf` - Narrows a query down to leaf nodes
+| You want | Use |
+|---|---|
+| the direct parent | `parent` |
+| the chain up to the root | `ancestors` or `parents()` |
+| the direct children | `children` |
+| the whole subtree | `descendants` |
+| neighbours on the same level | `siblings()`, `prevSibling()`, `nextSibling()` |
+| the tree as a structure | `->get()->toTree()`, see [Collections](./Collections.md) |
+| to filter by what a node has | `has()`, `whereHas()`, `withCount()` |
 
-### To get a Parent Node
-
-> @return Model
+## Upwards
 
 ```php
-$parent = $node->parent;
-# it's equal to
-$parent = $node->parent()->first();
+$node->parent;                    // the direct parent, or null for a root
+$node->parents();                 // Collection of ancestors, root first
+$node->ancestors;                 // the same as a relation
+$node->parentByLevel(1);          // the single ancestor sitting at level 1
 ```
 
-### To get Parents chains
+`parents()` and `ancestors` are ordered from the root down. `parentByLevel()` returns **one
+model**, not a chain — it is `parents($level)->first()`.
 
-> @return Collection
+Each of these is one query.
+
+## Downwards
 
 ```php
-$parents = $node->parents();
+$node->children;                  // direct children, ordered
+$node->descendants;               // the whole subtree, any depth
+$node->descendants()->count();    // without loading it
 ```
 
-### To get the ancestor at a given level
+One query each, whatever the depth. `descendants` comes back in no defined order — see
+[Limitations](./Limitations.md#names-that-mean-something-slightly-different).
 
-> @return Model|null
+Limiting the depth happens in the query, not in PHP:
 
 ```php
-$parent = $node->parentByLevel(1);
+$node->newNestedSetQuery()->descendantsQuery(1)->get();   // children only
 ```
 
-This returns a **single node**, not a chain: it is `parents($level)->first()`, and `parents()`
-is ordered from the root down. For a node at level 3, `parentByLevel(1)` gives the ancestor at
-level 1, while `parents(1)` gives the whole collection of ancestors from level 1 downwards.
-
-### To get a Collection of direct descendants
-
-> @return Collection
+## Sideways
 
 ```php
-$children = $node->children;
-# it's equal to
-$children = $node->children()->get();
+$node->siblings()->get();         // same parent, this node excluded
+$node->siblingsAndSelf()->get();
+
+$node->prevSibling()->first();    // the sibling immediately before
+$node->nextSibling()->first();
+$node->prevSiblings()->get();     // all siblings before
+$node->nextSiblings()->get();
 ```
 
-You can use relation as usual:
+Ignoring the parent and walking the tree by position instead:
 
 ```php
-$node->children()->save($subNode);
-$subNode->children()->save($subSubNode);
+$node->prev()->first();           // the node immediately before, anywhere
+$node->next()->first();
+$node->prevNodes()->get();        // everything before it
+$node->nextNodes()->get();        // everything after it
 ```
 
-### To get a Collection of direct descendants with Trashed Nodes
+> [!NOTE]
+> `nextNodes()` includes the node's **own descendants** — they open after it in the numbering.
 
-> @return Collection
+## Leaves
 
 ```php
-$children = $node->childrenWithTrashed;
-# it's equal to
-$children = $node->childrenWithTrashed()->get();
-# it's equal to
-$children = $node->children()->withTrashed()->get();
+$node->newNestedSetQuery()->leaves()->get();    // leaves of this subtree
+$node->newNestedSetQuery()->leaves(1)->get();   // only one level down
+Category::query()->leaf()->get();               // every leaf in the table
 ```
 
-### To get a Collection of all descendants in Laravel-Relation manner
+`leaf()` narrows a query to nodes with no children; `leaves()` is that applied to a subtree.
 
-> @return Collection
+## Trashed nodes
+
+On a model using `SoftDeletes`, trashed nodes are hidden. Two shortcuts, and the usual escape
+hatch:
 
 ```php
-$children = $node->descendants;
-# it's equal to
-$children = $node->descendants()->get();
+$node->childrenWithTrashed;
+$node->parentWithTrashed;
+$node->descendants()->withTrashed()->get();
 ```
 
-### To get a Chain of Parent Nodes (till Root) in Laravel-Relation manner
+See [Soft Deletes](./SoftDeletes.md).
 
-> @return Collection
+## Scoping a query
+
+Static on the model, or on any builder:
 
 ```php
-$ancestors = $node->ancestors;
-# it's equal to
-$ancestors = $node->ancestors()->get();
+Category::root()->first();          // the root, or roots of a multi-tree
+Category::notRoot()->get();         // everything else
+
+Category::byTree($treeId)->get();   // one tree — multi-tree only
+Category::byLevel(1)->get();        // exactly level 1
+Category::toLevel(1)->get();        // level 1 and above
+Category::byParent($node)->get();   // the direct children of a node
 ```
 
-Ancestors come back ordered from the root down. Descendants carry no explicit ordering.
-
-### Siblings
-
-Siblings are nodes that have same parent.
+Ancestors of a node you have only the id of:
 
 ```php
-// Get all siblings of the node
-$collection = $node->siblings()->get();
-
-// Get siblings which are before the node
-$collection = $node->prevSiblings()->get();
-
-// Get siblings which are after the node
-$collection = $node->nextSiblings()->get();
-
-// Get a sibling that is immediately before the node
-$prevNode = $node->prevSibling()->first();
-
-// Get a sibling that is immediately after the node
-$nextNode = $node->nextSibling()->first();
+MultiCategory::parentsByModelId($id)->get();
+MultiCategory::parentsByModelId($id, level: 1)->get();
+MultiCategory::parentsByModelId($id, andSelf: true)->get();
 ```
+
+> [!WARNING]
+> `parentsByModelId()` works on multi-tree models only, and raises the **global** `\Exception` on
+> a single tree — not the package one.
+
+## Ordering
 
 ```php
-$prevNode = $node->prev()->first();
-$nextNode = $node->next()->first();
+Category::query()->defaultOrder()->get();              // by lft, ascending
+Category::query()->defaultOrder(SORT_DESC)->get();
 ```
 
-## Receiving through Queries without Models
-
-### root
-
-Returns a query for root nodes.
-
-```php
-MultiCategory::root();
-```
-
-### notRoot
-
-Returns a query for non-root nodes.
-
-```php
-MultiCategory::notRoot();
-```
-
-### parentsByModelId
-
-Returns a collection of parents of the node with the specified id.
-
-NB: In progress. Works only for multi-tree nodes.
-
-```php
-MultiCategory::parentsByModelId($node31->id)->get();
-MultiCategory::parentsByModelId($node31->id, level: 1)->get();
-MultiCategory::parentsByModelId($node31->id, andSelf: true)->get();
-```
-
-### byTree
-
-Returns a query for nodes of the specified tree.
-
-```php
-MultiCategory::byTree($id);
-MultiCategory::byTree($id)->get();
-```
-
-### toLevel
-
-Returns a query for nodes of the specified level.
-
-```php
-Category::toLevel(1);
-```
-
-### byParent
-
-Returns a query for nodes of the specified parent.
-
-```php
-Category::byParent($pid);
-```
+> [!NOTE]
+> `defaultOrder()` **replaces** any ordering already on the query rather than adding to it.
 
 ## Filtering by a relation
 
-`ancestors` and `descendants` are ordinary Eloquent relations, so the usual existence helpers
-work on them. On a multi-tree model every one of these stays inside the node's own tree.
+`ancestors` and `descendants` are ordinary Eloquent relations, so the existence helpers work on
+them. On a multi-tree model each one stays inside the node's own tree.
 
 ```php
 // Nodes that have a subtree of their own, and the leaves
@@ -209,3 +151,8 @@ Category::query()
 Category::query()->withCount('descendants')->get();
 ```
 
+## Related
+
+- [Collections](./Collections.md) — turning a flat result into a tree
+- [Performance](./Performance.md) — what each of these costs
+- [API Reference](./ApiReference.md) — the complete list

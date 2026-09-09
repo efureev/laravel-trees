@@ -1,47 +1,84 @@
-# Creating nodes
+# Creating Nodes
 
-A Node is usual Laravel Model. First Node is named `Root Node` (or `Root`). The Root node contains other nodes inside.
+A node is an ordinary Eloquent model. What makes it a tree node is that it always has a
+**position**, and the position has to be stated when it is created.
 
-In a single Tree Mode - you can create only one Root Node. Otherwise, if you want to use several Root-nodes you should
-use MultiTree Mode.
+## The root
 
-## Creating Root-nodes
+A root is the node with no parent. How it is created depends on the
+[tree shape](./Basic.md).
 
-**In a single-Tree mode:**
-
-You have to force the creation of the first Root Node like this:
+**Single tree** — say it outright. There is no other node to hang it from, so the package will
+not guess:
 
 ```php
-Category::make($attributes)->makeRoot()->save(); 
-Category::make($attributes)->saveAsRoot();
+Category::make($attributes)->makeRoot()->save();
+Category::make($attributes)->saveAsRoot();     // the same thing
 ```
 
-**In a multi-Tree mode:**
+> [!WARNING]
+> `Category::create($attributes)` on a single-tree model raises `NotSupportedException`, and a
+> second root raises `UniqueRootException`.
 
-You can create Root-node like a usual Laravel manner:
+**Multi-tree** — a node with no parent starts a new tree, so the ordinary Eloquent call works:
 
 ```php
 Category::create($attributes);
 Category::make($attributes)->save();
 ```
 
-## Creating sub-nodes
-
-Non-Root Nodes must be appended into another Node (Root- or NonRoot-).
-
-There are several ways to add/create new Non-Nodes to other nodes:
-
-- `PrependTo`: Adds a node inside another node. The Node is inserted BEFORE other children of the parent node.
-- `AppendTo`: Adds a node inside another node. The Node is inserted AFTER other children of the parent node.
-- `InsertBefore`: Adds child-node into same parent node. The Node is inserted BEFORE target node.
-- `InsertAfter`: Adds child-node into same parent node. The Node is inserted AFTER target node.
-
-Examples:
+To choose the tree id instead of having one generated:
 
 ```php
-$node->prependTo($parent)->save();
-$node->appendTo($parent)->save();
-
-$node->insertBefore($parent)->save();
-$node->insertAfter($parent)->save();
+Category::make($attributes)->setTree($tenantId)->makeRoot()->save();
 ```
+
+## Everything else
+
+Every non-root node is positioned relative to an existing one. Four ways, differing in where the
+new node lands:
+
+| Method | Takes | Puts the node |
+|---|---|---|
+| `prependTo($parent)` | a **parent** | first among that parent's children |
+| `appendTo($parent)` | a **parent** | last among that parent's children |
+| `insertBefore($sibling)` | a **sibling** | directly before it, same parent |
+| `insertAfter($sibling)` | a **sibling** | directly after it, same parent |
+
+Applied one after another to the same tree:
+
+```php
+$b->appendTo($root)->save();        // root, B
+$a->prependTo($root)->save();       // root, A, B
+$mid->insertAfter($a)->save();      // root, A, MID, B
+$first->insertBefore($a)->save();   // root, FIRST, A, MID, B
+```
+
+> [!WARNING]
+> `insertBefore()` and `insertAfter()` take a **sibling**, not a parent. Passing a root raises
+> `UniqueRootException` — "Can not insert a node before/after root" — because a sibling of the
+> root would be a second root.
+
+## Nothing happens until you save
+
+The positioning call records where the node belongs and returns the model. It issues no query.
+
+```php
+$node->appendTo($parent);          // no query, nothing persisted
+$node->appendTo($parent)->save();  // the node is created and the tree makes room for it
+```
+
+This is the most common way to lose a node. See
+[Architecture](./Architecture.md#operations-are-deferred).
+
+## What it costs
+
+Creating a node is three statements: read the target, shift the bounds to make room, insert.
+The shift is one `UPDATE`, but it touches every node positioned after the new one — see
+[Performance](./Performance.md).
+
+## Related
+
+- [Managing Nodes](./ManagingNodes.md) — moving and deleting what you created
+- [Tree Shapes](./Basic.md) — single versus multi
+- [Quick Start](./QuickStart.md) — the whole flow end to end

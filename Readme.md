@@ -72,7 +72,7 @@ composer require efureev/laravel-trees
 ## Documentation
 
 - [Quick Start](./docs/QuickStart.md)
-- [Basic Usage](./docs/Basic.md)
+- [Tree Shapes](./docs/Basic.md)
 - [Architecture](./docs/Architecture.md)
 - [Advanced Tree Configuration](./docs/AdvancedTreeConfig.md)
 - [Database Migration](./docs/Migration.md)
