@@ -71,7 +71,9 @@ composer require efureev/laravel-trees
 
 ## Documentation
 
+- [Quick Start](./docs/QuickStart.md)
 - [Basic Usage](./docs/Basic.md)
+- [Architecture](./docs/Architecture.md)
 - [Advanced Tree Configuration](./docs/AdvancedTreeConfig.md)
 - [Database Migration](./docs/Migration.md)
 - [Creating Nodes](./docs/CreatingNodes.md)
@@ -79,8 +81,14 @@ composer require efureev/laravel-trees
 - [Retrieving Nodes](./docs/ReceivingNodes.md)
 - [Collections](./docs/Collections.md)
 - [Model Helpers](./docs/Helpers.md)
+- [Soft Deletes](./docs/SoftDeletes.md)
 - [Console Commands](./docs/Console.md)
 - [Health Checks and Fixing](./docs/HealthAndFix.md)
+- [Troubleshooting](./docs/Troubleshooting.md)
+- [API Reference](./docs/ApiReference.md)
+- [Use Cases](./docs/UseCases.md)
+- [Performance](./docs/Performance.md)
+- [Limitations](./docs/Limitations.md)
 
 ## Testing
 
