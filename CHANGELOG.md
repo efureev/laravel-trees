@@ -82,6 +82,11 @@
 - Stale comment in `.docker/Dockerfile` claiming the default command is a `PHPCS + PHPUnit` gate,
   while `CMD` runs `composer test`
 
+- `Collection::fillMissingIntermediateNodes()`, and with it `toBreadcrumbs()`, fetches the
+  missing ancestors of the whole collection in one query instead of one per node. Every node asks
+  the same shape of question — which rows enclose its bounds — so they fold into a single `OR`
+  group; for multi-trees the tree condition sits inside each group, since the nodes may come from
+  different trees
 - Deleting a node no longer runs a `select count(*)` over its children. The answer went to
   `onDeletingNodeHasChildren()`, whose body is a commented-out throw, so nothing read it; where
   the model does not soft-delete, `isLeaf()` answers the same question from the bounds already in

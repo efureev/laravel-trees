@@ -192,22 +192,58 @@ class Collection extends BaseCollection
         $keyName    = $firstModel->getKeyName();
 
         $existingNodeIds = $this->pluck($keyName, $keyName)->all();
-        $sortedNodes     = $this->sortByDesc(static fn(Model $item) => $item->levelValue());
+
+        /** @var array<int, Model&TreeModel> $orphans */
+        $orphans = [];
 
         /** @var Model&TreeModel $node */
-        foreach ($sortedNodes as $node) {
+        foreach ($this->items as $node) {
             if (!$node instanceof Model || $node->isRoot() || isset($existingNodeIds[$node->parentValue()])) {
                 continue;
             }
 
-            /** @var Collection $missingParents */
-            $missingParents = $node->parentsBuilder()
-                ->whereNotIn($node->getKeyName(), $existingNodeIds)
-                ->get();
-
-            $this->items     = array_merge($this->items, $missingParents->all());
-            $existingNodeIds = array_merge($missingParents->pluck($keyName, $keyName)->all(), $existingNodeIds);
+            $orphans[] = $node;
         }
+
+        if (!$orphans) {
+            return;
+        }
+
+        $left  = (string)$firstModel->leftAttribute();
+        $right = (string)$firstModel->rightAttribute();
+
+        // Every node asks the same shape of question — which rows enclose my bounds — so the
+        // whole collection folds into one OR group instead of a query per node.
+        // Built statement by statement rather than chained: Laravel types where() with a
+        // closure as a query builder, which loses defaultOrder().
+        /** @var QueryBuilderV2 $query */
+        $query = $firstModel->newQuery();
+        $query->whereNotIn($keyName, $existingNodeIds);
+        $query->where(
+            static function (QueryBuilderV2 $query) use ($orphans, $left, $right) {
+                foreach ($orphans as $orphan) {
+                    $query->orWhere(
+                        static function (QueryBuilderV2 $inner) use ($orphan, $left, $right) {
+                            $inner
+                                ->where($left, '<', $orphan->leftValue())
+                                ->where($right, '>', $orphan->rightValue());
+
+                            // treeCondition() speaks for one model only, and the orphans
+                            // may well sit in different trees.
+                            if ($orphan->isMulti() && ($tree = $orphan->treeValue()) !== null) {
+                                $inner->where((string)$orphan->treeAttribute(), $tree);
+                            }
+                        }
+                    );
+                }
+            }
+        );
+        $query->defaultOrder();
+
+        /** @var Collection $missingParents */
+        $missingParents = $query->get();
+
+        $this->items = array_merge($this->items, $missingParents->all());
     }
 
     /**
