@@ -172,6 +172,10 @@
 
 ### Removed
 
+- Commented-out code that referenced methods which do not exist: a `throw` calling a factory
+  `DeletedNodeHasChildrenException` never had, a call to an `onRestoredNode…` method absent from
+  the whole package, and an abandoned `makeRoot()` signature taking a tree id the method does
+  not accept
 - `fakerphp/faker` from `require-dev`: the removed `Structure` factories were its only consumer,
   and it still arrives transitively through `orchestra/testbench`
 - Dead test fixtures `StructureHelper`, `StructureFactory` and `SoftDeleteStructureFactory`

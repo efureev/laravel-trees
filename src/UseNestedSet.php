@@ -352,11 +352,14 @@ trait UseNestedSet
 
 
     /**
-     * Callback on deleting node which has children
+     * Called when a node that still has children is being deleted.
+     *
+     * Empty on purpose: the package re-parents the children rather than refusing. Override it
+     * on the model to refuse instead — throwing from here aborts the delete. The configurable
+     * `ChildrenHandler` strategy covers the same ground without subclassing.
      */
     protected function onDeletingNodeHasChildren(): void
     {
-        //throw DeletedNodeHasChildrenException::make($this);
     }
 
     protected static function resolveDeleterWithChildren(string $value): DeleteStrategy
@@ -420,14 +423,9 @@ trait UseNestedSet
         return $this->getTreeConfig()->isMulti();
     }
 
-    //    public function makeRoot(int|string|null $tree = null): self
     public function makeRoot(): static
     {
         $this->operation = Operation::MakeRoot;
-
-        //        if ($tree) {
-        //                    $this->setTree($tree);
-        //        }
 
         return $this;
     }
@@ -629,8 +627,6 @@ trait UseNestedSet
 
     public function afterRestore(): void
     {
-        // $this->onRestoredNodeWeShouldToRestoredChildrenBy();
-
         $this->operation  = null;
         $this->node       = null;
         $this->treeChange = null;

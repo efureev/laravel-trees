@@ -6,6 +6,7 @@ namespace Fureev\Trees\Tests\Functional\Tree\Uno;
 
 use Fureev\Trees\Tests\Functional\AbstractFunctionalTreeTestCase;
 use Fureev\Trees\Tests\models\v5\ArchivedCategory;
+use Fureev\Trees\Tests\models\v5\CustomRestoreCategory;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
@@ -129,5 +130,65 @@ class RestoreTest extends AbstractFunctionalTreeTestCase
 
         // The node and everything beneath it are back.
         static::assertSame(4, ArchivedCategory::query()->count());
+    }
+    /**
+     * The trait declares two static closures and never assigns them, which reads as dead code
+     * from inside the package. A model using the trait can assign them — that is what
+     * `protected static` is for — and the restore routines then defer to whatever it set.
+     */
+    #[Test]
+    public function theRestoreRoutinesCanBeReplacedByTheModel(): void
+    {
+        $calls = [];
+
+        CustomRestoreCategory::useCustomRestore(
+            static function ($model, $deletedAt) use (&$calls) {
+                $calls[] = [
+                    'parents',
+                    $model->getKey(),
+                    $deletedAt,
+                ];
+
+                return 'parents replaced';
+            },
+            static function ($model, $deletedAt) use (&$calls) {
+                $calls[] = [
+                    'descendants',
+                    $model->getKey(),
+                    $deletedAt,
+                ];
+
+                return 'descendants replaced';
+            }
+        );
+
+        try {
+            /** @var CustomRestoreCategory $root */
+            $root = CustomRestoreCategory::make(['title' => 'root']);
+            $root->makeRoot()->save();
+
+            $root = $root->refresh();
+
+            static::assertSame('parents replaced', $root->restoreWithParents());
+            static::assertSame('descendants replaced', $root->restoreWithDescendants());
+
+            static::assertSame(
+                [
+                    [
+                        'parents',
+                        $root->getKey(),
+                        null,
+                    ],
+                    [
+                        'descendants',
+                        $root->getKey(),
+                        null,
+                    ],
+                ],
+                $calls
+            );
+        } finally {
+            CustomRestoreCategory::useCustomRestore();
+        }
     }
 }
