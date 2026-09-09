@@ -68,10 +68,11 @@ Category::fixMultiTree();         // every tree in the table
 
 Each returns the number of nodes it changed; `fixMultiTree()` returns one count per tree.
 
-> [!WARNING]
-> The `Fixing` trait carries the author's own note: *"It's not verified and tested on new
-> Version 5!"*. Treat it as a last resort — take a backup, run it on a copy, and check the
-> result with `HealthyChecker` before trusting it in production.
+> [!IMPORTANT]
+> Repair rewrites the bounds of every node it touches, so it is still a last resort rather than
+> routine maintenance: take a backup and check the result with `HealthyChecker`. What it is no
+> longer is untested — an orphan, a cycle of parent links, a tree with no root at all, and
+> several trees at once are all covered.
 
 A node whose parent row is gone, or one caught in a cycle of parent links, is attached to the
 root of the tree being repaired. Neither can be placed from its own link, and the bounds are the

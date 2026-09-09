@@ -1,9 +1,38 @@
 # Migration Guide
 
-## From v6.1 to v6.2
+## From v6 to v7
 
-No breaking API changes. Three behaviours changed in ways worth knowing about, all of them
-fixes to something that was silently wrong.
+Two signatures changed and a number of behaviours did, almost all of them because something was
+silently wrong. Nothing here needs a schema change, and most applications need no code change
+at all — the sections below say which ones do.
+
+Start with **Signatures** if you extend the package's own classes, and with **Health checks** if
+you compare `check()` against a literal.
+
+### Signatures
+
+`BaseRelation::relationExistenceCondition()` is gone, replaced by `addExistenceConstraint()`.
+The old one returned a raw SQL fragment; the new one applies `whereColumn()` constraints to the
+query it is handed:
+
+```php
+protected function addExistenceConstraint(Builder $query, string $hash, string $parentTable): void
+```
+
+Both are protected, and the two relations in the package are the only implementations, so this
+matters only if you wrote a relation of your own on top of `BaseRelation`.
+
+`QueryBuilder\Fixing::makeGap()` declares its parameters as `int`:
+
+```php
+public function makeGap(int $cut, int $height): int
+```
+
+Callers passing numeric strings from a file with `declare(strict_types=1)` need to cast.
+
+`Table::getColumnNames()` is gone; `getExtraColumnNames()` does the same and says what it
+returns. Both are protected on a `final` class, so nothing outside the package could reach
+either.
 
 ### `makeRoot()` on an existing node
 
@@ -84,9 +113,17 @@ Table::fromQuery($query)->hideLevel()->draw($output);
 Calling it through an instance still works, so nothing fails to run; only that one order
 changes meaning.
 
-### Nothing to do
+### `Contracts\TreeModel` describes the whole node
 
-No configuration changes, no schema changes, no code changes required.
+The interface declared 24 methods and now declares 66 — everything the tree traits add. Nothing
+implements it and nothing tests for it (`Helper::isTreeNode()` asks whether the model uses
+`UseTree`), so this breaks nothing; it means code typed as `Model&TreeModel` can call a node's
+own API without static analysis objecting.
+
+### Nothing else to do
+
+No configuration changes and no schema changes. Everything above is either a behaviour that was
+wrong before, or a signature only reachable from inside the package.
 
 ## From v5 to v6
 

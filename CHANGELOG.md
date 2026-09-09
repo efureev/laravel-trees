@@ -4,6 +4,9 @@
 
 ### Added
 
+- `docs/Concepts.md`: what a nested set is, the vocabulary the rest of the documentation uses
+  without re-explaining, when the shape fits and when a parent link would serve better, and what
+  the package adds on top of the scheme
 - `RangeCheck` and `RootCheck`, and `MissingParentCheck` joins the list `HealthyChecker` runs.
   Between them they close three blind spots: a tree whose numbering has holes because bounds
   were vacated and never reclaimed — which is what a subtree deleted by query leaves, and what
@@ -243,6 +246,22 @@
 
 ### Fixed — documentation
 
+- The "Queries" column of the API reference. Five of its numbers had drifted as the code under
+  them changed: deleting a node with children costs seven statements rather than three, moving a
+  sibling six rather than five, `saveAsRoot()` two rather than three, and
+  `moveChildrenToParent()` four. `DocumentedQueryCountsTest` asserts every number in that column
+  now, so a change in cost shows up as a failing test instead of a stale table
+- The limitation about tree id types was missing from `Limitations.md` — `setTree()` stores the
+  value as given while reading goes through the cast, so a string in an integer column compares
+  unequal until the row is read back
+- `getTreeConfig()`, `getTreeBuilder()`, `Table::setOutput()` and `Table::setCollection()` were
+  in neither the reference nor its internal list; `initializeUseTree()` and `uniqueIds()` join
+  the internal list
+- The warning that `Fixing` is "not verified and tested on new Version 5" is gone from the docs
+  and from the trait itself. It is tested now — a broken tree, a broken subtree, several trees
+  at once, an orphan, a cycle of parent links, a tree with no root — and two defects in the
+  repair were fixed in the course of writing those tests. It still rewrites every bound it
+  touches, so the documentation calls it a last resort rather than untested
 - The main example in `docs/AdvancedTreeConfig.md` did not parse: a missing semicolon after
   `setAttributes(...)`, plus `use Fureev\Trees\UseTree;` written inside the class body, which
   resolves against the current namespace and fails with `Trait "App\Models\Fureev\Trees\UseTree"

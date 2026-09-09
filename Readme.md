@@ -71,6 +71,7 @@ composer require efureev/laravel-trees
 
 ## Documentation
 
+- [Concepts](./docs/Concepts.md)
 - [Quick Start](./docs/QuickStart.md)
 - [Tree Shapes](./docs/Basic.md)
 - [Architecture](./docs/Architecture.md)

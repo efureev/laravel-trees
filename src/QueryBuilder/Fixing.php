@@ -11,9 +11,16 @@ use Illuminate\Database\Query\Builder as Query;
 use Illuminate\Database\Query\Expression;
 
 /**
- * @mixin QueryBuilderV2<Model>
+ * Rebuilds the bounds of a tree from its `parent_id` links.
  *
- * !! Be careful !! It's not verified and tested on new Version 5!
+ * This carried a warning that it was neither verified nor tested since v5. It is tested now —
+ * a broken tree, a broken subtree, several trees at once, an orphan, a cycle of parent links,
+ * a tree with no root at all — and repairing an orphan or a cycle was fixed in the course of
+ * writing those tests. The warning is gone with the reason for it.
+ *
+ * It still rewrites every bound it touches, so it is a last resort rather than maintenance.
+ *
+ * @mixin QueryBuilderV2<Model>
  */
 trait Fixing
 {

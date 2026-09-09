@@ -4,7 +4,8 @@ Every public entry point, grouped by what you want to do rather than by class. S
 taken from the source, not from prose.
 
 > [!NOTE]
-> "Queries" counts the statements a call issues by itself. Methods returning a query builder
+> "Queries" counts the statements a call issues by itself, measured rather than estimated —
+> `DocumentedQueryCountsTest` asserts every number in this column. Methods returning a query builder
 > issue nothing until the query is executed.
 
 ## Creating and positioning
@@ -14,7 +15,7 @@ Positioning records an intent; the tree changes on the next `save()`.
 | Method | Does | Queries |
 |---|---|---|
 | `makeRoot(): static` | mark the node a root | 0 |
-| `saveAsRoot(): bool` | `makeRoot()` and save, or plain save if already a root | 3 |
+| `saveAsRoot(): bool` | `makeRoot()` and save, or plain save if already a root | 2 |
 | `appendTo(Model $node): static` | become the **last** child of `$node` | 0 |
 | `prependTo(Model $node): static` | become the **first** child of `$node` | 0 |
 | `insertBefore(Model $node): static` | become the sibling before `$node` | 0 |
@@ -27,8 +28,8 @@ See [Creating Nodes](./CreatingNodes.md).
 
 | Method | Does | Queries |
 |---|---|---|
-| `up(): bool` | swap with the previous sibling; `false` if there is none | 5 |
-| `down(): bool` | swap with the next sibling; `false` if there is none | 5 |
+| `up(): bool` | swap with the previous sibling; `false` if there is none | 6 |
+| `down(): bool` | swap with the next sibling; `false` if there is none | 6 |
 | `setTree(string\|int $treeId): static` | choose the tree; multi-tree only | 0 |
 
 Re-positioning an existing node uses the same methods as creating one. Promoting a node to a
@@ -39,10 +40,10 @@ root is `makeRoot()->save()` — multi-tree only, see
 
 | Method | Does | Queries |
 |---|---|---|
-| `delete()` | remove the node, lift its children one level | 3 |
+| `delete()` | remove the node, lift its children into its parent | 7 |
 | `deleteWithChildren(bool $forceDelete = true): mixed` | remove the node and its subtree | 3+ |
 | `removeDescendants(): void` | remove the subtree, keep the node; closes the bounds it freed | 2 |
-| `moveChildrenToParent(): void` | lift the children into the parent, keep the node as a leaf | 3 |
+| `moveChildrenToParent(): void` | lift the children into the parent, keep the node as a leaf | 4 |
 
 > [!WARNING]
 > Always delete through the model. A query-level `delete()` skips the bookkeeping and breaks the
@@ -92,6 +93,8 @@ None of these touch the database except where noted.
 | `isMulti(): bool` | is the model configured with a tree column |
 | `getRoot(): ?static` | the root of this tree (1 query) |
 | `getBounds(): array` | the tree column values, positional: left, right, level, parent, tree last |
+| `getTreeConfig(): Config` | the built configuration — column names, types, strategies |
+| `getTreeBuilder(): Builder` | the builder the model declared, before it was built |
 
 ## Values and column names
 
@@ -212,6 +215,8 @@ use Fureev\Trees\Table;
 | `Table::fromModel(Model $model): Table` | build from a node and its subtree |
 | `Table::fromTree(Collection $collection): Table` | build from a linked collection |
 | `Table::fromQuery(QueryBuilderV2 $query): Table` | build from a query |
+| `setCollection(Collection $collection): Table` | render a collection you already have |
+| `setOutput(?OutputInterface $output = null): Table` | where to write; `draw()` takes one too |
 | `setExtraColumns(array $columns): Table` | pick the columns to print |
 | `hideLevel(): Table` | drop the level column |
 | `setOffset(string $offset): Table` | change the indent |
@@ -269,7 +274,7 @@ to the model, and helpers for its own queries:
 `afterRestore()`, `getDirty()`, `newEloquentBuilder()`, `newCollection()`, `trace()`,
 `treeCondition()`, `applyNestedSetScope()`, `whereNodeBetween()`, `getNodeData()`,
 `getPlainNodeData()`, `getNodeBounds()`, `wrappedColumns()`, `wrappedKey()`, `wrappedTable()`,
-`newNestedSetQuery()`, `newScopedQuery()`, `isForceSaving()`.
+`newNestedSetQuery()`, `newScopedQuery()`, `isForceSaving()`, `initializeUseTree()`, `uniqueIds()`.
 
 Calling them directly bypasses the bookkeeping described in
 [Architecture](./Architecture.md).

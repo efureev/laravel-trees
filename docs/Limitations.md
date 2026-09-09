@@ -14,6 +14,7 @@
 | [Single trees](#a-single-tree-holds-exactly-one-root) | One root only; a node cannot be promoted to a root |
 | [Soft deletes](#a-trashed-node-keeps-its-place) | A trashed node keeps its bounds and its place |
 | [Databases](#postgresql-is-the-tested-database) | Tested on PostgreSQL only |
+| [Key types](#a-tree-id-has-to-match-its-column) | `setTree()` takes the value as given; a string in an integer column compares unequal |
 | [Semantics](#names-that-mean-something-slightly-different) | `isChildOf()` means "is a descendant"; several methods reorder for you |
 
 ---
@@ -131,13 +132,29 @@ That has consequences worth knowing:
 The suite runs against PostgreSQL only, in CI and in the bundled Docker setup. MySQL appears in
 one code path but no test exercises it. Other engines are unverified.
 
+## A tree id has to match its column
+
+`setTree()` stores what it is handed, without casting it to the column's type. Reading it back
+goes through the cast, so a value of the wrong type is written one way and read another:
+
+```php
+$node->setTree('777');   // integer column
+$node->treeValue();      // 777, as an int
+```
+
+`isEqualTo()` compares tree values strictly, so a node written with `'777'` can compare unequal
+to one written with `777` until both have been read back from the database. Pass the type the
+column holds — an int for an integer column, a string for a UUID or ULID one.
+
+The package does not cast on the way in on purpose: doing so would mean reading the model's
+casts on every write, on the hot path, to catch a mistake in the call.
+
 ## Names that mean something slightly different
 
 | Name | What it actually does |
 |---|---|
 | `isChildOf($node)` | True for a descendant at **any** depth, not only a direct child — it compares bounds. Kept under its historical name; `isDescendantOf()` is the same check, `isDirectChildOf()` the one level down |
 | `orderBy()` after `children()`, `parents()` or `whereAncestorOf()` | Kept, but below `lft`. `lft` is unique within a tree, so the tie never happens and the ordering never applies — `reorder()` first |
-| `Fixing` trait | Carries the author's note that it is not verified since v5. Treat repairs as a last resort and check the result |
 
 > [!NOTE]
 > `Fureev\Trees\Contracts\TreeModel` describes a node for static analysis; nothing implements it
