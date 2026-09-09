@@ -759,7 +759,10 @@ trait UseNestedSet
         $left  = (string)$this->leftAttribute();
         $right = (string)$this->rightAttribute();
 
-        $query = $this->query();
+        // newQuery(), not query(): the latter is Model's static factory, so it builds a fresh
+        // instance on the default connection and the shift would rewrite bounds in the wrong
+        // database whenever the node lives on another one.
+        $query = $this->newQuery();
 
         if ($this->isMulti()) {
             $query->where((string)$this->treeAttribute(), $tree);

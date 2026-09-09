@@ -56,6 +56,14 @@
 
 ### Fixed
 
+- The bound shift runs on the node's own connection. It reached for its query through
+  `Model::query()`, which is static and therefore builds a fresh instance carrying the default
+  connection: the select and the insert went to the node's connection while the statement that
+  rewrites the bounds of the whole tree went elsewhere. Anything using `Model::on()`,
+  `setConnection()`, a tenant connection or a read/write split was writing half of each
+  operation to the wrong database. It also made the advice in the readme untrue — wrapping a
+  write in a transaction did not keep a second writer out, because the second writer's shift
+  was not on the connection holding the locks
 - `forceSave()` lowers its flag in a `finally`, so it lives exactly as long as the one save it
   was raised for. It was cleared on the `saved` and `updated` events only, and a listener
   vetoing `saving` makes `save()` return before either fires — the flag then stayed raised on
