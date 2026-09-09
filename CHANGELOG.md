@@ -8,10 +8,10 @@
   `gate:docker` and a matching `gate` service in `docker-compose.yml`, so the whole CI gate can be
   reproduced locally with one command
 - Regression coverage for `QueryBuilder\Fixing::makeGap()` called with a zero offset
-
-- `moveChildrenToParent()` refuses a node with no parent instead of dying on it, and refuses
-  before writing anything. It used to shift the descendants first and only then dereference the
-  missing parent, so a root left the call with a raw `Error` and a renumbered tree behind it
+- `isDescendantOf()` and `isDirectChildOf()` on the tree trait. `isChildOf()` compares bounds,
+  so it answers "is a descendant at any depth" rather than "is a child"; the first of the two is
+  the same check under a name that says so, and the second is the one-level question the old name
+  is mistaken for, answered from the parent column. `isChildOf()` is unchanged and stays
 - `parentsByModelId()` works on single trees as well. It joins a subquery holding the target
   node and compares bounds, and the only thing a single tree lacked was something to join on —
   so the subquery is cross joined instead, which is the same thing without a condition. The
@@ -43,6 +43,9 @@
 
 ### Fixed
 
+- `moveChildrenToParent()` refuses a node with no parent instead of dying on it, and refuses
+  before writing anything. It used to shift the descendants first and only then dereference the
+  missing parent, so a root left the call with a raw `Error` and a renumbered tree behind it
 - `has()`, `whereHas()`, `doesntHave()` and `withCount()` work over the `ancestors` and
   `descendants` relations: `BaseRelation` never implemented `getRelationExistenceQuery()`, so
   Laravel fell back to a key comparison and every such call died with

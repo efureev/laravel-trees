@@ -84,6 +84,8 @@ None of these touch the database except where noted.
 | `isRoot(): bool` | is `parent_id` null |
 | `isLeaf(): bool` | has no children — from the bounds, unless the model soft-deletes |
 | `isChildOf(Model $node): bool` | is inside that node's bounds — **any depth** |
+| `isDescendantOf(Model $node): bool` | same check as `isChildOf()`, named for what it answers |
+| `isDirectChildOf(Model $node): bool` | is that node the immediate parent — one level, from the parent column |
 | `isEqualTo(Model $model): bool` | same bounds, level, parent and tree |
 | `isLevel(int $level): bool` | sits at that level |
 | `isMulti(): bool` | is the model configured with a tree column |

@@ -9,7 +9,9 @@ Questions a node can answer about itself. None of these touch the database unles
 | `isRoot(): bool` | is `parent_id` null |
 | `isLeaf(): bool` | has no children |
 | `isLevel(int $level): bool` | sits at that level |
-| `isChildOf(Model $node): bool` | is inside that node's bounds |
+| `isChildOf(Model $node): bool` | is inside that node's bounds — **any depth** |
+| `isDescendantOf(Model $node): bool` | the same question under a clearer name |
+| `isDirectChildOf(Model $node): bool` | is that node the immediate parent — **one level only** |
 | `isEqualTo(Model $node): bool` | same bounds, level, parent and tree |
 | `isMulti(): bool` | is the model configured with a tree column |
 | `getRoot(): ?static` | the root of this tree — **one query** |
@@ -17,13 +19,18 @@ Questions a node can answer about itself. None of these touch the database unles
 ```php
 $node->isRoot();
 $node->isLeaf();
-$node->isChildOf($ancestor);
+$node->isDescendantOf($ancestor);   // anywhere below it
+$node->isDirectChildOf($parent);    // exactly one level below it
 ```
 
+> [!WARNING]
+> `isChildOf()` does not ask what its name suggests. It compares bounds, so a grandchild answers
+> true as readily as a child. `isDescendantOf()` is the identical check under a name that admits
+> it; `isDirectChildOf()` is the stricter question, and reads the parent column instead.
+
 > [!NOTE]
-> `isChildOf()` compares bounds, so it is true for a descendant at **any** depth, not only a
-> direct child. `isLeaf()` also answers from the bounds — except on a soft-deleting model, where
-> it falls back to counting children.
+> `isLeaf()` also answers from the bounds — except on a soft-deleting model, where it falls back
+> to counting children.
 
 ## Values
 

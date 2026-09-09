@@ -34,6 +34,12 @@ trait WithQueryBuilder
     }
 
     /**
+     * Is this node inside `$node`'s bounds?
+     *
+     * The name is narrower than the answer: the check compares bounds, so a grandchild says yes
+     * as readily as a child. `isDescendantOf()` is the same check under a name that admits it,
+     * and `isDirectChildOf()` is the stricter question this one is often mistaken for.
+     *
      * @phpstan-param Model&UseTree $node
      */
     public function isChildOf(Model $node): bool
@@ -41,6 +47,33 @@ trait WithQueryBuilder
         return $this->treeValue() === $node->treeValue() &&
             $this->leftValue() > $node->leftValue() &&
             $this->rightValue() < $node->rightValue();
+    }
+
+    /**
+     * Is this node anywhere inside `$node`'s subtree, at any depth?
+     *
+     * Same check as `isChildOf()`, named for what it actually answers.
+     *
+     * @phpstan-param Model&UseTree $node
+     */
+    public function isDescendantOf(Model $node): bool
+    {
+        return $this->isChildOf($node);
+    }
+
+    /**
+     * Is `$node` this node's immediate parent?
+     *
+     * Reads the parent column rather than the bounds, so it is true one level down and nowhere
+     * else. A root answers false for everything, having no parent to match.
+     *
+     * @phpstan-param Model&UseTree $node
+     */
+    public function isDirectChildOf(Model $node): bool
+    {
+        $parent = $this->parentValue();
+
+        return $parent !== null && $parent === $node->getKey();
     }
 
     /**
