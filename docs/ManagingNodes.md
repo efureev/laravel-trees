@@ -55,5 +55,29 @@ Category::where('id', '=', $id)->delete();
 
 ## Delete SoftDeletable Models
 
-The Tree works normally with `SoftDelete` trait. 
+The Tree works normally with `SoftDelete` trait.
+
+## Promote a Node to a Root
+
+An existing node can become the root of its own tree. The whole subtree travels with it: the
+descendants keep their shape and move into the new tree.
+
+```php
+$node->makeRoot()->save();
+// or, equivalently
+$node->saveAsRoot();
+```
+
+The node ends up with `lft = 1`, `lvl = 0`, no parent, and a freshly generated tree id. The gap
+it leaves behind in the old tree is closed.
+
+To place it into a tree you choose rather than a generated one, set the value first:
+
+```php
+$node->setTree(42)->makeRoot()->save();
+```
+
+**NB** This is a multi-tree operation. On a single-tree model it throws
+`Can not move a node as the root when Model is not set to "MultiTree"`, since a single tree has
+room for only one root.
 

@@ -77,6 +77,7 @@ composer require efureev/laravel-trees
 - [Creating Nodes](./docs/CreatingNodes.md)
 - [Managing Nodes](./docs/ManagingNodes.md)
 - [Retrieving Nodes](./docs/ReceivingNodes.md)
+- [Collections](./docs/Collections.md)
 - [Model Helpers](./docs/Helpers.md)
 - [Console Commands](./docs/Console.md)
 - [Health Checks and Fixing](./docs/HealthAndFix.md)
@@ -98,3 +99,15 @@ DB_HOST=localhost DB_PORT=5432 DB_DATABASE=forge DB_USERNAME=forge DB_PASSWORD=f
 # or
 ./vendor/bin/phpunit --testdox
 ```
+
+### The full gate
+
+`gate` runs the same three checks CI does, in the same order, and stops at the first failure:
+PHPStan, PHPCS, PHPUnit.
+
+```shell
+composer gate:docker   # inside Docker, PostgreSQL included
+composer gate          # against a PostgreSQL you already have running
+```
+
+The individual steps are `composer phpstan`, `composer phpcs` and `composer test`.

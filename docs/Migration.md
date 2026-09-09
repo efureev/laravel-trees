@@ -43,8 +43,8 @@ return new class extends Migration {
 
 ## Rolling the migration back
 
-`Migrate::dropColumns()` removes the tree columns together with the indexes `buildColumns()`
-created:
+Add a `down()` to the same migration class. `Migrate::dropColumns()` removes the tree columns
+together with the indexes `buildColumns()` created:
 
 ```php
 public function down()

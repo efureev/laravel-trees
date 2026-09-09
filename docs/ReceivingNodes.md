@@ -186,3 +186,26 @@ Returns a query for nodes of the specified parent.
 ```php
 Category::byParent($pid);
 ```
+
+## Filtering by a relation
+
+`ancestors` and `descendants` are ordinary Eloquent relations, so the usual existence helpers
+work on them. On a multi-tree model every one of these stays inside the node's own tree.
+
+```php
+// Nodes that have a subtree of their own, and the leaves
+Category::query()->has('descendants')->get();
+Category::query()->doesntHave('descendants')->get();
+
+// Everything except the roots
+Category::query()->has('ancestors')->get();
+
+// Ancestors of the nodes matching a condition
+Category::query()
+    ->whereHas('descendants', static fn($query) => $query->where('title', 'Shoes'))
+    ->get();
+
+// $node->descendants_count without loading the subtree
+Category::query()->withCount('descendants')->get();
+```
+
