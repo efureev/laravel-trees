@@ -152,8 +152,15 @@ class FixingTest extends AbstractFunctionalTreeTestCase
         static::assertFalse((new HealthyChecker(FixableCategory::class))->isBroken());
     }
 
+    /**
+     * A node whose parent row is gone cannot be placed from its own link, and the bounds are
+     * exactly what the repair is rebuilding, so it is hung from the root.
+     *
+     * It used to become a root itself, which leaves a single tree with two — a shape the package
+     * refuses to write, and one no check could see until `RootCheck` existed.
+     */
     #[Test]
-    public function fixTreeTurnsOrphanIntoRoot(): void
+    public function fixTreeAttachesAnOrphanToTheRoot(): void
     {
         $root = $this->buildTree();
 
@@ -163,7 +170,6 @@ class FixingTest extends AbstractFunctionalTreeTestCase
             ->orderBy((string)$root->leftAttribute())
             ->first();
 
-        // Point the child to a non-existent parent: it must become a root.
         $child->getConnection()
             ->table($child->getTable())
             ->where($child->getKeyName(), $child->getKey())
@@ -173,20 +179,72 @@ class FixingTest extends AbstractFunctionalTreeTestCase
 
         $repaired = FixableCategory::query()->whereKey($child->getKey())->first();
 
-        static::assertNull($repaired->parentValue());
-        static::assertTrue($repaired->isRoot());
+        static::assertSame($root->getKey(), $repaired->parentValue());
+        static::assertFalse($repaired->isRoot());
 
-        // The bounds are sound again, and the parent link no longer dangles.
-        static::assertSame(0, (new OddnessCheck(FixableCategory::class))->check());
-        static::assertSame(0, (new DuplicatesCheck(FixableCategory::class))->check());
-        static::assertSame(0, (new MissingParentCheck(FixableCategory::class))->check());
-
-        // But a single tree may hold one root, and the repair has made a second one. See the
-        // finding in INSPECTION.md: promoting an orphan is right for a multi-tree model and
-        // leaves a single tree in a shape the package refuses to write.
-        static::assertSame(1, (new RootCheck(FixableCategory::class))->check());
-        static::assertTrue((new HealthyChecker(FixableCategory::class))->isBroken());
+        static::assertSame(0, (new RootCheck(FixableCategory::class))->check());
+        static::assertFalse((new HealthyChecker(FixableCategory::class))->isBroken());
     }
+
+    /**
+     * Parent links pointing at each other are reachable from nowhere, so the walk never sees
+     * them. They are hung from the root for the same reason an orphan is.
+     */
+    #[Test]
+    public function fixTreeBreaksACycle(): void
+    {
+        $root = $this->buildTree();
+
+        $children = FixableCategory::query()
+            ->where((string)$root->parentAttribute(), $root->getKey())
+            ->orderBy((string)$root->leftAttribute())
+            ->get();
+
+        $first  = $children->first();
+        $second = $children->last();
+
+        static::assertTrue($first->isNot($second));
+
+        $table = $first->getTable();
+
+        $first->getConnection()->table($table)
+            ->where($first->getKeyName(), $first->getKey())
+            ->update([(string)$root->parentAttribute() => $second->getKey()]);
+
+        $second->getConnection()->table($table)
+            ->where($second->getKeyName(), $second->getKey())
+            ->update([(string)$root->parentAttribute() => $first->getKey()]);
+
+        FixableCategory::fixTree();
+
+        static::assertFalse((new HealthyChecker(FixableCategory::class))->isBroken());
+        static::assertSame(
+            1,
+            FixableCategory::query()->whereNull((string)$root->parentAttribute())->count()
+        );
+    }
+
+    /**
+     * With every link dangling there is no root to hang anything from, so one of them becomes
+     * it — and exactly one, not one per orphan.
+     */
+    #[Test]
+    public function fixTreeSalvagesATreeWithoutARoot(): void
+    {
+        $root = $this->buildTree();
+
+        FixableCategory::query()->getQuery()
+            ->update([(string)$root->parentAttribute() => 999999]);
+
+        FixableCategory::fixTree();
+
+        static::assertSame(
+            1,
+            FixableCategory::query()->whereNull((string)$root->parentAttribute())->count()
+        );
+        static::assertFalse((new HealthyChecker(FixableCategory::class))->isBroken());
+    }
+
 
     #[Test]
     public function makeGapWithZeroHeightLeavesBoundsUntouched(): void

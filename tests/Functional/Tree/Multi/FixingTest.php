@@ -83,4 +83,66 @@ class FixingTest extends AbstractFunctionalTreeTestCase
             static::assertSame(0, $changed);
         }
     }
+
+    /**
+     * Repairing a multi tree used to leave it worse than it started. The orphan was dropped from
+     * the walk instead of being placed, so it kept its old bounds while everything around it was
+     * renumbered on top of them: one dangling link became a pile of colliding ones.
+     */
+    #[Test]
+    public function fixMultiTreeAttachesAnOrphanToItsOwnRoot(): void
+    {
+        $nodes = [];
+
+        foreach (['one', 'two'] as $name) {
+            /** @var FixableMultiCategory $root */
+            $root = static::model(['title' => "root $name"]);
+            $root->save();
+
+            /** @var FixableMultiCategory $branch */
+            $branch = static::model(['title' => "branch $name"]);
+            $branch->appendTo($root->refresh())->save();
+
+            /** @var FixableMultiCategory $leaf */
+            $leaf = static::model(['title' => "leaf $name"]);
+            $leaf->appendTo($branch->refresh())->save();
+
+            $nodes["root_$name"] = $root->refresh();
+            $nodes["leaf_$name"] = $leaf->refresh();
+        }
+
+        $victim = $nodes['leaf_one'];
+
+        $victim->getConnection()
+            ->table($victim->getTable())
+            ->where($victim->getKeyName(), $victim->getKey())
+            ->update([(string)$victim->parentAttribute() => 999999]);
+
+        $untouched = FixableMultiCategory::query()
+            ->byTree($nodes['root_two']->treeValue())
+            ->defaultOrder()
+            ->get()
+            ->map(static fn(FixableMultiCategory $n) => [$n->leftValue(), $n->rightValue()])
+            ->all();
+
+        FixableMultiCategory::fixMultiTree();
+
+        $repaired = FixableMultiCategory::query()->whereKey($victim->getKey())->first();
+
+        static::assertSame($nodes['root_one']->getKey(), $repaired->parentValue());
+        static::assertSame($nodes['root_one']->treeValue(), $repaired->treeValue());
+
+        static::assertFalse((new HealthyChecker(FixableMultiCategory::class))->isBroken());
+
+        // The other tree is renumbered by its own pass and must come out unchanged.
+        static::assertSame(
+            $untouched,
+            FixableMultiCategory::query()
+                ->byTree($nodes['root_two']->treeValue())
+                ->defaultOrder()
+                ->get()
+                ->map(static fn(FixableMultiCategory $n) => [$n->leftValue(), $n->rightValue()])
+                ->all()
+        );
+    }
 }

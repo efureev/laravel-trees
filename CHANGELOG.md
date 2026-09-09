@@ -68,6 +68,17 @@
 
 ### Fixed
 
+- `fixTree()` places a node whose parent row is gone under the root of the tree it is
+  repairing, and so does `fixMultiTree()`. Both used to hand such a node to a salvage pass that
+  ran after the numbering and re-keyed one group at a time to `null`, then walked again with the
+  original parent id — looking for a group it had just removed.
+
+  On a whole single tree that made the node a second root, which the package refuses to write
+  and no check could see until `RootCheck` existed. On a subtree, and therefore on every tree
+  `fixMultiTree()` touches, the node was skipped instead: it kept its old bounds while
+  everything around it was renumbered on top of them, so repairing a tree with one dangling link
+  left it with five defects rather than one. Nodes caught in a cycle of parent links, which no
+  dangling key reveals, are placed the same way
 - The health checks run against the model they were handed. Both `HealthyChecker` and
   `AbstractCheck` reduced it to its class name and built a fresh one, discarding a connection
   chosen with `setConnection()` — so a tree on another connection was checked on the default one

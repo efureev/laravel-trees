@@ -73,8 +73,12 @@ Each returns the number of nodes it changed; `fixMultiTree()` returns one count 
 > Version 5!"*. Treat it as a last resort — take a backup, run it on a copy, and check the
 > result with `HealthyChecker` before trusting it in production.
 
-Repair cannot invent what is gone. If `parent_id` itself is wrong, or the parent row was deleted,
-the rebuild has nothing correct to work from.
+A node whose parent row is gone, or one caught in a cycle of parent links, is attached to the
+root of the tree being repaired. Neither can be placed from its own link, and the bounds are the
+damage being repaired, so the root is the one place known to be there.
+
+Repair cannot invent what is gone. If `parent_id` points at the wrong node, the rebuild follows
+it, because that link is all it has.
 
 ## Preventing the damage
 

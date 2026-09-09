@@ -38,7 +38,10 @@ trait Fixing
     /**
      * Fixes the tree based on parentage info.
      *
-     * Nodes with invalid parent are saved as roots.
+     * A node whose `parent_id` names a row that is gone, and a node caught in a cycle of parent
+     * links, are re-attached to the root of the tree being repaired. Neither can be placed from
+     * its own link, and the root is the one place known to be there — using the bounds instead
+     * would contradict the whole method, which treats them as the damage to repair.
      *
      * @param Model|UseTree|null $root
      *
@@ -87,16 +90,12 @@ trait Fixing
         $updated = [];
         $moved   = 0;
 
+        // Before numbering, not after: a group left out of the walk keeps the bounds it had, and
+        // the nodes that were renumbered land on top of it. Repairing a tree used to be able to
+        // leave it worse than it started.
+        static::reattachUnreachable($dictionary, $parentId);
+
         $cut = self::reorderNodes($dictionary, $updated, $parentId, $cut, $parentLevel);
-
-        // Save nodes that have invalid parent as roots
-        while (!empty($dictionary)) {
-            $dictionary[null] = reset($dictionary);
-
-            unset($dictionary[key($dictionary)]);
-
-            $cut = self::reorderNodes($dictionary, $updated, $parentId, $cut, $parentLevel);
-        }
 
         if ($parent && ($grown = $cut - abs($parent->rightValue())) !== 0) {
             $moved = $parent->newScopedQuery()->makeGap((abs($parent->rightValue()) + 1), $grown);
@@ -109,6 +108,73 @@ trait Fixing
         }
 
         return (count($updated) + $moved);
+    }
+
+    /**
+     * Moves every group the walk cannot reach under the root of the tree being repaired.
+     *
+     * A group is unreachable when its key names no node present — the parent row is gone — or
+     * when the links form a cycle, which no key being dangling hides. Both used to be handled
+     * after the numbering by re-keying one group at a time to `null` and running the walk again
+     * with the original parent id, which looked for a group that had just been removed: on a
+     * subtree the nodes were silently skipped, and on a whole single tree they became a second
+     * root, a shape the package refuses to write.
+     *
+     * @param array<array-key, mixed> $dictionary Nodes grouped by their parent key
+     */
+    protected static function reattachUnreachable(array &$dictionary, int|string|null $parentId): void
+    {
+        $start = ($parentId ?? '');
+
+        $reachable = [];
+        $queue     = [$start];
+
+        while ($queue !== []) {
+            $key = array_shift($queue);
+
+            if (!isset($dictionary[$key])) {
+                continue;
+            }
+
+            /** @var Model|UseTree $model */
+            foreach ($dictionary[$key] as $model) {
+                $reachable[] = $model->getKey();
+                $queue[]     = $model->getKey();
+            }
+        }
+
+        $stranded = [];
+
+        foreach (array_keys($dictionary) as $key) {
+            if ($key === $start || in_array($key, $reachable, false)) {
+                continue;
+            }
+
+            foreach ($dictionary[$key] as $model) {
+                $stranded[] = $model;
+            }
+
+            unset($dictionary[$key]);
+        }
+
+        if ($stranded === []) {
+            return;
+        }
+
+        // With no root of its own the tree cannot be hung from one, so the first stranded node
+        // becomes it and the rest hang from that. Either way exactly one root comes out.
+        $anchor = ($parentId ?? (isset($dictionary[$start][0]) ? $dictionary[$start][0]->getKey() : null));
+
+        if ($anchor === null) {
+            $first  = array_shift($stranded);
+            $anchor = $first->getKey();
+
+            $dictionary[$start] = [$first];
+        }
+
+        foreach ($stranded as $model) {
+            $dictionary[$anchor][] = $model;
+        }
     }
 
     protected static function reorderNodes(

@@ -53,6 +53,12 @@ a vacated span, a second root and an orphan all used to read as healthy.
 Pass the model rather than its class name where the connection or the query scope matters:
 `new HealthyChecker($node)`.
 
+### Repairing a tree places orphans differently
+
+`fixTree()` used to make a node with a missing parent into a root. It now attaches it to the
+root of the tree being repaired, because a single tree may hold only one root. If you relied on
+the old behaviour to split a tree, promote the node yourself with `makeRoot()` after the repair.
+
 ### Nothing to do
 
 No configuration changes, no schema changes, no code changes required.
