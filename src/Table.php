@@ -70,10 +70,6 @@ final class Table
         return $this;
     }
 
-    public function fromQuery(QueryBuilderV2 $query): self
-    {
-        return $this->setCollection($query->get()->toTree());
-    }
 
 
     protected function render(): void
@@ -183,14 +179,28 @@ final class Table
         }
     }
 
+    /**
+     * Run the query and render what it returns.
+     *
+     * Static, like the two factories beside it. It used to be the odd one out, which made
+     * `Table::fromQuery(...)` — the form anyone writes by analogy — a fatal error rather than a
+     * mistake with a message. Reaching it through an instance still works, because PHP allows a
+     * static method to be called that way; what no longer carries over is configuration applied
+     * before the call, since the table is built here rather than configured in place.
+     */
+    public static function fromQuery(QueryBuilderV2 $query): self
+    {
+        return (new self())
+            ->setCollection($query->get()->toTree());
+    }
+
     public static function fromModel(Model $model): self
     {
         if (!Helper::isTreeNode($model)) {
             throw new InvalidArgumentException('Model must be a node.');
         }
 
-        return (new self())
-            ->fromQuery($model->newNestedSetQuery()->descendantsQuery(null, true));
+        return self::fromQuery($model->newNestedSetQuery()->descendantsQuery(null, true));
     }
 
     public static function fromTree(Collection $collection): self

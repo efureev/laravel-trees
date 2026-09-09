@@ -8,6 +8,8 @@ use Fureev\Trees\Table;
 use Fureev\Trees\Tests\models\v5\Category;
 use Illuminate\Console\BufferedConsoleOutput;
 use PHPUnit\Framework\Attributes\Test;
+use ReflectionClass;
+use ReflectionMethod;
 
 class TableTest extends AbstractFunctionalTreeTestCase
 {
@@ -117,5 +119,77 @@ class TableTest extends AbstractFunctionalTreeTestCase
         $node31->appendTo($node21->refresh())->save();
 
         return $root->refresh();
+    }
+
+    /**
+     * The form anyone writes by analogy with the two factories beside it. It used to be a fatal
+     * error, and PHP refuses before any magic could soften it: a public non-static method in a
+     * static context is not "inaccessible", so `__callStatic` never runs.
+     */
+    #[Test]
+    public function theQueryFactoryIsStatic(): void
+    {
+        $root = $this->buildTree();
+
+        $output = new BufferedConsoleOutput();
+
+        Table::fromQuery($root->newNestedSetQuery()->defaultOrder())
+            ->setExtraColumns(['title' => 'Label'])
+            ->draw($output);
+
+        $rendered = $output->fetch();
+
+        static::assertStringContainsString('root node', $rendered);
+        static::assertStringContainsString('child 2.1', $rendered);
+    }
+
+    /**
+     * All three factories agree now. The mismatch was found by checking signatures while writing
+     * the reference, so it is checked the same way here.
+     */
+    #[Test]
+    public function everyFactoryIsStatic(): void
+    {
+        $reflection = new ReflectionClass(Table::class);
+
+        $factories = [];
+
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if (str_starts_with($method->getName(), 'from')) {
+                $factories[$method->getName()] = $method->isStatic();
+            }
+        }
+
+        ksort($factories);
+
+        static::assertSame(
+            [
+                'fromModel' => true,
+                'fromQuery' => true,
+                'fromTree'  => true,
+            ],
+            $factories
+        );
+    }
+
+    /**
+     * Configuration goes after the factory, which is the only order the other two allow.
+     */
+    #[Test]
+    public function configuringAfterTheFactoryApplies(): void
+    {
+        $root = $this->buildTree();
+
+        $output = new BufferedConsoleOutput();
+
+        Table::fromQuery($root->newNestedSetQuery()->defaultOrder())
+            ->hideLevel()
+            ->setExtraColumns(['title' => 'Label'])
+            ->draw($output);
+
+        $rendered = $output->fetch();
+
+        static::assertStringNotContainsString('Level', $rendered);
+        static::assertStringContainsString('Label', $rendered);
     }
 }

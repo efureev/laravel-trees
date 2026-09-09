@@ -35,15 +35,13 @@ Table::fromTree(Category::query()->defaultOrder()->get()->toTree())
 ## From a query
 
 ```php
-(new Table())
-    ->fromQuery(Category::query()->defaultOrder())
+Table::fromQuery(Category::query()->defaultOrder())
     ->setExtraColumns(['title' => 'Label'])
     ->draw($output);
 ```
 
 > [!NOTE]
-> `fromQuery()` is an **instance** method, while `fromModel()` and `fromTree()` are static. It
-> has to be reached through `new Table()`.
+> All three factories build the table, so configuration goes after the call, not before it.
 
 ## Choosing the columns
 

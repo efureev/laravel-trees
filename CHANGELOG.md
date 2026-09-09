@@ -25,6 +25,12 @@
 
 ### Changed
 
+- `Table::fromQuery()` is static, like `fromModel()` and `fromTree()` beside it. It was the odd
+  one out, so the form written by analogy was a fatal error rather than a mistake with a
+  message — and PHP refuses before any magic could soften it, since a public non-static method
+  in a static context does not count as inaccessible and `__callStatic` never runs. Existing
+  calls through an instance keep working; what no longer carries over is configuration applied
+  before the call, because the table is built by the factory rather than configured in place
 - `HealthyChecker::check()` returns six entries rather than three. Code comparing the whole
   array against a literal needs the new keys; `isBroken()` and `getTotalErrors()` are unaffected
 - `DuplicatesCheck::check()` and `WrongParentCheck::check()` answer with a number of nodes, as

@@ -72,6 +72,18 @@ write.
 called before, so a handler that refuses by throwing now leaves the node in place. A handler
 that counted on the node already being deleted has to be looked at.
 
+### `Table::fromQuery()` builds the table
+
+It is static now, so `(new Table())->hideLevel()->fromQuery($query)` loses the `hideLevel()`.
+Move configuration after the factory — the order the other two have always required:
+
+```php
+Table::fromQuery($query)->hideLevel()->draw($output);
+```
+
+Calling it through an instance still works, so nothing fails to run; only that one order
+changes meaning.
+
 ### Nothing to do
 
 No configuration changes, no schema changes, no code changes required.

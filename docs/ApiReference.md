@@ -211,7 +211,7 @@ use Fureev\Trees\Table;
 |---|---|
 | `Table::fromModel(Model $model): Table` | build from a node and its subtree |
 | `Table::fromTree(Collection $collection): Table` | build from a linked collection |
-| `(new Table())->fromQuery(QueryBuilderV2 $query): Table` | build from a query — **not static**, unlike the two above |
+| `Table::fromQuery(QueryBuilderV2 $query): Table` | build from a query |
 | `setExtraColumns(array $columns): Table` | pick the columns to print |
 | `hideLevel(): Table` | drop the level column |
 | `setOffset(string $offset): Table` | change the indent |
