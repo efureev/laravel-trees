@@ -90,7 +90,7 @@ None of these touch the database except where noted.
 | `isLevel(int $level): bool` | sits at that level |
 | `isMulti(): bool` | is the model configured with a tree column |
 | `getRoot(): ?static` | the root of this tree (1 query) |
-| `getBounds(): array` | the tree column values, in configuration order |
+| `getBounds(): array` | the tree column values, positional: left, right, level, parent, tree last |
 
 ## Values and column names
 

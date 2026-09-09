@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fureev\Trees;
 
 use Fureev\Trees\Contracts\TreeModel;
+use Fureev\Trees\Exceptions\Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -382,11 +383,30 @@ class QueryBuilderV2 extends Builder
 
 
     /**
+     * The node's tree columns as a positional array: left, right, level, parent, and the tree
+     * value last on a multi-tree model. The order is the configured one, the same one
+     * `getBounds()` uses — callers read this by index.
+     *
+     * Built from the column list rather than from the row: `array_values()` on the fetched row
+     * would take whichever order the driver returned the columns in, which happens to match on
+     * PostgreSQL and is nowhere guaranteed.
+     *
+     * An id that matches nothing yields an empty array unless `$required` says otherwise.
+     *
      * @return array<int, int|string|null>
      */
     public function getPlainNodeData(string|int $id, bool $required = false): array
     {
-        return array_values($this->getNodeData($id, $required));
+        $data = $this->getNodeData($id, $required);
+
+        if ($data === []) {
+            return [];
+        }
+
+        return array_map(
+            static fn(string $column) => ($data[$column] ?? null),
+            $this->model->getTreeConfig()->columnsNames()
+        );
     }
 
 
@@ -413,6 +433,9 @@ class QueryBuilderV2 extends Builder
     /**
      * Add node selection statement between specified range.
      *
+     * Takes a bounds array as `getNodeBounds()` builds it: left first, right second, and on a
+     * multi-tree model the tree value last.
+     *
      * @param (string|int)[] $values
      */
     public function whereNodeBetween(array $values, string $boolean = 'and', bool $not = false): static
@@ -434,6 +457,14 @@ class QueryBuilderV2 extends Builder
             );
 
         if ($this->model->isMulti()) {
+            // The tree value is read off the end. A pair of bounds and nothing else would hand
+            // the right bound over as a tree id and filter by nonsense.
+            if (count($values) < 3) {
+                throw new Exception(
+                    'Can not select between nodes: the bounds array must carry the tree value last.'
+                );
+            }
+
             $treeId = end($values);
             $this->query->where($this->columnWithTbl((string)$this->model->treeAttribute()), $treeId);
         }

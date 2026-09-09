@@ -135,6 +135,12 @@ trait WithQueryBuilder
     }
 
     /**
+     * The node's tree columns as a positional array: left, right, level, parent, and the tree
+     * value last on a multi-tree model — the configured column order either way.
+     *
+     * A model answers from its own attributes, an id from a row fetched for it. Both come back
+     * in the same order, and `whereNodeBetween()` reads them by index.
+     *
      * @phpstan-param (Model&UseTree)|string|int $node
      * @return array<int, int|string|null>
      */

@@ -43,6 +43,14 @@
 
 ### Fixed
 
+- `getPlainNodeData()` builds the positional bounds array from the configured column list
+  instead of from the order the driver returned the columns in. It used to be
+  `array_values()` over the fetched row, so the agreement between the two halves of
+  `getNodeBounds()` — attributes for a model, a row for an id — rested on PostgreSQL happening
+  to answer in `SELECT` order. Callers read that array by index, and nothing checked it
+- `whereNodeBetween()` refuses a multi-tree call carrying nothing but a pair of bounds. It
+  reads the tree value off the end of the array, so a two-element array had the right bound
+  filtering as a tree id
 - `defaultOrder()` no longer leaves the bindings of a raw ordering behind. It cleared the
   `orders` array by hand and nothing else, so a query built as
   `orderByRaw('... ?', [$v])->defaultOrder()` reached the database carrying a value with no

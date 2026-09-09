@@ -41,7 +41,7 @@ $node->isDirectChildOf($parent);    // exactly one level below it
 | `levelValue(): int` | the depth, `0` at the root |
 | `parentValue(): int\|string\|null` | the parent key, `null` at a root |
 | `treeValue(): int\|string\|null` | the tree id, `null` on a single tree |
-| `getBounds(): array` | all of the above, in configuration order |
+| `getBounds(): array` | all of the above, positional: left, right, level, parent, tree last |
 
 ## Column names
 
