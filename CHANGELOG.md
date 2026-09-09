@@ -19,6 +19,13 @@
 
 ### Changed
 
+- The `ancestors` and `descendants` relations come back in tree order on every path. Only one
+  of the four was ordered before: `descendants` never was, and `ancestors` was ordered when
+  read one node at a time but not when eager loaded — `whereAncestorOf()` applies the ordering
+  to the builder `whereNested()` hands it, and that builder is discarded except for its wheres.
+  `descendants` gains the ordering it never had, and both are now ordered once, outside the
+  nested group, where it survives. `has()`, `whereHas()` and `withCount()` build their own
+  subquery and are untouched
 - Column names are taken as strings everywhere an `Attribute` object used to be handed over
   directly — `Collection::linkNodes()` grouping, the two subquery bounds in
   `parentsByModelId()`, and `byTree()`. Stringification produced the same name, so nothing

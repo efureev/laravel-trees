@@ -78,6 +78,12 @@ class RelationEagerTest extends AbstractFunctionalTreeTestCase
         $ancestorTitles = $byTitle['tree 1 / level 3']->getRelation('ancestors')
             ->pluck('title')
             ->all();
-        static::assertEqualsCanonicalizing(['tree 1', 'tree 1 / level 2'], $ancestorTitles);
+        static::assertSame(
+            [
+                'tree 1',
+                'tree 1 / level 2',
+            ],
+            $ancestorTitles
+        );
     }
 }

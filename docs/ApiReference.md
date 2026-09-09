@@ -67,7 +67,7 @@ Pass a timestamp to touch only nodes trashed at or after it. See
 | `children()` | `HasMany` — direct children, in position order (**reorders**) | 1 |
 | `childrenWithTrashed()` | `HasMany`, trashed included | 1 |
 | `ancestors()` | relation — every ancestor, **root first** | 1 |
-| `descendants()` | relation — the whole subtree, any depth, **unordered** | 1 |
+| `descendants()` | relation — the whole subtree, any depth, in tree order | 1 |
 | `parents(?int $level = null): Collection` | ancestors as a collection | 1 |
 | `parentsBuilder(?int $level = null): QueryBuilderV2` | the same as a builder | 0 |
 | `parentByLevel(int $level): ?self` | the **single** ancestor at that level | 1 |

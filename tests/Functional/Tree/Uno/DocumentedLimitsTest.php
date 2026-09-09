@@ -95,26 +95,6 @@ class DocumentedLimitsTest extends AbstractFunctionalTreeTestCase
     }
 
     /**
-     * Backs docs/Limitations.md: the descendants relation carries no ORDER BY, while ancestors
-     * does. The order descendants come back in is down to the query plan, so documentation must
-     * not promise one.
-     */
-    #[Test]
-    public function descendantsCarryNoOrderByWhileAncestorsDo(): void
-    {
-        $nodes = $this->buildBranch();
-
-        static::assertStringNotContainsStringIgnoringCase(
-            'order by',
-            $nodes['root']->descendants()->toSql()
-        );
-        static::assertStringContainsStringIgnoringCase(
-            'order by',
-            $nodes['leaf']->ancestors()->toSql()
-        );
-    }
-
-    /**
      * Backs docs/Troubleshooting.md: HealthyChecker runs three of the four checks — the missing
      * parent one is commented out of its list — so an orphaned node passes unnoticed. A clean
      * report means "none of the three found anything", not "the tree is sound".

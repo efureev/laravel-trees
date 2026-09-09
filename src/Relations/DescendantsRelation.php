@@ -26,7 +26,9 @@ class DescendantsRelation extends BaseRelation
             return;
         }
 
-        $this->query->whereDescendantOf($this->parent)->applyNestedSetScope();
+        // whereDescendantOf() adds no ordering of its own, unlike whereAncestorOf(). Without
+        // this the rows arrive in whatever order the plan produced them.
+        $this->query->whereDescendantOf($this->parent)->applyNestedSetScope()->defaultOrder();
     }
 
     protected function addEagerConstraint(QueryBuilderV2 $query, Model $model): void

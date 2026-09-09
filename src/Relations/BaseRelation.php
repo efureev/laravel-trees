@@ -80,6 +80,12 @@ abstract class BaseRelation extends Relation
                 }
             }
         );
+
+        // Ordered out here rather than inside the closure. whereNested() keeps only the wheres
+        // of the builder it hands over, so an ordering applied in there — as whereAncestorOf()
+        // does — is thrown away with the rest of it. match() walks the results in the order
+        // they arrive, so this is what puts each model's relation in tree order.
+        $this->query->defaultOrder();
     }
 
     abstract protected function addEagerConstraint(QueryBuilderV2 $query, Model $model): void;

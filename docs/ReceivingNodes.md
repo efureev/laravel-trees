@@ -37,8 +37,8 @@ $node->descendants;               // the whole subtree, any depth
 $node->descendants()->count();    // without loading it
 ```
 
-One query each, whatever the depth. `descendants` comes back in no defined order — see
-[Limitations](./Limitations.md#names-that-mean-something-slightly-different).
+One query each, whatever the depth. Both come back in tree order — `lft` ascending, so an
+ancestor chain reads root first and a subtree reads depth first.
 
 Limiting the depth happens in the query, not in PHP:
 

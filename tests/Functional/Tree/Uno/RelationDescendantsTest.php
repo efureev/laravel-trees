@@ -81,7 +81,13 @@ class RelationDescendantsTest extends AbstractFunctionalTreeTestCase
         $titles = $nodes['node31']->descendants()->get()->pluck('title')->all();
 
         // node321 sits two levels below node31 and must still be there.
-        static::assertEqualsCanonicalizing(['node32', 'node321'], $titles);
+        static::assertSame(
+            [
+                'node32',
+                'node321',
+            ],
+            $titles
+        );
     }
 
     #[Test]
@@ -118,7 +124,7 @@ class RelationDescendantsTest extends AbstractFunctionalTreeTestCase
 
         static::assertInstanceOf(Collection::class, $viaProperty);
         static::assertTrue($root->relationLoaded('descendants'));
-        static::assertEqualsCanonicalizing(
+        static::assertSame(
             $root->descendants()->get()->modelKeys(),
             $viaProperty->modelKeys()
         );
@@ -132,7 +138,7 @@ class RelationDescendantsTest extends AbstractFunctionalTreeTestCase
         $viaRelation = $nodes['root']->descendants()->get()->modelKeys();
         $viaQuery    = $nodes['root']->newNestedSetQuery()->descendantsQuery()->get()->modelKeys();
 
-        static::assertEqualsCanonicalizing($viaQuery, $viaRelation);
+        static::assertSame($viaQuery, $viaRelation);
     }
 
     #[Test]
