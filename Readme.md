@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./docs/assets/logo/logo.svg" alt="laravel-trees" width="520">
+</p>
+
 # Laravel Tree Structure
 
 ![PHP Laravel Package](https://github.com/efureev/laravel-trees/workflows/PHP%20Laravel%20Package/badge.svg?branch=master)

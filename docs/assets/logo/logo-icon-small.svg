@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 18 164 164" width="164" height="164" role="img" aria-label="laravel-trees">
+  <title>laravel-trees</title>
+  <g fill="none" stroke="#7A8899" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 44 H34 V156 H50"/><path d="M134 44 H150 V156 H134"/>
+  </g>
+  <g fill="none" stroke="#FF2D20" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M70 132 L92 102 L114 132"/>
+    <path d="M75 97 L92 74 L109 97"/>
+    <path d="M79 68 L92 51 L105 68"/>
+  </g>
+</svg>

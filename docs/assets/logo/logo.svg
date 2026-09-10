@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="14 22 514 156" width="514" height="156" role="img" aria-label="laravel-trees">
+  <title>laravel-trees</title>
+  <g fill="none" stroke="#7A8899" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M44 38 H30 V162 H44"/><path d="M140 38 H154 V162 H140"/>
+  </g>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#9AA5B1" stroke-width="5">
+      <path d="M52 144 L60 134 L68 144"/><path d="M53.5 130 L60 121 L66.5 130"/><path d="M55 116 L60 108 L65 116"/>
+      <path d="M116 144 L124 134 L132 144"/><path d="M117.5 130 L124 121 L130.5 130"/><path d="M119 116 L124 108 L129 116"/>
+    </g>
+    <g stroke="#FF2D20" stroke-width="6.5">
+      <path d="M81 148 L92 135 L103 148"/><path d="M82.5 131 L92 120 L101.5 131"/><path d="M84 114 L92 105 L100 114"/><path d="M85.5 98 L92 90 L98.5 98"/>
+    </g>
+  </g>
+  <text x="200" y="110" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif" font-size="54" font-weight="700" letter-spacing="-1.5" fill="#5A6675">laravel<tspan fill="#FF2D20">-trees</tspan></text>
+  <text x="203" y="141" font-family="ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace" font-size="15" letter-spacing="4" fill="#9AA5B1">A FOREST IN ONE SET</text>
+</svg>
