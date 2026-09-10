@@ -1,5 +1,24 @@
 # Changelog
 
+## [unreleased]
+
+### Added
+
+- `DocumentedPerformanceCountsTest`, one per tree shape: every number in the cost table of
+  `docs/Performance.md` is now asserted from the query log, the way `DocumentedQueryCountsTest`
+  already backs the "Queries" column of `docs/ApiReference.md`
+
+### Fixed
+
+- `docs/Performance.md` gave one number per operation where the cost depends on the case:
+  inserting a root takes one statement or two, promoting a node to a root three or four, and a
+  move costs five only when it moves — `up()` and `down()` cost six, a move to an adjacent spot
+  four, and a re-position under the current parent writes nothing at all, because positioning
+  changes no attribute and `save()` finds the model clean. The table now names the case,
+  and a note lists the three ways a move departs from five
+- `docs/Performance.md` said `toLevel($level)` cuts the range it reads; it adds a level
+  predicate to a query and leaves the range alone
+
 ## [7.0.0](https://github.com/efureev/laravel-trees/compare/v6.1.0...v7.0.0) (2026-09-09)
 
 A major, and a large one: an audit of the package produced this release almost in full. Most

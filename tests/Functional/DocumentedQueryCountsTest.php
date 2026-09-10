@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Fureev\Trees\Tests\Functional;
 
+use Fureev\Trees\Tests\Functional\Concerns\CountsStatements;
 use Fureev\Trees\Tests\models\v5\Category;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -16,22 +17,14 @@ use PHPUnit\Framework\Attributes\Test;
  */
 class DocumentedQueryCountsTest extends AbstractFunctionalTreeTestCase
 {
+    use CountsStatements;
+
     /**
      * @return class-string<Category>
      */
     protected static function modelClass(): string
     {
         return Category::class;
-    }
-
-    private function statements(callable $operation): int
-    {
-        $connection = static::model()->getConnection();
-
-        $connection->flushQueryLog();
-        $operation();
-
-        return count($connection->getQueryLog());
     }
 
     /**
