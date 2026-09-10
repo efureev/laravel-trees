@@ -8,7 +8,8 @@
   top of `Readme.md`), `logo-icon.svg` (square mark), `logo-icon-small.svg` (simplified mark
   whose strokes survive 16 px), `logo-og.svg` (social card), plus rasterised `png/` sizes —
   favicons 16/32/48, app icons 64…1024, `apple-touch-icon.png`, README lock-up at 1x and 2x,
-  `og-image.png` — and `favicon.ico` bundling 16/32/48
+  `og-image.png` — and `docs/favicon.ico`, bundling 16/32/48 for hosts that look for it
+  at the docs root
 - `DocumentedPerformanceCountsTest`, one per tree shape: every number in the cost table of
   `docs/Performance.md` is now asserted from the query log, the way `DocumentedQueryCountsTest`
   already backs the "Queries" column of `docs/ApiReference.md`
